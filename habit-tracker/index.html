@@ -1,0 +1,1005 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="theme-color" content="#1a1a2e">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Habits">
+    <meta name="description" content="Track your daily morning and evening habits">
+
+    <title>Habit Tracker</title>
+
+    <!-- PWA Manifest -->
+    <link rel="manifest" href="manifest.json">
+
+    <!-- Icons -->
+    <link rel="icon" type="image/png" sizes="192x192" href="assets/icons/icon-192.png">
+    <link rel="apple-touch-icon" href="assets/icons/icon-192.png">
+
+    <!-- Styles -->
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+    <!-- App Container -->
+    <div id="app">
+        <!-- Loading Screen -->
+        <div id="loading-screen" class="screen active">
+            <div class="loading-content">
+                <div class="logo">
+                    <span class="logo-icon">&#10003;</span>
+                </div>
+                <h1>Habit Tracker</h1>
+                <div class="loading-spinner"></div>
+                <p id="loading-status" style="color: var(--text-secondary); margin-top: 16px; font-size: 0.9rem;"></p>
+            </div>
+        </div>
+
+        <!-- Auth Screen -->
+        <div id="auth-screen" class="screen">
+            <div class="auth-content">
+                <div class="logo">
+                    <span class="logo-icon">&#10003;</span>
+                </div>
+                <h1>Habit Tracker</h1>
+                <p class="subtitle">Track your daily routines</p>
+
+                <form id="auth-form" class="auth-form">
+                    <div class="input-group">
+                        <input type="email" id="email-input" placeholder="your@email.com" required autocomplete="email">
+                    </div>
+                    <button type="submit" class="btn btn-primary" id="auth-submit">
+                        <span>Send Magic Link</span>
+                    </button>
+                </form>
+
+                <div id="auth-message" class="auth-message hidden">
+                    <div class="message-icon">&#9993;</div>
+                    <h2>Check your email</h2>
+                    <p>We sent a magic link to <strong id="sent-email"></strong></p>
+                    <button class="btn btn-secondary" id="try-again">Try another email</button>
+                </div>
+
+                <div id="auth-error" class="auth-error hidden"></div>
+            </div>
+        </div>
+
+        <!-- Main App Screen -->
+        <div id="main-screen" class="screen">
+            <!-- Header -->
+            <header class="app-header">
+                <button class="btn-icon" id="prev-date" aria-label="Previous day">
+                    <span>&#8249;</span>
+                </button>
+                <div class="date-display" id="current-date">
+                    <span class="date-text">Today</span>
+                    <span class="date-full">Thu, Dec 5, 2025</span>
+                </div>
+                <button class="btn-icon" id="next-date" aria-label="Next day">
+                    <span>&#8250;</span>
+                </button>
+            </header>
+
+            <!-- Tab Navigation -->
+            <nav class="tab-nav">
+                <button class="tab-btn active" data-tab="morning">
+                    <span class="tab-icon">&#9788;</span>
+                    <span>Morning</span>
+                </button>
+                <button class="tab-btn" data-tab="evening">
+                    <span class="tab-icon">&#9790;</span>
+                    <span>Evening</span>
+                </button>
+            </nav>
+
+            <!-- Habit Lists -->
+            <main class="habit-container">
+                <div id="morning-habits" class="habit-list active">
+                    <!-- Habits will be rendered here -->
+                </div>
+                <div id="evening-habits" class="habit-list">
+                    <!-- Habits will be rendered here -->
+                </div>
+            </main>
+
+            <!-- Progress Bar -->
+            <div class="progress-section">
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progress-fill"></div>
+                </div>
+                <span class="progress-text" id="progress-text">0/0 completed</span>
+            </div>
+
+            <!-- Bottom Navigation -->
+            <nav class="bottom-nav">
+                <button class="nav-btn active" data-view="today">
+                    <span class="nav-icon">&#10003;</span>
+                    <span>Today</span>
+                </button>
+                <button class="nav-btn" data-view="dashboard">
+                    <span class="nav-icon">&#9632;</span>
+                    <span>Dashboard</span>
+                </button>
+                <button class="nav-btn" data-view="settings">
+                    <span class="nav-icon">&#9881;</span>
+                    <span>Settings</span>
+                </button>
+            </nav>
+        </div>
+
+        <!-- Dashboard Screen -->
+        <div id="dashboard-screen" class="screen">
+            <header class="app-header">
+                <h1>Dashboard</h1>
+                <select id="month-selector" class="month-select">
+                    <!-- Options will be populated dynamically -->
+                </select>
+            </header>
+
+            <main class="dashboard-content">
+                <!-- Summary Cards -->
+                <div class="summary-cards">
+                    <div class="summary-card">
+                        <span class="card-value" id="overall-rate">0%</span>
+                        <span class="card-label">Overall</span>
+                    </div>
+                    <div class="summary-card">
+                        <span class="card-value" id="current-streak">0</span>
+                        <span class="card-label">Day Streak</span>
+                    </div>
+                    <div class="summary-card">
+                        <span class="card-value" id="best-streak">0</span>
+                        <span class="card-label">Best Streak</span>
+                    </div>
+                </div>
+
+                <!-- Tabs for Morning/Evening -->
+                <div class="dashboard-tabs">
+                    <button class="dash-tab active" data-type="morning">Morning</button>
+                    <button class="dash-tab" data-type="evening">Evening</button>
+                </div>
+
+                <!-- Habit Completion Rates -->
+                <section class="chart-section">
+                    <h2>Completion Rates</h2>
+                    <div id="habit-rates" class="habit-rates">
+                        <!-- Bars will be rendered here -->
+                    </div>
+                </section>
+
+                <!-- Calendar Heatmap -->
+                <section class="chart-section">
+                    <h2>Calendar</h2>
+                    <div id="calendar-heatmap" class="calendar-heatmap">
+                        <!-- Calendar will be rendered here -->
+                    </div>
+                </section>
+            </main>
+
+            <!-- Bottom Navigation -->
+            <nav class="bottom-nav">
+                <button class="nav-btn" data-view="today">
+                    <span class="nav-icon">&#10003;</span>
+                    <span>Today</span>
+                </button>
+                <button class="nav-btn active" data-view="dashboard">
+                    <span class="nav-icon">&#9632;</span>
+                    <span>Dashboard</span>
+                </button>
+                <button class="nav-btn" data-view="settings">
+                    <span class="nav-icon">&#9881;</span>
+                    <span>Settings</span>
+                </button>
+            </nav>
+        </div>
+
+        <!-- Settings Screen -->
+        <div id="settings-screen" class="screen">
+            <header class="app-header">
+                <h1>Settings</h1>
+            </header>
+
+            <main class="settings-content">
+                <!-- Edit Habits Section -->
+                <section class="settings-section">
+                    <h2>Morning Habits</h2>
+                    <div id="edit-morning-habits" class="edit-habit-list">
+                        <!-- Editable habits will be rendered here -->
+                    </div>
+                    <button class="btn btn-add" id="add-morning-habit">
+                        <span>+ Add Morning Habit</span>
+                    </button>
+                </section>
+
+                <section class="settings-section">
+                    <h2>Evening Habits</h2>
+                    <div id="edit-evening-habits" class="edit-habit-list">
+                        <!-- Editable habits will be rendered here -->
+                    </div>
+                    <button class="btn btn-add" id="add-evening-habit">
+                        <span>+ Add Evening Habit</span>
+                    </button>
+                </section>
+
+                <!-- Account Section -->
+                <section class="settings-section">
+                    <h2>Account</h2>
+                    <div class="account-info">
+                        <span id="user-email">user@email.com</span>
+                    </div>
+                    <button class="btn btn-danger" id="logout-btn">Sign Out</button>
+                </section>
+            </main>
+
+            <!-- Bottom Navigation -->
+            <nav class="bottom-nav">
+                <button class="nav-btn" data-view="today">
+                    <span class="nav-icon">&#10003;</span>
+                    <span>Today</span>
+                </button>
+                <button class="nav-btn" data-view="dashboard">
+                    <span class="nav-icon">&#9632;</span>
+                    <span>Dashboard</span>
+                </button>
+                <button class="nav-btn active" data-view="settings">
+                    <span class="nav-icon">&#9881;</span>
+                    <span>Settings</span>
+                </button>
+            </nav>
+        </div>
+    </div>
+
+    <!-- Add/Edit Habit Modal -->
+    <div id="habit-modal" class="modal hidden">
+        <div class="modal-overlay"></div>
+        <div class="modal-content">
+            <h2 id="modal-title">Add Habit</h2>
+            <form id="habit-form">
+                <input type="hidden" id="habit-id">
+                <input type="hidden" id="habit-type">
+                <div class="input-group">
+                    <input type="text" id="habit-name" placeholder="Habit name" required maxlength="100">
+                </div>
+                <div class="modal-actions">
+                    <button type="button" class="btn btn-secondary" id="cancel-habit">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Save</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Delete Confirmation Modal -->
+    <div id="delete-modal" class="modal hidden">
+        <div class="modal-overlay"></div>
+        <div class="modal-content">
+            <h2>Delete Habit?</h2>
+            <p>This will remove the habit from your list. Historical data will be preserved.</p>
+            <div class="modal-actions">
+                <button class="btn btn-secondary" id="cancel-delete">Cancel</button>
+                <button class="btn btn-danger" id="confirm-delete">Delete</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Offline Indicator -->
+    <div id="offline-indicator" class="offline-indicator hidden">
+        <span>You're offline. Changes will sync when connected.</span>
+    </div>
+
+    <!-- Firebase SDK -->
+    <script type="module">
+        // Firebase imports
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
+        import { getFirestore, collection, doc, getDoc, getDocs, setDoc, addDoc, updateDoc, deleteDoc, query, orderBy, onSnapshot, serverTimestamp, writeBatch } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+        import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, sendSignInLinkToEmail, isSignInWithEmailLink, signInWithEmailLink } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
+
+        // ========== CONFIGURATION ==========
+        const firebaseConfig = {
+            apiKey: "AIzaSyAodoB3p7-Cex_Imus3slp_g50Bs0UlBko",
+            authDomain: "habit-tracker-f3c23.firebaseapp.com",
+            projectId: "habit-tracker-f3c23",
+            storageBucket: "habit-tracker-f3c23.firebasestorage.app",
+            messagingSenderId: "506442188864",
+            appId: "1:506442188864:web:37b25d676ca80c58cd77a5"
+        };
+
+        // Default habits
+        const DEFAULT_MORNING_HABITS = [
+            "Stop alarm without snooze and get up",
+            "Go to bathroom and wash face with soap",
+            "Eat protein bar/fruit",
+            "Look phone (only messages)",
+            "5-10 minute stretching & get changed",
+            "Go to the gym",
+            "Complete scheduled gym session",
+            "Go home, prepare breakfast & have shower",
+            "Eat breakfast + phone (social/news)",
+            "Get changed & go to uni"
+        ];
+
+        const DEFAULT_EVENING_HABITS = [
+            "Send messages to Adri",
+            "Check calendar + gym session next day",
+            "Set up alarm & Airplane mode",
+            "Prepare bag & clothes for next day",
+            "Wash face + apply Roche Possay",
+            "Take pill",
+            "Read 5-10 pages book",
+            "Turn lights off"
+        ];
+
+        // ========== GLOBALS ==========
+        let app, db, auth;
+        let currentUser = null;
+        let habits = { morning: [], evening: [] };
+        let currentDate = new Date();
+        let currentTab = 'morning';
+        let currentEntry = null;
+        let unsubscribeHabits = null;
+        let unsubscribeEntry = null;
+
+        // ========== INITIALIZATION ==========
+        async function init() {
+            updateLoadingStatus('Connecting to server...');
+
+            try {
+                // Initialize Firebase
+                app = initializeApp(firebaseConfig);
+                db = getFirestore(app);
+                auth = getAuth(app);
+
+                updateLoadingStatus('Checking authentication...');
+
+                // Check for email link sign-in
+                if (isSignInWithEmailLink(auth, window.location.href)) {
+                    await handleEmailLinkSignIn();
+                }
+
+                // Listen for auth state changes
+                onAuthStateChanged(auth, handleAuthStateChange);
+
+            } catch (error) {
+                console.error('Initialization error:', error);
+                showError('Failed to connect. Please refresh the page.');
+            }
+        }
+
+        function updateLoadingStatus(message) {
+            const status = document.getElementById('loading-status');
+            if (status) status.textContent = message;
+        }
+
+        // ========== AUTHENTICATION ==========
+        async function handleAuthStateChange(user) {
+            currentUser = user;
+
+            if (user) {
+                console.log('User signed in:', user.email);
+                updateLoadingStatus('Loading your habits...');
+
+                // Initialize default habits for new users
+                await initializeDefaultHabits();
+
+                // Subscribe to data
+                subscribeToHabits();
+                subscribeToEntry();
+
+                // Update UI
+                document.getElementById('user-email').textContent = user.email;
+                showScreen('main');
+                updateDateDisplay();
+
+            } else {
+                console.log('No user signed in');
+
+                // Cleanup subscriptions
+                if (unsubscribeHabits) unsubscribeHabits();
+                if (unsubscribeEntry) unsubscribeEntry();
+
+                showScreen('auth');
+            }
+        }
+
+        async function handleEmailLinkSignIn() {
+            let email = localStorage.getItem('emailForSignIn');
+
+            if (!email) {
+                email = prompt('Please enter your email to confirm sign-in:');
+            }
+
+            if (email) {
+                try {
+                    await signInWithEmailLink(auth, email, window.location.href);
+                    localStorage.removeItem('emailForSignIn');
+                    window.history.replaceState(null, '', window.location.pathname);
+                } catch (error) {
+                    console.error('Email link sign-in error:', error);
+                }
+            }
+        }
+
+        async function sendMagicLink(email) {
+            const continueUrl = window.location.origin + window.location.pathname;
+            console.log('Sending magic link to:', email);
+            console.log('Continue URL:', continueUrl);
+
+            const actionCodeSettings = {
+                url: continueUrl,
+                handleCodeInApp: true
+            };
+
+            try {
+                await sendSignInLinkToEmail(auth, email, actionCodeSettings);
+                console.log('Magic link sent successfully!');
+                localStorage.setItem('emailForSignIn', email);
+            } catch (err) {
+                console.error('sendSignInLinkToEmail error:', err);
+                console.error('Error code:', err.code);
+                console.error('Error message:', err.message);
+                throw err;
+            }
+        }
+
+        async function logout() {
+            await signOut(auth);
+        }
+
+        // ========== HABITS ==========
+        async function initializeDefaultHabits() {
+            const habitsRef = collection(db, `users/${currentUser.uid}/habits`);
+            const snapshot = await getDocs(habitsRef);
+
+            if (!snapshot.empty) return; // Already has habits
+
+            // Add default morning habits
+            for (let i = 0; i < DEFAULT_MORNING_HABITS.length; i++) {
+                await addDoc(habitsRef, {
+                    name: DEFAULT_MORNING_HABITS[i],
+                    type: 'morning',
+                    order: i + 1,
+                    createdAt: serverTimestamp(),
+                    archived: false
+                });
+            }
+
+            // Add default evening habits
+            for (let i = 0; i < DEFAULT_EVENING_HABITS.length; i++) {
+                await addDoc(habitsRef, {
+                    name: DEFAULT_EVENING_HABITS[i],
+                    type: 'evening',
+                    order: i + 1,
+                    createdAt: serverTimestamp(),
+                    archived: false
+                });
+            }
+        }
+
+        function subscribeToHabits() {
+            const habitsRef = collection(db, `users/${currentUser.uid}/habits`);
+            const q = query(habitsRef, orderBy('order', 'asc'));
+
+            unsubscribeHabits = onSnapshot(q, (snapshot) => {
+                habits = { morning: [], evening: [] };
+
+                snapshot.forEach((doc) => {
+                    const habit = { id: doc.id, ...doc.data() };
+                    if (!habit.archived) {
+                        habits[habit.type]?.push(habit);
+                    }
+                });
+
+                renderHabits();
+                renderEditableHabits();
+                updateProgress();
+            });
+        }
+
+        async function addHabit(name, type) {
+            const habitsRef = collection(db, `users/${currentUser.uid}/habits`);
+            const maxOrder = habits[type].length > 0
+                ? Math.max(...habits[type].map(h => h.order || 0))
+                : 0;
+
+            await addDoc(habitsRef, {
+                name: name.trim(),
+                type: type,
+                order: maxOrder + 1,
+                createdAt: serverTimestamp(),
+                archived: false
+            });
+        }
+
+        async function updateHabitName(habitId, name) {
+            const habitRef = doc(db, `users/${currentUser.uid}/habits`, habitId);
+            await updateDoc(habitRef, { name: name.trim() });
+        }
+
+        async function deleteHabit(habitId) {
+            const habitRef = doc(db, `users/${currentUser.uid}/habits`, habitId);
+            await updateDoc(habitRef, { archived: true });
+        }
+
+        // ========== ENTRIES ==========
+        function formatDate(date) {
+            const d = new Date(date);
+            return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+        }
+
+        function subscribeToEntry() {
+            if (unsubscribeEntry) unsubscribeEntry();
+
+            const dateString = formatDate(currentDate);
+            const entryRef = doc(db, `users/${currentUser.uid}/entries`, dateString);
+
+            unsubscribeEntry = onSnapshot(entryRef, (docSnapshot) => {
+                if (docSnapshot.exists()) {
+                    currentEntry = { id: docSnapshot.id, ...docSnapshot.data() };
+                } else {
+                    currentEntry = { morning: [], evening: [] };
+                }
+                updateHabitCheckmarks();
+                updateProgress();
+            });
+        }
+
+        async function toggleHabit(habitId, type) {
+            const dateString = formatDate(currentDate);
+            const entryRef = doc(db, `users/${currentUser.uid}/entries`, dateString);
+
+            const completed = currentEntry[type] || [];
+            const isCompleted = completed.includes(habitId);
+
+            const newCompleted = isCompleted
+                ? completed.filter(id => id !== habitId)
+                : [...completed, habitId];
+
+            await setDoc(entryRef, {
+                date: dateString,
+                [type]: newCompleted
+            }, { merge: true });
+        }
+
+        // ========== UI RENDERING ==========
+        function showScreen(screenName) {
+            ['loading', 'auth', 'main', 'dashboard', 'settings'].forEach(name => {
+                const screen = document.getElementById(`${name}-screen`);
+                if (screen) {
+                    screen.classList.toggle('active', name === screenName);
+                }
+            });
+        }
+
+        function showError(message) {
+            const loadingContent = document.querySelector('.loading-content');
+            if (loadingContent) {
+                loadingContent.innerHTML = `
+                    <div class="logo" style="background: var(--accent-danger);">
+                        <span class="logo-icon">!</span>
+                    </div>
+                    <h1>Error</h1>
+                    <p style="color: var(--text-secondary); margin: 16px 0;">${message}</p>
+                    <button onclick="location.reload()" class="btn btn-primary" style="max-width: 150px;">Refresh</button>
+                `;
+            }
+        }
+
+        function renderHabits() {
+            renderHabitList('morning-habits', habits.morning, 'morning');
+            renderHabitList('evening-habits', habits.evening, 'evening');
+        }
+
+        function renderHabitList(containerId, habitList, type) {
+            const container = document.getElementById(containerId);
+            if (!container) return;
+
+            if (habitList.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-state-icon">${type === 'morning' ? '🌅' : '🌙'}</div>
+                        <p>No ${type} habits yet</p>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = habitList.map(habit => `
+                <div class="habit-item" data-id="${habit.id}" data-type="${type}">
+                    <div class="habit-checkbox"></div>
+                    <span class="habit-name">${escapeHtml(habit.name)}</span>
+                </div>
+            `).join('');
+
+            // Add click handlers
+            container.querySelectorAll('.habit-item').forEach(item => {
+                item.addEventListener('click', async () => {
+                    const habitId = item.dataset.id;
+                    const habitType = item.dataset.type;
+                    item.classList.add('completing');
+                    await toggleHabit(habitId, habitType);
+                    setTimeout(() => item.classList.remove('completing'), 300);
+                });
+            });
+
+            updateHabitCheckmarks();
+        }
+
+        function updateHabitCheckmarks() {
+            if (!currentEntry) return;
+
+            document.querySelectorAll('.habit-item').forEach(item => {
+                const habitId = item.dataset.id;
+                const type = item.dataset.type;
+                const completed = currentEntry[type] || [];
+                item.classList.toggle('completed', completed.includes(habitId));
+            });
+        }
+
+        function updateProgress() {
+            const habitList = habits[currentTab] || [];
+            const completed = currentEntry?.[currentTab] || [];
+            const total = habitList.length;
+            const done = habitList.filter(h => completed.includes(h.id)).length;
+            const percentage = total > 0 ? (done / total) * 100 : 0;
+
+            document.getElementById('progress-fill').style.width = `${percentage}%`;
+            document.getElementById('progress-text').textContent = `${done}/${total} completed`;
+        }
+
+        function updateDateDisplay() {
+            const today = new Date();
+            const isToday = formatDate(currentDate) === formatDate(today);
+            const dateText = document.querySelector('#current-date .date-text');
+            const dateFull = document.querySelector('#current-date .date-full');
+
+            if (isToday) {
+                dateText.textContent = 'Today';
+            } else {
+                const yesterday = new Date(today);
+                yesterday.setDate(yesterday.getDate() - 1);
+                dateText.textContent = formatDate(currentDate) === formatDate(yesterday)
+                    ? 'Yesterday'
+                    : currentDate.toLocaleDateString('en-US', { weekday: 'short' });
+            }
+
+            dateFull.textContent = currentDate.toLocaleDateString('en-US', {
+                weekday: 'short', month: 'short', day: 'numeric', year: 'numeric'
+            });
+
+            document.getElementById('next-date').disabled = isToday;
+            document.getElementById('next-date').style.opacity = isToday ? '0.3' : '1';
+        }
+
+        function renderEditableHabits() {
+            renderEditableList('edit-morning-habits', habits.morning, 'morning');
+            renderEditableList('edit-evening-habits', habits.evening, 'evening');
+        }
+
+        function renderEditableList(containerId, habitList, type) {
+            const container = document.getElementById(containerId);
+            if (!container) return;
+
+            if (habitList.length === 0) {
+                container.innerHTML = '<p style="color: var(--text-muted);">No habits yet</p>';
+                return;
+            }
+
+            container.innerHTML = habitList.map(habit => `
+                <div class="edit-habit-item" data-id="${habit.id}">
+                    <span class="drag-handle">☰</span>
+                    <span class="edit-habit-name">${escapeHtml(habit.name)}</span>
+                    <div class="edit-habit-actions">
+                        <button class="edit-btn edit" data-id="${habit.id}" data-type="${type}">✎</button>
+                        <button class="edit-btn delete" data-id="${habit.id}">×</button>
+                    </div>
+                </div>
+            `).join('');
+
+            container.querySelectorAll('.edit-btn.edit').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const habit = habits[btn.dataset.type].find(h => h.id === btn.dataset.id);
+                    if (habit) openHabitModal(habit, btn.dataset.type);
+                });
+            });
+
+            container.querySelectorAll('.edit-btn.delete').forEach(btn => {
+                btn.addEventListener('click', () => openDeleteModal(btn.dataset.id));
+            });
+        }
+
+        // ========== DASHBOARD ==========
+        async function renderDashboard() {
+            const now = new Date();
+            const year = now.getFullYear();
+            const month = now.getMonth();
+
+            // Populate month selector
+            const monthSelector = document.getElementById('month-selector');
+            monthSelector.innerHTML = '';
+            for (let i = 0; i < 12; i++) {
+                const d = new Date(year, month - i, 1);
+                const option = document.createElement('option');
+                option.value = `${d.getFullYear()}-${d.getMonth()}`;
+                option.textContent = d.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+                if (i === 0) option.selected = true;
+                monthSelector.appendChild(option);
+            }
+
+            await updateDashboardData(year, month);
+        }
+
+        async function updateDashboardData(year, month) {
+            // Get entries for the month
+            const startDate = new Date(year, month, 1);
+            const endDate = new Date(year, month + 1, 0);
+            const today = new Date();
+            const lastDay = (year === today.getFullYear() && month === today.getMonth())
+                ? today.getDate()
+                : endDate.getDate();
+
+            // Calculate stats
+            let totalCompleted = 0;
+            let totalPossible = 0;
+            const totalHabits = habits.morning.length + habits.evening.length;
+
+            // Render habit rates
+            const ratesContainer = document.getElementById('habit-rates');
+            const currentType = document.querySelector('.dash-tab.active')?.dataset.type || 'morning';
+            const typeHabits = habits[currentType];
+
+            if (typeHabits.length === 0) {
+                ratesContainer.innerHTML = '<p style="color: var(--text-muted);">No habits to display</p>';
+            } else {
+                ratesContainer.innerHTML = typeHabits.map(habit => `
+                    <div class="rate-item">
+                        <span class="rate-label">${escapeHtml(habit.name)}</span>
+                        <div class="rate-bar-container">
+                            <div class="rate-bar">
+                                <div class="rate-fill" style="width: 0%"></div>
+                            </div>
+                            <span class="rate-value">--%</span>
+                        </div>
+                    </div>
+                `).join('');
+            }
+
+            // Render calendar
+            renderCalendar(year, month);
+
+            // Update summary cards
+            document.getElementById('overall-rate').textContent = '0%';
+            document.getElementById('current-streak').textContent = '0';
+            document.getElementById('best-streak').textContent = '0';
+        }
+
+        function renderCalendar(year, month) {
+            const container = document.getElementById('calendar-heatmap');
+            const firstDay = new Date(year, month, 1);
+            const lastDay = new Date(year, month + 1, 0);
+            const startDayOfWeek = firstDay.getDay();
+            const today = formatDate(new Date());
+
+            const weekdays = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+            let html = '<div class="calendar-weekdays">';
+            weekdays.forEach(day => {
+                html += `<span class="weekday-label">${day}</span>`;
+            });
+            html += '</div><div class="calendar-heatmap">';
+
+            // Empty cells before first day
+            for (let i = 0; i < startDayOfWeek; i++) {
+                html += '<div class="calendar-day empty"></div>';
+            }
+
+            // Days of month
+            for (let day = 1; day <= lastDay.getDate(); day++) {
+                const dateString = formatDate(new Date(year, month, day));
+                const isToday = dateString === today;
+                html += `<div class="calendar-day level-0 ${isToday ? 'today' : ''}">${day}</div>`;
+            }
+
+            html += '</div>';
+            container.innerHTML = html;
+        }
+
+        // ========== MODALS ==========
+        let habitToEdit = null;
+        let habitToDelete = null;
+
+        function openHabitModal(habit, type) {
+            habitToEdit = habit;
+            document.getElementById('habit-id').value = habit?.id || '';
+            document.getElementById('habit-type').value = type;
+            document.getElementById('habit-name').value = habit?.name || '';
+            document.getElementById('modal-title').textContent = habit ? 'Edit Habit' : 'Add Habit';
+            document.getElementById('habit-modal').classList.remove('hidden');
+            document.getElementById('habit-name').focus();
+        }
+
+        function closeHabitModal() {
+            habitToEdit = null;
+            document.getElementById('habit-modal').classList.add('hidden');
+            document.getElementById('habit-form').reset();
+        }
+
+        function openDeleteModal(habitId) {
+            habitToDelete = habitId;
+            document.getElementById('delete-modal').classList.remove('hidden');
+        }
+
+        function closeDeleteModal() {
+            habitToDelete = null;
+            document.getElementById('delete-modal').classList.add('hidden');
+        }
+
+        // ========== UTILITIES ==========
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        // ========== EVENT LISTENERS ==========
+        document.addEventListener('DOMContentLoaded', () => {
+            // Auth form
+            document.getElementById('auth-form').addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const email = document.getElementById('email-input').value.trim();
+                const btn = e.target.querySelector('button[type="submit"]');
+
+                btn.disabled = true;
+                btn.innerHTML = '<span>Sending...</span>';
+
+                try {
+                    await sendMagicLink(email);
+                    document.getElementById('auth-form').classList.add('hidden');
+                    document.getElementById('auth-message').classList.remove('hidden');
+                    document.getElementById('sent-email').textContent = email;
+                } catch (error) {
+                    console.error('Auth error:', error);
+                    let errorMsg = 'Failed to send email. ';
+                    if (error.code === 'auth/operation-not-allowed') {
+                        errorMsg = 'Email link sign-in is not enabled. Please enable it in Firebase Console.';
+                    } else if (error.code === 'auth/invalid-email') {
+                        errorMsg = 'Please enter a valid email address.';
+                    } else if (error.code === 'auth/missing-continue-uri') {
+                        errorMsg = 'Configuration error. Missing continue URL.';
+                    } else if (error.code === 'auth/unauthorized-continue-uri') {
+                        errorMsg = 'This domain is not authorized. Add localhost to Firebase authorized domains.';
+                    } else if (error.message) {
+                        errorMsg = error.message;
+                    }
+                    document.getElementById('auth-error').textContent = errorMsg;
+                    document.getElementById('auth-error').classList.remove('hidden');
+                } finally {
+                    btn.disabled = false;
+                    btn.innerHTML = '<span>Send Magic Link</span>';
+                }
+            });
+
+            document.getElementById('try-again').addEventListener('click', () => {
+                document.getElementById('auth-form').classList.remove('hidden');
+                document.getElementById('auth-message').classList.add('hidden');
+                document.getElementById('email-input').value = '';
+            });
+
+            // Date navigation
+            document.getElementById('prev-date').addEventListener('click', () => {
+                currentDate.setDate(currentDate.getDate() - 1);
+                updateDateDisplay();
+                subscribeToEntry();
+            });
+
+            document.getElementById('next-date').addEventListener('click', () => {
+                const tomorrow = new Date(currentDate);
+                tomorrow.setDate(tomorrow.getDate() + 1);
+                if (tomorrow <= new Date()) {
+                    currentDate = tomorrow;
+                    updateDateDisplay();
+                    subscribeToEntry();
+                }
+            });
+
+            // Tab navigation
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    currentTab = btn.dataset.tab;
+                    document.querySelectorAll('.tab-btn').forEach(b => b.classList.toggle('active', b === btn));
+                    document.getElementById('morning-habits').classList.toggle('active', currentTab === 'morning');
+                    document.getElementById('evening-habits').classList.toggle('active', currentTab === 'evening');
+                    updateProgress();
+                });
+            });
+
+            // Bottom navigation
+            document.querySelectorAll('.nav-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const view = btn.dataset.view;
+                    document.querySelectorAll('.nav-btn').forEach(b => b.classList.toggle('active', b.dataset.view === view));
+
+                    if (view === 'today') showScreen('main');
+                    else if (view === 'dashboard') {
+                        showScreen('dashboard');
+                        renderDashboard();
+                    }
+                    else if (view === 'settings') showScreen('settings');
+                });
+            });
+
+            // Dashboard tabs
+            document.querySelectorAll('.dash-tab').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    document.querySelectorAll('.dash-tab').forEach(b => b.classList.toggle('active', b === btn));
+                    renderDashboard();
+                });
+            });
+
+            // Add habit buttons
+            document.getElementById('add-morning-habit').addEventListener('click', () => openHabitModal(null, 'morning'));
+            document.getElementById('add-evening-habit').addEventListener('click', () => openHabitModal(null, 'evening'));
+
+            // Habit modal
+            document.getElementById('habit-form').addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const id = document.getElementById('habit-id').value;
+                const type = document.getElementById('habit-type').value;
+                const name = document.getElementById('habit-name').value.trim();
+
+                if (!name) return;
+
+                try {
+                    if (id) {
+                        await updateHabitName(id, name);
+                    } else {
+                        await addHabit(name, type);
+                    }
+                    closeHabitModal();
+                } catch (error) {
+                    console.error('Error saving habit:', error);
+                    alert('Failed to save habit.');
+                }
+            });
+
+            document.getElementById('cancel-habit').addEventListener('click', closeHabitModal);
+            document.querySelector('#habit-modal .modal-overlay').addEventListener('click', closeHabitModal);
+
+            // Delete modal
+            document.getElementById('confirm-delete').addEventListener('click', async () => {
+                if (habitToDelete) {
+                    try {
+                        await deleteHabit(habitToDelete);
+                        closeDeleteModal();
+                    } catch (error) {
+                        console.error('Error deleting habit:', error);
+                        alert('Failed to delete habit.');
+                    }
+                }
+            });
+
+            document.getElementById('cancel-delete').addEventListener('click', closeDeleteModal);
+            document.querySelector('#delete-modal .modal-overlay').addEventListener('click', closeDeleteModal);
+
+            // Logout
+            document.getElementById('logout-btn').addEventListener('click', logout);
+
+            // Offline indicator
+            window.addEventListener('online', () => document.getElementById('offline-indicator').classList.add('hidden'));
+            window.addEventListener('offline', () => document.getElementById('offline-indicator').classList.remove('hidden'));
+
+            // Start the app
+            init();
+        });
+    </script>
+
+    <!-- Register Service Worker -->
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('sw.js')
+                    .then(reg => console.log('Service Worker registered'))
+                    .catch(err => console.log('Service Worker registration failed:', err));
+            });
+        }
+    </script>
+</body>
+</html>
