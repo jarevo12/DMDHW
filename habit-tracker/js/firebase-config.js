@@ -15,6 +15,9 @@ let app = null;
 let db = null;
 let auth = null;
 
+// Check if running on localhost (for emulator usage)
+const USE_EMULATORS = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+
 // Initialize Firebase
 async function initializeFirebase() {
     return new Promise((resolve, reject) => {
@@ -27,7 +30,7 @@ async function initializeFirebase() {
 
         function setupFirebase() {
             try {
-                const { initializeApp, getFirestore, enableIndexedDbPersistence, getAuth } = window.firebaseModules;
+                const { initializeApp, getFirestore, enableIndexedDbPersistence, getAuth, connectFirestoreEmulator, connectAuthEmulator } = window.firebaseModules;
 
                 // Initialize Firebase app
                 app = initializeApp(firebaseConfig);
@@ -37,6 +40,13 @@ async function initializeFirebase() {
 
                 // Initialize Auth
                 auth = getAuth(app);
+
+                // Connect to emulators if running locally
+                if (USE_EMULATORS) {
+                    console.log('🔧 Using Firebase Emulators');
+                    connectFirestoreEmulator(db, 'localhost', 8080);
+                    connectAuthEmulator(auth, 'http://localhost:9099');
+                }
 
                 // Enable offline persistence
                 enableIndexedDbPersistence(db)

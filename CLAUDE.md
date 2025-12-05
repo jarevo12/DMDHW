@@ -21,6 +21,28 @@ cd habit-tracker && python -m http.server 8000
 # Open http://localhost:8000
 ```
 
+### Firebase Emulators (for safe local testing)
+
+The app automatically connects to Firebase emulators when running on localhost.
+
+```bash
+# Start emulators (run from project root)
+firebase emulators:start
+
+# This starts:
+# - Auth emulator: http://localhost:9099
+# - Firestore emulator: http://localhost:8080
+# - Emulator UI: http://localhost:4000
+```
+
+**When to use emulators:**
+- Testing features that modify data structure
+- Testing auth flows without affecting production
+- Development without internet connection
+- Destructive testing (data resets on restart)
+
+**Note:** When running on localhost, the app automatically uses emulators. When deployed, it uses production Firebase.
+
 ### Processing Utilities
 
 ```bash
@@ -86,12 +108,18 @@ git tag -a v<X.Y.Z> -m "Description of feature"
 git push origin main --tags
 ```
 
-### 5. Version Tagging Convention
+### 5. Deploy to Production
+```bash
+# Deploy to Firebase Hosting (https://habit-tracker-f3c23.web.app/)
+firebase deploy --only hosting
+```
+
+### 6. Version Tagging Convention
 - **Major (X.0.0)**: Breaking changes or major new functionality
 - **Minor (X.Y.0)**: New features, backwards compatible
 - **Patch (X.Y.Z)**: Bug fixes
 
-### 6. If Something Breaks
+### 7. If Something Breaks
 ```bash
 git checkout <last-stable-tag>   # Roll back to stable version
 git revert <bad-commit>          # Or revert specific commit
