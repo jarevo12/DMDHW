@@ -135,13 +135,13 @@
 
             <!-- Bottom Navigation -->
             <nav class="bottom-nav">
-                <button class="nav-btn active" data-view="today">
-                    <span class="nav-icon">&#10003;</span>
-                    <span>Today</span>
-                </button>
-                <button class="nav-btn" data-view="dashboard">
+                <button class="nav-btn active" data-view="dashboard">
                     <span class="nav-icon">&#9632;</span>
                     <span>Dashboard</span>
+                </button>
+                <button class="nav-btn" data-view="today">
+                    <span class="nav-icon">&#10003;</span>
+                    <span>Today</span>
                 </button>
                 <button class="nav-btn" data-view="settings">
                     <span class="nav-icon">&#9881;</span>
@@ -201,13 +201,13 @@
 
             <!-- Bottom Navigation -->
             <nav class="bottom-nav">
-                <button class="nav-btn" data-view="today">
-                    <span class="nav-icon">&#10003;</span>
-                    <span>Today</span>
-                </button>
                 <button class="nav-btn active" data-view="dashboard">
                     <span class="nav-icon">&#9632;</span>
                     <span>Dashboard</span>
+                </button>
+                <button class="nav-btn" data-view="today">
+                    <span class="nav-icon">&#10003;</span>
+                    <span>Today</span>
                 </button>
                 <button class="nav-btn" data-view="settings">
                     <span class="nav-icon">&#9881;</span>
@@ -256,13 +256,13 @@
 
             <!-- Bottom Navigation -->
             <nav class="bottom-nav">
-                <button class="nav-btn" data-view="today">
-                    <span class="nav-icon">&#10003;</span>
-                    <span>Today</span>
-                </button>
                 <button class="nav-btn" data-view="dashboard">
                     <span class="nav-icon">&#9632;</span>
                     <span>Dashboard</span>
+                </button>
+                <button class="nav-btn" data-view="today">
+                    <span class="nav-icon">&#10003;</span>
+                    <span>Today</span>
                 </button>
                 <button class="nav-btn active" data-view="settings">
                     <span class="nav-icon">&#9881;</span>
@@ -409,8 +409,9 @@
 
                 // Update UI
                 document.getElementById('user-email').textContent = user.email;
-                showScreen('main');
+                showScreen('dashboard');
                 updateDateDisplay();
+                renderDashboard();
 
             } else {
                 console.log('No user signed in');
@@ -751,50 +752,130 @@
         }
 
         async function updateDashboardData(year, month) {
-            // Get entries for the month
+            const today = new Date();
             const startDate = new Date(year, month, 1);
             const endDate = new Date(year, month + 1, 0);
-            const today = new Date();
             const lastDay = (year === today.getFullYear() && month === today.getMonth())
                 ? today.getDate()
                 : endDate.getDate();
 
-            // Calculate stats
-            let totalCompleted = 0;
-            let totalPossible = 0;
-            const totalHabits = habits.morning.length + habits.evening.length;
+            // Fetch all entries for the month
+            const entriesRef = collection(db, `users/${currentUser.uid}/entries`);
+            const entriesSnapshot = await getDocs(entriesRef);
 
-            // Render habit rates
-            const ratesContainer = document.getElementById('habit-rates');
+            const entriesMap = {};
+            entriesSnapshot.forEach(doc => {
+                entriesMap[doc.id] = doc.data();
+            });
+
+            // Calculate habit completion rates for current type
             const currentType = document.querySelector('.dash-tab.active')?.dataset.type || 'morning';
             const typeHabits = habits[currentType];
 
+            const habitStats = typeHabits.map(habit => {
+                let completed = 0;
+                let possible = lastDay;
+
+                for (let day = 1; day <= lastDay; day++) {
+                    const dateString = formatDate(new Date(year, month, day));
+                    const entry = entriesMap[dateString];
+                    if (entry && entry[currentType] && entry[currentType].includes(habit.id)) {
+                        completed++;
+                    }
+                }
+
+                return {
+                    habit,
+                    completed,
+                    possible,
+                    rate: possible > 0 ? Math.round((completed / possible) * 100) : 0
+                };
+            });
+
+            // Render habit rates
+            const ratesContainer = document.getElementById('habit-rates');
             if (typeHabits.length === 0) {
                 ratesContainer.innerHTML = '<p style="color: var(--text-muted);">No habits to display</p>';
             } else {
-                ratesContainer.innerHTML = typeHabits.map(habit => `
+                ratesContainer.innerHTML = habitStats.map(stat => `
                     <div class="rate-item">
-                        <span class="rate-label">${escapeHtml(habit.name)}</span>
+                        <span class="rate-label">${escapeHtml(stat.habit.name)}</span>
                         <div class="rate-bar-container">
                             <div class="rate-bar">
-                                <div class="rate-fill" style="width: 0%"></div>
+                                <div class="rate-fill" style="width: ${stat.rate}%"></div>
                             </div>
-                            <span class="rate-value">--%</span>
+                            <span class="rate-value">${stat.rate}%</span>
                         </div>
                     </div>
                 `).join('');
             }
 
-            // Render calendar
-            renderCalendar(year, month);
+            // Calculate overall completion rate
+            let totalCompleted = 0;
+            let totalPossible = 0;
+            const allHabits = [...habits.morning, ...habits.evening];
 
-            // Update summary cards
-            document.getElementById('overall-rate').textContent = '0%';
-            document.getElementById('current-streak').textContent = '0';
-            document.getElementById('best-streak').textContent = '0';
+            for (let day = 1; day <= lastDay; day++) {
+                const dateString = formatDate(new Date(year, month, day));
+                const entry = entriesMap[dateString];
+
+                allHabits.forEach(habit => {
+                    totalPossible++;
+                    const type = habit.type;
+                    if (entry && entry[type] && entry[type].includes(habit.id)) {
+                        totalCompleted++;
+                    }
+                });
+            }
+
+            const overallRate = totalPossible > 0 ? Math.round((totalCompleted / totalPossible) * 100) : 0;
+            document.getElementById('overall-rate').textContent = `${overallRate}%`;
+
+            // Calculate streaks
+            let currentStreak = 0;
+            let bestStreak = 0;
+            let tempStreak = 0;
+
+            const todayDate = new Date();
+            for (let i = 0; i <= 365; i++) {
+                const checkDate = new Date(todayDate);
+                checkDate.setDate(checkDate.getDate() - i);
+                const dateString = formatDate(checkDate);
+                const entry = entriesMap[dateString];
+
+                if (!entry) {
+                    if (i === 0) continue; // Today not logged yet
+                    if (currentStreak === 0) currentStreak = tempStreak;
+                    tempStreak = 0;
+                    continue;
+                }
+
+                const morningComplete = habits.morning.length > 0
+                    ? habits.morning.every(h => entry.morning?.includes(h.id))
+                    : true;
+                const eveningComplete = habits.evening.length > 0
+                    ? habits.evening.every(h => entry.evening?.includes(h.id))
+                    : true;
+
+                if (morningComplete && eveningComplete) {
+                    tempStreak++;
+                    bestStreak = Math.max(bestStreak, tempStreak);
+                } else {
+                    if (currentStreak === 0) currentStreak = tempStreak;
+                    tempStreak = 0;
+                }
+            }
+
+            if (currentStreak === 0) currentStreak = tempStreak;
+
+            document.getElementById('current-streak').textContent = currentStreak;
+            document.getElementById('best-streak').textContent = bestStreak;
+
+            // Render calendar with real data
+            renderCalendar(year, month, entriesMap);
         }
 
-        function renderCalendar(year, month) {
+        function renderCalendar(year, month, entriesMap) {
             const container = document.getElementById('calendar-heatmap');
             const firstDay = new Date(year, month, 1);
             const lastDay = new Date(year, month + 1, 0);
@@ -813,11 +894,34 @@
                 html += '<div class="calendar-day empty"></div>';
             }
 
+            const allHabits = [...habits.morning, ...habits.evening];
+            const totalHabitsCount = allHabits.length;
+
             // Days of month
             for (let day = 1; day <= lastDay.getDate(); day++) {
                 const dateString = formatDate(new Date(year, month, day));
                 const isToday = dateString === today;
-                html += `<div class="calendar-day level-0 ${isToday ? 'today' : ''}">${day}</div>`;
+                const entry = entriesMap[dateString];
+
+                let completedCount = 0;
+                if (entry) {
+                    allHabits.forEach(habit => {
+                        const type = habit.type;
+                        if (entry[type] && entry[type].includes(habit.id)) {
+                            completedCount++;
+                        }
+                    });
+                }
+
+                const completionRate = totalHabitsCount > 0 ? completedCount / totalHabitsCount : 0;
+                let level = 0;
+                if (completionRate >= 1) level = 5;
+                else if (completionRate >= 0.8) level = 4;
+                else if (completionRate >= 0.6) level = 3;
+                else if (completionRate >= 0.4) level = 2;
+                else if (completionRate > 0) level = 1;
+
+                html += `<div class="calendar-day level-${level} ${isToday ? 'today' : ''}">${day}</div>`;
             }
 
             html += '</div>';
