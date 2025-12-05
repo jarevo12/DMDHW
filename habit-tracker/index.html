@@ -49,7 +49,29 @@
                     <div class="input-group">
                         <input type="email" id="email-input" placeholder="your@email.com" required autocomplete="email">
                     </div>
-                    <button type="submit" class="btn btn-primary" id="auth-submit">
+                    <div class="input-group" id="password-group">
+                        <input type="password" id="password-input" placeholder="Password (min 6 characters)" autocomplete="current-password" minlength="6" required>
+                    </div>
+
+                    <!-- Auth method toggle -->
+                    <div class="auth-toggle">
+                        <button type="button" id="toggle-auth-method" class="btn-link">
+                            <span id="toggle-text">Use magic link instead</span>
+                        </button>
+                    </div>
+
+                    <!-- Password Auth Buttons -->
+                    <div id="password-buttons" style="display: flex; gap: 8px;">
+                        <button type="button" class="btn btn-primary" id="signin-btn">
+                            <span>Sign In</span>
+                        </button>
+                        <button type="button" class="btn btn-secondary" id="signup-btn">
+                            <span>Sign Up</span>
+                        </button>
+                    </div>
+
+                    <!-- Magic Link Button -->
+                    <button type="submit" class="btn btn-primary" id="magic-link-btn" style="display: none;">
                         <span>Send Magic Link</span>
                     </button>
                 </form>
@@ -841,11 +863,38 @@
 
         // ========== EVENT LISTENERS ==========
         document.addEventListener('DOMContentLoaded', () => {
-            // Auth form
+            // Toggle between magic link and password authentication
+            let usePassword = true;
+
+            document.getElementById('toggle-auth-method').addEventListener('click', () => {
+                usePassword = !usePassword;
+                const passwordGroup = document.getElementById('password-group');
+                const passwordInput = document.getElementById('password-input');
+                const toggleText = document.getElementById('toggle-text');
+                const magicLinkBtn = document.getElementById('magic-link-btn');
+                const passwordButtons = document.getElementById('password-buttons');
+
+                if (usePassword) {
+                    passwordGroup.style.display = 'block';
+                    passwordInput.required = true;
+                    toggleText.textContent = 'Use magic link instead';
+                    magicLinkBtn.style.display = 'none';
+                    passwordButtons.style.display = 'flex';
+                } else {
+                    passwordGroup.style.display = 'none';
+                    passwordInput.required = false;
+                    passwordInput.value = '';
+                    toggleText.textContent = 'Use password instead';
+                    magicLinkBtn.style.display = 'block';
+                    passwordButtons.style.display = 'none';
+                }
+            });
+
+            // Magic Link form submission
             document.getElementById('auth-form').addEventListener('submit', async (e) => {
                 e.preventDefault();
                 const email = document.getElementById('email-input').value.trim();
-                const btn = e.target.querySelector('button[type="submit"]');
+                const btn = document.getElementById('magic-link-btn');
 
                 btn.disabled = true;
                 btn.innerHTML = '<span>Sending...</span>';
@@ -858,7 +907,9 @@
                 } catch (error) {
                     console.error('Auth error:', error);
                     let errorMsg = 'Failed to send email. ';
-                    if (error.code === 'auth/operation-not-allowed') {
+                    if (error.code === 'auth/quota-exceeded') {
+                        errorMsg = 'Daily quota exceeded. Please use password authentication instead.';
+                    } else if (error.code === 'auth/operation-not-allowed') {
                         errorMsg = 'Email link sign-in is not enabled. Please enable it in Firebase Console.';
                     } else if (error.code === 'auth/invalid-email') {
                         errorMsg = 'Please enter a valid email address.';
@@ -874,6 +925,86 @@
                 } finally {
                     btn.disabled = false;
                     btn.innerHTML = '<span>Send Magic Link</span>';
+                }
+            });
+
+            // Sign In button handler
+            document.getElementById('signin-btn').addEventListener('click', async () => {
+                const email = document.getElementById('email-input').value.trim();
+                const password = document.getElementById('password-input').value;
+                const btn = document.getElementById('signin-btn');
+
+                if (!email || !password) {
+                    document.getElementById('auth-error').textContent = 'Please enter email and password.';
+                    document.getElementById('auth-error').classList.remove('hidden');
+                    return;
+                }
+
+                btn.disabled = true;
+                btn.innerHTML = '<span>Signing in...</span>';
+                document.getElementById('auth-error').classList.add('hidden');
+
+                try {
+                    await signInWithEmailAndPassword(auth, email, password);
+                    // Success - handleAuthStateChange will be triggered automatically
+                } catch (error) {
+                    console.error('Sign in error:', error);
+                    let errorMsg = 'Sign in failed. ';
+                    if (error.code === 'auth/invalid-credential' ||
+                        error.code === 'auth/user-not-found' ||
+                        error.code === 'auth/wrong-password') {
+                        errorMsg = 'Invalid email or password. Please try again or sign up.';
+                    } else if (error.code === 'auth/invalid-email') {
+                        errorMsg = 'Please enter a valid email address.';
+                    } else if (error.code === 'auth/too-many-requests') {
+                        errorMsg = 'Too many failed attempts. Please try again later.';
+                    } else if (error.message) {
+                        errorMsg = error.message;
+                    }
+                    document.getElementById('auth-error').textContent = errorMsg;
+                    document.getElementById('auth-error').classList.remove('hidden');
+                } finally {
+                    btn.disabled = false;
+                    btn.innerHTML = '<span>Sign In</span>';
+                }
+            });
+
+            // Sign Up button handler
+            document.getElementById('signup-btn').addEventListener('click', async () => {
+                const email = document.getElementById('email-input').value.trim();
+                const password = document.getElementById('password-input').value;
+                const btn = document.getElementById('signup-btn');
+
+                if (!email || !password) {
+                    document.getElementById('auth-error').textContent = 'Please enter email and password.';
+                    document.getElementById('auth-error').classList.remove('hidden');
+                    return;
+                }
+
+                btn.disabled = true;
+                btn.innerHTML = '<span>Creating account...</span>';
+                document.getElementById('auth-error').classList.add('hidden');
+
+                try {
+                    await createUserWithEmailAndPassword(auth, email, password);
+                    // Success - handleAuthStateChange will be triggered automatically
+                } catch (error) {
+                    console.error('Sign up error:', error);
+                    let errorMsg = 'Sign up failed. ';
+                    if (error.code === 'auth/email-already-in-use') {
+                        errorMsg = 'Email already registered. Please sign in instead.';
+                    } else if (error.code === 'auth/weak-password') {
+                        errorMsg = 'Password must be at least 6 characters.';
+                    } else if (error.code === 'auth/invalid-email') {
+                        errorMsg = 'Please enter a valid email address.';
+                    } else if (error.message) {
+                        errorMsg = error.message;
+                    }
+                    document.getElementById('auth-error').textContent = errorMsg;
+                    document.getElementById('auth-error').classList.remove('hidden');
+                } finally {
+                    btn.disabled = false;
+                    btn.innerHTML = '<span>Sign Up</span>';
                 }
             });
 

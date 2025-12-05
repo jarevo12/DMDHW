@@ -166,6 +166,31 @@ body {
     margin-bottom: var(--spacing-lg);
 }
 
+.auth-toggle {
+    text-align: center;
+    margin: var(--spacing-sm) 0;
+}
+
+.btn-link {
+    background: none;
+    border: none;
+    color: var(--accent-primary);
+    cursor: pointer;
+    font-size: 0.9rem;
+    text-decoration: underline;
+    padding: var(--spacing-sm);
+    transition: opacity var(--transition-fast);
+}
+
+.btn-link:hover {
+    opacity: 0.8;
+}
+
+#password-buttons {
+    display: flex;
+    gap: var(--spacing-sm);
+}
+
 .input-group {
     margin-bottom: var(--spacing-md);
 }

@@ -1,0 +1,10 @@
+{
+  "hosting": {
+    "public": "habit-tracker",
+    "ignore": [
+      "firebase.json",
+      "**/.*",
+      "**/node_modules/**"
+    ]
+  }
+}
