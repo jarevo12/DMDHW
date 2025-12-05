@@ -58,3 +58,43 @@ python split_pdf.py /path/to/pdf.pdf [pages_per_chunk]
 - Security rules defined in `firestore.rules` - users can only access their own data
 - Service worker (`sw.js`) enables offline support
 - Default habits are hardcoded in `habits.js`
+
+## Feature Development Workflow (MANDATORY)
+
+**Always follow this workflow when adding new features:**
+
+### 1. Before Starting Any Feature
+```bash
+git checkout main
+git pull origin main
+git checkout -b feature/<feature-name>
+```
+
+### 2. During Development
+- Make incremental commits with clear messages
+- Test changes locally before committing
+
+### 3. Before Merging
+- **Ask user for validation**: Always ask "Would you like to test this feature before I merge to main?"
+- Only proceed to merge after user confirms the feature works
+
+### 4. After User Validation
+```bash
+git checkout main
+git merge feature/<feature-name>
+git tag -a v<X.Y.Z> -m "Description of feature"
+git push origin main --tags
+```
+
+### 5. Version Tagging Convention
+- **Major (X.0.0)**: Breaking changes or major new functionality
+- **Minor (X.Y.0)**: New features, backwards compatible
+- **Patch (X.Y.Z)**: Bug fixes
+
+### 6. If Something Breaks
+```bash
+git checkout <last-stable-tag>   # Roll back to stable version
+git revert <bad-commit>          # Or revert specific commit
+```
+
+**Current stable version**: Tag after each successful feature merge
