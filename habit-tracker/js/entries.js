@@ -312,6 +312,56 @@ function calculateStreak(entries, habits) {
     return streak;
 }
 
+// Calculate per-habit current streak
+function calculateHabitStreak(entries, habitId, type) {
+    const today = getTodayString();
+    let streak = 0;
+    let currentDate = new Date(today);
+
+    // Go back day by day until we find a day where habit wasn't completed
+    for (let i = 0; i < 365; i++) {
+        const dateString = formatDate(currentDate);
+        const entry = entries[dateString];
+
+        if (entry && entry[type]?.includes(habitId)) {
+            streak++;
+        } else {
+            // Allow today to not be completed yet if it's the first day
+            if (streak === 0 && dateString === today) {
+                currentDate.setDate(currentDate.getDate() - 1);
+                continue;
+            }
+            break;
+        }
+
+        currentDate.setDate(currentDate.getDate() - 1);
+    }
+
+    return streak;
+}
+
+// Calculate per-habit best streak
+function calculateHabitBestStreak(entries, habitId, type) {
+    const dates = Object.keys(entries).sort();
+    let bestStreak = 0;
+    let currentStreak = 0;
+
+    dates.forEach(dateString => {
+        const entry = entries[dateString];
+
+        if (entry && entry[type]?.includes(habitId)) {
+            currentStreak++;
+            if (currentStreak > bestStreak) {
+                bestStreak = currentStreak;
+            }
+        } else {
+            currentStreak = 0;
+        }
+    });
+
+    return bestStreak;
+}
+
 // Add entry change listener
 function addEntryListener(callback) {
     entryListeners.push(callback);
@@ -356,6 +406,8 @@ export {
     getCompletionStats,
     calculateHabitRate,
     calculateStreak,
+    calculateHabitStreak,
+    calculateHabitBestStreak,
     addEntryListener,
     removeEntryListener,
     clearCache

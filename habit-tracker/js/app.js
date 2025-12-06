@@ -21,6 +21,14 @@ const state = {
 // DOM Elements cache
 const elements = {};
 
+// Calendar state
+const calendarState = {
+    currentMonth: new Date().getMonth(),
+    currentYear: new Date().getFullYear(),
+    isOpen: false,
+    entriesData: {}
+};
+
 // Initialize app
 async function init() {
     console.log('Initializing Habit Tracker...');
@@ -74,9 +82,14 @@ function cacheElements() {
     elements.authError = document.getElementById('auth-error');
     elements.tryAgain = document.getElementById('try-again');
 
-    elements.currentDate = document.getElementById('current-date');
-    elements.prevDate = document.getElementById('prev-date');
-    elements.nextDate = document.getElementById('next-date');
+    elements.currentDate = document.getElementById('current-date-btn');
+    elements.toggleCalendar = document.getElementById('toggle-calendar');
+    elements.todayShortcut = document.getElementById('today-shortcut');
+    elements.calendarPicker = document.getElementById('calendar-picker');
+    elements.prevMonth = document.getElementById('prev-month');
+    elements.nextMonth = document.getElementById('next-month');
+    elements.calendarMonthYear = document.getElementById('calendar-month-year');
+    elements.calendarDays = document.getElementById('calendar-days');
 
     elements.tabBtns = document.querySelectorAll('.tab-btn');
     elements.morningHabits = document.getElementById('morning-habits');
@@ -118,9 +131,11 @@ function setupEventListeners() {
     elements.authForm?.addEventListener('submit', handleAuthSubmit);
     elements.tryAgain?.addEventListener('click', handleTryAgain);
 
-    // Date navigation
-    elements.prevDate?.addEventListener('click', () => navigateDate(-1));
-    elements.nextDate?.addEventListener('click', () => navigateDate(1));
+    // Calendar navigation
+    elements.toggleCalendar?.addEventListener('click', toggleCalendar);
+    elements.todayShortcut?.addEventListener('click', goToToday);
+    elements.prevMonth?.addEventListener('click', () => navigateCalendarMonth(-1));
+    elements.nextMonth?.addEventListener('click', () => navigateCalendarMonth(1));
 
     // Tab navigation
     elements.tabBtns.forEach(btn => {
@@ -306,9 +321,135 @@ function updateDateDisplay() {
         year: 'numeric'
     });
 
-    // Disable next button if today
-    elements.nextDate.disabled = isToday;
-    elements.nextDate.style.opacity = isToday ? '0.3' : '1';
+    // Update calendar if open
+    if (calendarState.isOpen) {
+        renderCalendar();
+    }
+}
+
+// Toggle calendar
+function toggleCalendar() {
+    calendarState.isOpen = !calendarState.isOpen;
+    elements.calendarPicker.classList.toggle('hidden', !calendarState.isOpen);
+    elements.toggleCalendar.classList.toggle('active', calendarState.isOpen);
+
+    if (calendarState.isOpen) {
+        // Set calendar to current viewed date's month
+        calendarState.currentMonth = state.currentDate.getMonth();
+        calendarState.currentYear = state.currentDate.getFullYear();
+        renderCalendar();
+    }
+}
+
+// Go to today
+function goToToday() {
+    state.currentDate = new Date();
+    updateDateDisplay();
+    subscribeToCurrentDate();
+
+    // Close calendar if open
+    if (calendarState.isOpen) {
+        toggleCalendar();
+    }
+}
+
+// Navigate calendar month
+function navigateCalendarMonth(direction) {
+    calendarState.currentMonth += direction;
+
+    if (calendarState.currentMonth > 11) {
+        calendarState.currentMonth = 0;
+        calendarState.currentYear++;
+    } else if (calendarState.currentMonth < 0) {
+        calendarState.currentMonth = 11;
+        calendarState.currentYear--;
+    }
+
+    renderCalendar();
+}
+
+// Render calendar
+async function renderCalendar() {
+    const monthDate = new Date(calendarState.currentYear, calendarState.currentMonth, 1);
+    const lastDay = new Date(calendarState.currentYear, calendarState.currentMonth + 1, 0);
+    const startDayOfWeek = monthDate.getDay();
+    const today = new Date();
+    const todayString = formatDate(today);
+    const selectedString = formatDate(state.currentDate);
+
+    // Update month label
+    elements.calendarMonthYear.textContent = monthDate.toLocaleDateString('en-US', {
+        month: 'long',
+        year: 'numeric'
+    });
+
+    // Fetch entries for this month
+    const { getEntriesForMonth } = await import('./entries.js');
+    const entries = await getEntriesForMonth(calendarState.currentYear, calendarState.currentMonth);
+    calendarState.entriesData = entries;
+
+    // Build calendar grid
+    const days = [];
+
+    // Empty cells before first day
+    for (let i = 0; i < startDayOfWeek; i++) {
+        days.push('<button class="calendar-day-btn empty" disabled></button>');
+    }
+
+    // Days of the month
+    const totalHabits = state.habits.morning.length + state.habits.evening.length;
+
+    for (let day = 1; day <= lastDay.getDate(); day++) {
+        const dateString = formatDate(new Date(calendarState.currentYear, calendarState.currentMonth, day));
+        const entry = entries[dateString];
+        const isToday = dateString === todayString;
+        const isSelected = dateString === selectedString;
+        const isFuture = new Date(dateString) > today;
+
+        let classes = 'calendar-day-btn';
+        if (isToday) classes += ' today';
+        if (isSelected) classes += ' selected';
+
+        // Add data indicator
+        if (entry && totalHabits > 0) {
+            const completed = (entry.morning?.length || 0) + (entry.evening?.length || 0);
+            if (completed === totalHabits) {
+                classes += ' has-data';
+            } else if (completed > 0) {
+                classes += ' partial-data';
+            }
+        }
+
+        days.push(`
+            <button
+                class="${classes}"
+                data-date="${dateString}"
+                ${isFuture ? 'disabled' : ''}
+                onclick="window.habitTrackerApp.selectDate('${dateString}')"
+            >
+                ${day}
+            </button>
+        `);
+    }
+
+    elements.calendarDays.innerHTML = days.join('');
+
+    // Disable next month if it's in the future
+    const nextMonth = new Date(calendarState.currentYear, calendarState.currentMonth + 1, 1);
+    const thisMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+    elements.nextMonth.disabled = nextMonth > thisMonth;
+}
+
+// Select date from calendar
+function selectDate(dateString) {
+    state.currentDate = new Date(dateString);
+    updateDateDisplay();
+    subscribeToCurrentDate();
+
+    // Close calendar
+    if (calendarState.isOpen) {
+        toggleCalendar();
+    }
 }
 
 // Handle tab change
@@ -654,5 +795,6 @@ if (document.readyState === 'loading') {
 window.habitTrackerApp = {
     state,
     getHabits: () => state.habits,
-    getEntry: () => state.entry
+    getEntry: () => state.entry,
+    selectDate
 };

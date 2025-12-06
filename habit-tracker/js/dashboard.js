@@ -4,6 +4,8 @@ import {
     getEntriesForMonth,
     calculateHabitRate,
     calculateStreak,
+    calculateHabitStreak,
+    calculateHabitBestStreak,
     formatDate,
     getTodayString
 } from './entries.js';
@@ -13,6 +15,7 @@ let currentMonth = new Date().getMonth();
 let currentYear = new Date().getFullYear();
 let currentType = 'morning';
 let dashboardData = null;
+let completionChart = null;
 
 // Initialize dashboard
 async function initDashboard() {
@@ -131,7 +134,7 @@ function getBestStreak() {
     return bestStreak;
 }
 
-// Get habit completion rates for current type
+// Get habit completion rates for current type (with streaks)
 function getHabitRates() {
     if (!dashboardData) return [];
 
@@ -141,8 +144,41 @@ function getHabitRates() {
     return typeHabits.map(habit => ({
         id: habit.id,
         name: habit.name,
-        rate: calculateHabitRate(entries, habit.id, type, daysInMonth)
+        rate: calculateHabitRate(entries, habit.id, type, daysInMonth),
+        currentStreak: calculateHabitStreak(entries, habit.id, type),
+        bestStreak: calculateHabitBestStreak(entries, habit.id, type)
     }));
+}
+
+// Get daily completion percentages for chart
+function getDailyCompletionData() {
+    if (!dashboardData) return { labels: [], data: [] };
+
+    const { entries, habits, year, month, daysInMonth } = dashboardData;
+    const labels = [];
+    const data = [];
+    const totalHabits = habits.morning.length + habits.evening.length;
+
+    if (totalHabits === 0) return { labels: [], data: [] };
+
+    for (let day = 1; day <= daysInMonth; day++) {
+        const dateString = formatDate(new Date(year, month, day));
+        const entry = entries[dateString];
+
+        // Label with day number
+        labels.push(day);
+
+        // Calculate completion percentage
+        let completed = 0;
+        if (entry) {
+            completed = (entry.morning?.length || 0) + (entry.evening?.length || 0);
+        }
+
+        const percentage = Math.round((completed / totalHabits) * 100);
+        data.push(percentage);
+    }
+
+    return { labels, data };
 }
 
 // Generate calendar data
@@ -211,7 +247,23 @@ function renderHabitRates(containerId) {
 
     container.innerHTML = rates.map(habit => `
         <div class="rate-item">
-            <span class="rate-label">${escapeHtml(habit.name)}</span>
+            <div class="rate-header">
+                <span class="rate-label">${escapeHtml(habit.name)}</span>
+                <div class="rate-streaks">
+                    <span class="streak-badge" title="Current streak">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"></path>
+                        </svg>
+                        ${habit.currentStreak} days
+                    </span>
+                    <span class="streak-badge best" title="Best streak">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                            <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+                        </svg>
+                        ${habit.bestStreak} days
+                    </span>
+                </div>
+            </div>
             <div class="rate-bar-container">
                 <div class="rate-bar">
                     <div class="rate-fill" style="width: ${habit.rate}%"></div>
@@ -271,6 +323,117 @@ function renderMonthSelector(selectId) {
     `).join('');
 }
 
+// Render completion chart
+async function renderCompletionChart() {
+    const canvas = document.getElementById('completion-chart');
+    if (!canvas) return;
+
+    const { labels, data } = getDailyCompletionData();
+
+    // Destroy existing chart if it exists
+    if (completionChart) {
+        completionChart.destroy();
+    }
+
+    // Get Chart.js
+    if (!window.Chart) {
+        console.error('Chart.js not loaded');
+        return;
+    }
+
+    const ctx = canvas.getContext('2d');
+
+    completionChart = new window.Chart(ctx, {
+        type: 'line',
+        data: {
+            labels,
+            datasets: [{
+                label: 'Completion %',
+                data,
+                borderColor: 'rgb(255, 107, 157)',
+                backgroundColor: 'rgba(255, 107, 157, 0.1)',
+                borderWidth: 3,
+                fill: true,
+                tension: 0.4,
+                pointRadius: 4,
+                pointHoverRadius: 6,
+                pointBackgroundColor: 'rgb(255, 107, 157)',
+                pointBorderColor: '#0f0f14',
+                pointBorderWidth: 2,
+                pointHoverBackgroundColor: 'rgb(100, 255, 218)',
+                pointHoverBorderColor: 'rgb(255, 107, 157)',
+                pointHoverBorderWidth: 3
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    display: false
+                },
+                tooltip: {
+                    backgroundColor: 'rgba(15, 15, 20, 0.95)',
+                    titleColor: '#ffffff',
+                    bodyColor: '#b4b4c0',
+                    borderColor: 'rgba(255, 107, 157, 0.3)',
+                    borderWidth: 1,
+                    padding: 12,
+                    displayColors: false,
+                    callbacks: {
+                        title: (context) => {
+                            const day = context[0].label;
+                            const monthName = new Date(dashboardData.year, dashboardData.month, day).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+                            return monthName;
+                        },
+                        label: (context) => {
+                            return `${context.parsed.y}% completed`;
+                        }
+                    }
+                }
+            },
+            scales: {
+                x: {
+                    grid: {
+                        color: 'rgba(255, 255, 255, 0.03)',
+                        drawBorder: false
+                    },
+                    ticks: {
+                        color: '#6c6c7a',
+                        font: {
+                            size: 11,
+                            weight: '500'
+                        },
+                        maxRotation: 0,
+                        autoSkip: true,
+                        maxTicksLimit: 10
+                    }
+                },
+                y: {
+                    min: 0,
+                    max: 100,
+                    grid: {
+                        color: 'rgba(255, 255, 255, 0.03)',
+                        drawBorder: false
+                    },
+                    ticks: {
+                        color: '#6c6c7a',
+                        font: {
+                            size: 11,
+                            weight: '500'
+                        },
+                        callback: (value) => value + '%'
+                    }
+                }
+            },
+            interaction: {
+                intersect: false,
+                mode: 'index'
+            }
+        }
+    });
+}
+
 // Render summary cards
 function renderSummary() {
     const overallEl = document.getElementById('overall-rate');
@@ -288,6 +451,7 @@ async function renderDashboard() {
 
     renderSummary();
     renderMonthSelector('month-selector');
+    await renderCompletionChart();
     renderHabitRates('habit-rates');
     renderCalendar('calendar-heatmap');
 }
@@ -311,9 +475,11 @@ export {
     getBestStreak,
     getHabitRates,
     getCalendarData,
+    getDailyCompletionData,
     renderHabitRates,
     renderCalendar,
     renderMonthSelector,
     renderSummary,
+    renderCompletionChart,
     renderDashboard
 };
