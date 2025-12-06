@@ -4,6 +4,16 @@ import { initAuth, sendMagicLink, logOut, addAuthListener, getUserInfo } from '.
 import { initHabits, subscribeToHabits, getHabits, addHabit, updateHabit, deleteHabit, initializeDefaultHabits } from './habits.js';
 import { initEntries, subscribeToEntry, toggleHabit, formatDate, getTodayString, getCompletionStats } from './entries.js';
 import { initDashboard, renderDashboard, setMonth, setType } from './dashboard.js';
+import { initProfile, getUserProfile, hasCompletedOnboarding } from './profile.js';
+import { initOnboarding, initializeOnboarding, goToNextStep, goToPreviousStep, skipToReview } from './onboarding.js';
+import { getScheduledHabitsForDate, getUnscheduledHabitsForDate, getScheduleLabel } from './schedule.js';
+import {
+    openHabitModal, closeHabitModal, openDeleteModal, closeDeleteModal,
+    getHabitToEdit, getHabitToDelete,
+    openScheduleModal, closeScheduleModal, getScheduleCallback,
+    renderScheduleOptions, getScheduleFromModal
+} from './modals.js';
+import { initCalendarPicker, toggleCalendar, renderCalendar, navigateToPreviousMonth, navigateToNextMonth } from './calendar-picker.js';
 
 // App state
 const state = {
@@ -52,8 +62,14 @@ async function init() {
         // Initialize modules
         await Promise.all([
             initHabits(),
-            initEntries()
+            initEntries(),
+            initProfile(),
+            initOnboarding(),
+            initCalendarPicker()
         ]);
+
+        // Initialize dashboard
+        await initDashboard();
 
         // Initialize auth and wait for auth state
         await initAuth();
@@ -71,6 +87,7 @@ async function init() {
 function cacheElements() {
     elements.loadingScreen = document.getElementById('loading-screen');
     elements.authScreen = document.getElementById('auth-screen');
+    elements.onboardingScreen = document.getElementById('onboarding-screen');
     elements.mainScreen = document.getElementById('main-screen');
     elements.dashboardScreen = document.getElementById('dashboard-screen');
     elements.settingsScreen = document.getElementById('settings-screen');
@@ -132,10 +149,16 @@ function setupEventListeners() {
     elements.tryAgain?.addEventListener('click', handleTryAgain);
 
     // Calendar navigation
-    elements.toggleCalendar?.addEventListener('click', toggleCalendar);
+    elements.toggleCalendar?.addEventListener('click', handleToggleCalendar);
     elements.todayShortcut?.addEventListener('click', goToToday);
-    elements.prevMonth?.addEventListener('click', () => navigateCalendarMonth(-1));
-    elements.nextMonth?.addEventListener('click', () => navigateCalendarMonth(1));
+    elements.prevMonth?.addEventListener('click', () => {
+        navigateToPreviousMonth();
+        renderCalendar(state.currentDate, state.habits);
+    });
+    elements.nextMonth?.addEventListener('click', () => {
+        navigateToNextMonth();
+        renderCalendar(state.currentDate, state.habits);
+    });
 
     // Tab navigation
     elements.tabBtns.forEach(btn => {
@@ -167,6 +190,44 @@ function setupEventListeners() {
     elements.cancelDelete?.addEventListener('click', closeDeleteModal);
     elements.deleteModal?.querySelector('.modal-overlay')?.addEventListener('click', closeDeleteModal);
 
+    // Onboarding navigation
+    document.getElementById('onboarding-next')?.addEventListener('click', goToNextStep);
+    document.getElementById('onboarding-back')?.addEventListener('click', goToPreviousStep);
+    document.getElementById('onboarding-skip')?.addEventListener('click', skipToReview);
+
+    // Schedule modal
+    const scheduleModal = document.getElementById('schedule-modal');
+    scheduleModal?.querySelector('.modal-overlay')?.addEventListener('click', closeScheduleModal);
+    document.getElementById('cancel-schedule')?.addEventListener('click', closeScheduleModal);
+    document.getElementById('save-schedule')?.addEventListener('click', () => {
+        const schedule = getScheduleFromModal();
+        const callback = getScheduleCallback();
+        if (callback) {
+            callback(schedule);
+        }
+        closeScheduleModal();
+    });
+
+    // Schedule type buttons
+    document.querySelectorAll('.schedule-type-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            document.querySelectorAll('.schedule-type-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            const schedule = {type: btn.dataset.type};
+            renderScheduleOptions(schedule);
+        });
+    });
+
+    // Habit schedule button (in habit modal)
+    document.getElementById('habit-schedule-btn')?.addEventListener('click', () => {
+        const habitToEdit = getHabitToEdit();
+        const currentSchedule = habitToEdit?.schedule || {type: 'daily'};
+        openScheduleModal({schedule: currentSchedule}, (newSchedule) => {
+            document.getElementById('habit-schedule').value = JSON.stringify(newSchedule);
+            document.getElementById('habit-schedule-btn').textContent = getScheduleLabel(newSchedule);
+        });
+    });
+
     // Offline detection
     window.addEventListener('online', () => {
         elements.offlineIndicator?.classList.add('hidden');
@@ -183,13 +244,26 @@ async function handleAuthStateChange(user) {
     if (user) {
         console.log('User signed in:', user.email);
 
-        // Initialize default habits for new users
-        try {
-            await initializeDefaultHabits();
-        } catch (error) {
-            console.log('Default habits already exist or error:', error);
+        // Check if user has completed onboarding
+        const profile = await getUserProfile();
+
+        if (!hasCompletedOnboarding(profile)) {
+            // New user - show onboarding
+            console.log('New user - starting onboarding');
+            showScreen('onboarding');
+            initializeOnboarding(() => {
+                // Onboarding complete callback
+                console.log('Onboarding completed');
+                // Subscribe to data and show main screen
+                state.unsubscribeHabits = subscribeToHabits(handleHabitsUpdate);
+                subscribeToCurrentDate();
+                showScreen('main');
+                updateDateDisplay();
+            });
+            return;
         }
 
+        // Existing user - normal flow
         // Subscribe to habits
         state.unsubscribeHabits = subscribeToHabits(handleHabitsUpdate);
 
@@ -328,16 +402,16 @@ function updateDateDisplay() {
 }
 
 // Toggle calendar
-function toggleCalendar() {
-    calendarState.isOpen = !calendarState.isOpen;
-    elements.calendarPicker.classList.toggle('hidden', !calendarState.isOpen);
-    elements.toggleCalendar.classList.toggle('active', calendarState.isOpen);
+function handleToggleCalendar() {
+    toggleCalendar(state.currentDate, (newDate) => {
+        state.currentDate = newDate;
+        updateDateDisplay();
+        subscribeToCurrentDate();
+    });
 
-    if (calendarState.isOpen) {
-        // Set calendar to current viewed date's month
-        calendarState.currentMonth = state.currentDate.getMonth();
-        calendarState.currentYear = state.currentDate.getFullYear();
-        renderCalendar();
+    // After calendar opens, render it with current habits
+    if (!elements.calendarPicker.classList.contains('hidden')) {
+        renderCalendar(state.currentDate, state.habits);
     }
 }
 
@@ -511,8 +585,16 @@ function handleDashTypeChange(type) {
 
 // Render habits list
 function renderHabits() {
-    renderHabitList(elements.morningHabits, state.habits.morning, 'morning');
-    renderHabitList(elements.eveningHabits, state.habits.evening, 'evening');
+    const dateString = formatDate(state.currentDate);
+    const scheduledHabits = getScheduledHabitsForDate(state.habits, dateString);
+    const unscheduledHabits = getUnscheduledHabitsForDate(state.habits, dateString);
+
+    // Render scheduled habits
+    renderHabitList(elements.morningHabits, scheduledHabits.morning, 'morning');
+    renderHabitList(elements.eveningHabits, scheduledHabits.evening, 'evening');
+
+    // TODO: Render "Not Today" section for unscheduled habits
+    // This would require adding a UI element for unscheduled habits
 }
 
 // Render single habit list
@@ -720,7 +802,7 @@ async function handleLogout() {
 function showScreen(screenName) {
     state.currentScreen = screenName;
 
-    const screens = ['loading', 'auth', 'main', 'dashboard', 'settings'];
+    const screens = ['loading', 'auth', 'onboarding', 'main', 'dashboard', 'settings'];
     screens.forEach(name => {
         const screen = document.getElementById(`${name}-screen`);
         if (screen) {
