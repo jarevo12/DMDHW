@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Swiss Brutalism: Light vs Dark Mode</title>
+    <style>
+        /* Base Reset */
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: #444; 
+            color: #eee; 
+            padding: 40px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 60px;
+        }
+
+        h1 { margin-bottom: 20px; text-align: center; width: 100%; border-bottom: 1px solid #666; padding-bottom: 20px; }
+        h2 { font-size: 1.5rem; text-transform: uppercase; margin-bottom: 20px; color: #ccc; letter-spacing: 2px; }
+
+        .row-wrapper {
+            display: flex;
+            gap: 40px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .phone-container {
+            display: flex; flex-direction: column; align-items: center; gap: 10px;
+        }
+        .mode-label { font-weight: bold; text-transform: uppercase; color: #888; }
+
+        /* =========================================
+           SHARED BRUTALIST STYLES
+           ========================================= */
+        .brutal-frame {
+            width: 320px; height: 580px;
+            border: 4px solid;
+            font-family: 'Courier New', monospace;
+            display: flex; flex-direction: column;
+            overflow: hidden;
+            position: relative;
+        }
+
+        /* --- LIGHT MODE --- */
+        .light-mode {
+            background-color: #ffffff;
+            border-color: #000000;
+            color: #000000;
+        }
+        .light-mode .b-border-bottom { border-bottom: 4px solid #000; }
+        .light-mode .b-border-right { border-right: 4px solid #000; }
+        .light-mode .b-bg-accent { background-color: #ccff00; } /* Acid Green */
+        .light-mode .b-bg-black { background-color: #000; color: #fff; }
+        .light-mode .b-border-thin { border-bottom: 2px solid #000; }
+        .light-mode .b-box { border: 3px solid #000; background: #fff; }
+        .light-mode .b-box.filled { background: #000; }
+
+        /* --- DARK MODE --- */
+        .dark-mode {
+            background-color: #000000;
+            border-color: #ffffff;
+            color: #ffffff;
+        }
+        .dark-mode .b-border-bottom { border-bottom: 4px solid #fff; }
+        .dark-mode .b-border-right { border-right: 4px solid #fff; }
+        .dark-mode .b-bg-accent { background-color: #6a00ff; color: #fff; } /* Electric Purple */
+        .dark-mode .b-bg-black { background-color: #fff; color: #000; } /* Inverted to white */
+        .dark-mode .b-border-thin { border-bottom: 2px solid #fff; }
+        .dark-mode .b-box { border: 3px solid #fff; background: #000; }
+        .dark-mode .b-box.filled { background: #fff; }
+
+
+        /* Common Components */
+        .b-header { padding: 30px 20px; }
+        .b-big-title { font-size: 36px; font-weight: 900; line-height: 0.9; text-transform: uppercase; font-family: sans-serif; letter-spacing: -2px; }
+        
+        .b-stat-row { display: flex; }
+        .b-stat { flex: 1; padding: 15px; }
+        .b-lbl { font-size: 10px; font-weight: 900; margin-bottom: 5px; text-transform: uppercase; }
+        .b-val { font-size: 28px; font-weight: 900; font-family: sans-serif; }
+
+        .b-divider { padding: 10px 20px; font-weight: 900; font-size: 12px; text-transform: uppercase; }
+
+        .b-list-item { padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; }
+        .b-text { font-weight: 900; font-size: 14px; text-transform: uppercase; }
+        .b-box { width: 24px; height: 24px; }
+        
+        .b-nav { margin-top: auto; display: grid; grid-template-columns: 1fr 1fr 1fr; border-top: 4px solid; }
+        .dark-mode .b-nav { border-color: #fff; }
+        .light-mode .b-nav { border-color: #000; }
+        
+        .b-nav-btn { padding: 15px 0; text-align: center; font-weight: 900; font-size: 10px; cursor: pointer; }
+        .b-nav-btn.active { text-decoration: underline; }
+
+        /* Specific Page Elements */
+        .cal-strip { display: grid; grid-template-columns: repeat(5, 1fr); text-align: center; font-weight: bold; font-size: 14px; }
+        .cal-day { padding: 10px 0; border-right: 2px solid; }
+        .dark-mode .cal-day { border-color: #fff; }
+        .light-mode .cal-day { border-color: #000; }
+        .cal-day.active { font-weight: 900; } 
+        .light-mode .cal-day.active { background: #000; color: #fff; }
+        .dark-mode .cal-day.active { background: #fff; color: #000; }
+
+        .sett-tab { padding: 10px; text-align: center; font-weight: bold; border-bottom: 4px solid; }
+        .dark-mode .sett-tab { border-color: #fff; }
+        .light-mode .sett-tab { border-color: #000; }
+        .sett-tab.active { background: #ccff00; color: #000; } /* Always acid green/black for tab active in light */
+        .dark-mode .sett-tab.active { background: #6a00ff; color: #fff; }
+
+    </style>
+</head>
+<body>
+
+    <h1>Swiss Brutalism: Mode Comparison</h1>
+
+    <!-- DASHBOARD ROW -->
+    <h2>1. Dashboard</h2>
+    <div class="row-wrapper">
+        <div class="phone-container">
+            <div class="mode-label">Light Mode</div>
+            <div class="brutal-frame light-mode">
+                <div class="b-header b-border-bottom">
+                    <div class="b-big-title">YOUR<br>STATS</div>
+                </div>
+                <div class="b-stat-row b-border-bottom">
+                    <div class="b-stat b-border-right">
+                        <div class="b-lbl">RATE</div>
+                        <div class="b-val">84%</div>
+                    </div>
+                    <div class="b-stat b-bg-accent">
+                        <div class="b-lbl">STREAK</div>
+                        <div class="b-val">12d</div>
+                    </div>
+                </div>
+                <div class="b-divider b-bg-black">// TODAY'S LOG</div>
+                <div class="b-list-item b-border-thin">
+                    <div class="b-text">01. MEDITATE</div>
+                    <div class="b-box filled"></div>
+                </div>
+                <div class="b-list-item b-border-thin">
+                    <div class="b-text">02. READ</div>
+                    <div class="b-box"></div>
+                </div>
+                <div class="b-nav">
+                    <div class="b-nav-btn active b-bg-black">DASH</div>
+                    <div class="b-nav-btn b-border-right">TODAY</div>
+                    <div class="b-nav-btn">SETT</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="phone-container">
+            <div class="mode-label">Dark Mode</div>
+            <div class="brutal-frame dark-mode">
+                <div class="b-header b-border-bottom">
+                    <div class="b-big-title">YOUR<br>STATS</div>
+                </div>
+                <div class="b-stat-row b-border-bottom">
+                    <div class="b-stat b-border-right">
+                        <div class="b-lbl">RATE</div>
+                        <div class="b-val">84%</div>
+                    </div>
+                    <div class="b-stat b-bg-accent">
+                        <div class="b-lbl">STREAK</div>
+                        <div class="b-val">12d</div>
+                    </div>
+                </div>
+                <div class="b-divider b-bg-black">// TODAY'S LOG</div>
+                <div class="b-list-item b-border-thin">
+                    <div class="b-text">01. MEDITATE</div>
+                    <div class="b-box filled"></div>
+                </div>
+                <div class="b-list-item b-border-thin">
+                    <div class="b-text">02. READ</div>
+                    <div class="b-box"></div>
+                </div>
+                <div class="b-nav">
+                    <div class="b-nav-btn active b-bg-black">DASH</div>
+                    <div class="b-nav-btn b-border-right">TODAY</div>
+                    <div class="b-nav-btn">SETT</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- TODAY ROW -->
+    <h2 style="margin-top: 60px;">2. Today View</h2>
+    <div class="row-wrapper">
+        <div class="phone-container">
+            <div class="mode-label">Light Mode</div>
+            <div class="brutal-frame light-mode">
+                <div class="b-header b-border-bottom">
+                    <div class="b-lbl">DECEMBER 2025</div>
+                    <div class="b-big-title">THUR<br>04</div>
+                </div>
+                <div class="cal-strip b-border-bottom">
+                    <div class="cal-day">02</div>
+                    <div class="cal-day">03</div>
+                    <div class="cal-day active">04</div>
+                    <div class="cal-day">05</div>
+                    <div class="cal-day" style="border:none">06</div>
+                </div>
+                <div class="b-divider">// MORNING</div>
+                <div class="b-list-item b-border-thin">
+                    <div class="b-text" style="text-decoration:line-through">MAKE BED</div>
+                    <div class="b-box filled"></div>
+                </div>
+                <div class="b-list-item b-border-thin">
+                    <div class="b-text">HYDRATE</div>
+                    <div class="b-box"></div>
+                </div>
+                 <div class="b-nav">
+                    <div class="b-nav-btn b-border-right">DASH</div>
+                    <div class="b-nav-btn active b-bg-black">TODAY</div>
+                    <div class="b-nav-btn">SETT</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="phone-container">
+            <div class="mode-label">Dark Mode</div>
+            <div class="brutal-frame dark-mode">
+                <div class="b-header b-border-bottom">
+                    <div class="b-lbl">DECEMBER 2025</div>
+                    <div class="b-big-title">THUR<br>04</div>
+                </div>
+                <div class="cal-strip b-border-bottom">
+                    <div class="cal-day">02</div>
+                    <div class="cal-day">03</div>
+                    <div class="cal-day active">04</div>
+                    <div class="cal-day">05</div>
+                    <div class="cal-day" style="border:none">06</div>
+                </div>
+                <div class="b-divider">// MORNING</div>
+                <div class="b-list-item b-border-thin">
+                    <div class="b-text" style="text-decoration:line-through">MAKE BED</div>
+                    <div class="b-box filled"></div>
+                </div>
+                <div class="b-list-item b-border-thin">
+                    <div class="b-text">HYDRATE</div>
+                    <div class="b-box"></div>
+                </div>
+                 <div class="b-nav">
+                    <div class="b-nav-btn b-border-right">DASH</div>
+                    <div class="b-nav-btn active b-bg-black">TODAY</div>
+                    <div class="b-nav-btn">SETT</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- SETTINGS ROW -->
+    <h2 style="margin-top: 60px;">3. Settings</h2>
+    <div class="row-wrapper">
+        <div class="phone-container">
+            <div class="mode-label">Light Mode</div>
+            <div class="brutal-frame light-mode">
+                <div class="b-header b-border-bottom" style="background:#000; color:#fff;">
+                    <div class="b-big-title">EDIT<br>HABITS</div>
+                </div>
+                <div style="display:grid; grid-template-columns:1fr 1fr;">
+                    <div class="sett-tab active">DAILY</div>
+                    <div class="sett-tab">WEEKLY</div>
+                </div>
+                <div class="b-divider">// MORNING LIST</div>
+                <div class="b-list-item b-border-thin">
+                    <div class="b-text">01. NO SNOOZE</div>
+                    <div style="font-size:10px; font-weight:900; background:#000; color:#fff; padding:2px 6px;">EDIT</div>
+                </div>
+                <div class="b-list-item b-border-thin">
+                    <div class="b-text">02. PROTEIN</div>
+                    <div style="font-size:10px; font-weight:900; background:#000; color:#fff; padding:2px 6px;">EDIT</div>
+                </div>
+                 <div class="b-nav">
+                    <div class="b-nav-btn b-border-right">DASH</div>
+                    <div class="b-nav-btn b-border-right">TODAY</div>
+                    <div class="b-nav-btn active b-bg-black">SETT</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="phone-container">
+            <div class="mode-label">Dark Mode</div>
+            <div class="brutal-frame dark-mode">
+                 <div class="b-header b-border-bottom" style="background:#fff; color:#000;">
+                    <div class="b-big-title">EDIT<br>HABITS</div>
+                </div>
+                <div style="display:grid; grid-template-columns:1fr 1fr;">
+                    <div class="sett-tab active">DAILY</div>
+                    <div class="sett-tab">WEEKLY</div>
+                </div>
+                <div class="b-divider">// MORNING LIST</div>
+                <div class="b-list-item b-border-thin">
+                    <div class="b-text">01. NO SNOOZE</div>
+                    <div style="font-size:10px; font-weight:900; background:#fff; color:#000; padding:2px 6px;">EDIT</div>
+                </div>
+                <div class="b-list-item b-border-thin">
+                    <div class="b-text">02. PROTEIN</div>
+                    <div style="font-size:10px; font-weight:900; background:#fff; color:#000; padding:2px 6px;">EDIT</div>
+                </div>
+                 <div class="b-nav">
+                    <div class="b-nav-btn b-border-right">DASH</div>
+                    <div class="b-nav-btn b-border-right">TODAY</div>
+                    <div class="b-nav-btn active b-bg-black">SETT</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</body>
+</html>

@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Design Concepts Preview</title>
+    <style>
+        /* Reset and Base */
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: #222; 
+            color: #eee; 
+            padding: 40px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 60px;
+        }
+
+        h1 {
+            color: #fff;
+            margin-bottom: 40px;
+            text-align: center;
+            border-bottom: 1px solid #444;
+            padding-bottom: 20px;
+            width: 100%;
+            max-width: 800px;
+        }
+
+        .concept-wrapper {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .concept-label {
+            font-size: 1.2rem;
+            color: #aaa;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        /* =========================================
+           CONCEPT 1: TANGIBLE HIGH-TECH
+           ========================================= */
+        .phone-frame-1 {
+            width: 320px;
+            height: 600px;
+            background-color: #111;
+            border-radius: 30px;
+            border: 8px solid #333;
+            position: relative;
+            overflow: hidden;
+            font-family: sans-serif;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+        }
+
+        .c1-header {
+            padding: 30px 20px 10px;
+            border-bottom: 1px solid #222;
+        }
+        .c1-title { font-size: 24px; font-weight: 700; color: #fff; margin-bottom: 5px; }
+        .c1-date { font-size: 12px; color: #666; text-transform: uppercase; }
+        
+        .c1-card {
+            margin: 20px;
+            padding: 15px;
+            background: #1a1a1a;
+            border: 1px solid #333;
+            border-radius: 12px;
+            border-top: 1px solid #444; /* Highlight */
+        }
+        .c1-stat { font-size: 32px; font-weight: 700; color: #fff; }
+        .c1-label { font-size: 11px; color: #888; text-transform: uppercase; margin-bottom: 5px; }
+
+        .c1-item {
+            margin: 10px 20px;
+            padding: 15px;
+            background: #161616;
+            border: 1px solid #222;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            color: #ccc;
+        }
+        .c1-check { width: 20px; height: 20px; border-radius: 6px; background: #222; border: 1px solid #444; }
+        .c1-check.active { background: #3b82f6; border-color: #3b82f6; box-shadow: 0 0 10px rgba(59, 130, 246, 0.4); }
+
+
+        /* =========================================
+           CONCEPT 2: SWISS BRUTALISM
+           ========================================= */
+        .phone-frame-2 {
+            width: 320px;
+            height: 600px;
+            background-color: #fff;
+            border: 8px solid #000;
+            position: relative;
+            overflow: hidden;
+            font-family: monospace; /* Fallback to system mono */
+            box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+        }
+
+        .c2-header {
+            padding: 30px 20px;
+            border-bottom: 3px solid #000;
+        }
+        .c2-big-text { font-size: 40px; font-weight: 900; line-height: 0.9; color: #000; text-transform: uppercase; font-family: sans-serif; }
+        
+        .c2-stat-box {
+            border-bottom: 3px solid #000;
+            padding: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+        }
+        .c2-stat-box:nth-child(odd) { background: #ccff00; } /* Acid Green */
+
+        .c2-val { font-size: 30px; font-weight: 900; color: #000; font-family: sans-serif;}
+        .c2-lbl { font-size: 12px; font-weight: 700; color: #000; text-transform: uppercase; }
+
+        .c2-list-item {
+            padding: 15px 20px;
+            border-bottom: 3px solid #000;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-weight: 700;
+            color: #000;
+            font-size: 14px;
+        }
+        .c2-box { width: 24px; height: 24px; border: 3px solid #000; }
+        .c2-box.filled { background: #000; }
+
+
+        /* =========================================
+           CONCEPT 3: ORGANIC FLOW
+           ========================================= */
+        .phone-frame-3 {
+            width: 320px;
+            height: 600px;
+            background-color: #f4f1ea; /* Sand */
+            border-radius: 30px;
+            border: 8px solid #e0ddd5;
+            position: relative;
+            overflow: hidden;
+            font-family: sans-serif;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+        }
+
+        /* Blob */
+        .c3-blob {
+            position: absolute;
+            top: -50px; right: -50px;
+            width: 300px; height: 300px;
+            background: #e6e0d5;
+            border-radius: 50%;
+            z-index: 0;
+        }
+
+        .c3-content { position: relative; z-index: 1; padding: 40px 20px; }
+        
+        .c3-head { font-size: 26px; font-weight: bold; color: #5a6b53; margin-bottom: 30px; } /* Moss Green */
+
+        .c3-card {
+            background: rgba(255,255,255,0.7);
+            padding: 20px;
+            border-radius: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.03);
+        }
+        .c3-val { font-size: 28px; color: #5a6b53; font-weight: bold; }
+        .c3-lbl { font-size: 12px; color: #888; text-transform: uppercase; letter-spacing: 1px; }
+
+        .c3-pill {
+            background: #fff;
+            padding: 15px;
+            border-radius: 50px;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            color: #666;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.02);
+        }
+        .c3-circle { width: 24px; height: 24px; border-radius: 50%; border: 2px solid #ddd; }
+        .c3-circle.done { background: #dca788; border-color: #dca788; } /* Terracotta */
+
+    </style>
+</head>
+<body>
+
+    <h1>Design Concept Options</h1>
+
+    <div class="concept-wrapper">
+        <div class="concept-label">1. Tangible High-Tech</div>
+        <div class="phone-frame-1">
+            <div class="c1-header">
+                <div class="c1-date">Saturday</div>
+                <div class="c1-title">Dashboard</div>
+            </div>
+            <div class="c1-card">
+                <div class="c1-label">Completion Rate</div>
+                <div class="c1-stat">84%</div>
+            </div>
+            <div class="c1-item">
+                <div class="c1-check active"></div>
+                <span>Meditation</span>
+            </div>
+            <div class="c1-item">
+                <div class="c1-check"></div>
+                <span>Read Book</span>
+            </div>
+            <div class="c1-item">
+                <div class="c1-check"></div>
+                <span>Gym</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="concept-wrapper">
+        <div class="concept-label">2. Swiss Brutalism</div>
+        <div class="phone-frame-2">
+            <div class="c2-header">
+                <div class="c2-big-text">YOUR<br>STATS</div>
+            </div>
+            <div class="c2-stat-box">
+                <div>
+                    <div class="c2-lbl">TOTAL</div>
+                    <div class="c2-val">84%</div>
+                </div>
+            </div>
+            <div class="c2-stat-box" style="background: white;">
+                <div>
+                    <div class="c2-lbl">STREAK</div>
+                    <div class="c2-val">12 DAYS</div>
+                </div>
+            </div>
+            <div style="padding: 15px 20px; background: black; color: white; font-weight: bold; font-size: 12px;">// TASKS</div>
+            <div class="c2-list-item">
+                <span>01. MEDITATION</span>
+                <div class="c2-box filled"></div>
+            </div>
+            <div class="c2-list-item">
+                <span>02. READ BOOK</span>
+                <div class="c2-box"></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="concept-wrapper">
+        <div class="concept-label">3. Organic Flow</div>
+        <div class="phone-frame-3">
+            <div class="c3-blob"></div>
+            <div class="c3-content">
+                <div class="c3-head">Good Morning</div>
+                
+                <div class="c3-card">
+                    <div class="c3-lbl">Your Focus</div>
+                    <div class="c3-val">12 Day Streak</div>
+                </div>
+
+                <div class="c3-pill">
+                    <div class="c3-circle done"></div>
+                    <span>Meditation</span>
+                </div>
+                <div class="c3-pill">
+                    <div class="c3-circle"></div>
+                    <span>Read Book</span>
+                </div>
+                <div class="c3-pill">
+                    <div class="c3-circle"></div>
+                    <span>Drink Water</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</body>
+</html>

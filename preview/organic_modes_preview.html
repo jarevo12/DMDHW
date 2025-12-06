@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Organic Flow: Mode Comparison</title>
+    <style>
+        /* Base Reset */
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: #e0ddd5; 
+            color: #333; 
+            padding: 40px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 60px;
+        }
+
+        h1 { margin-bottom: 20px; text-align: center; width: 100%; border-bottom: 1px solid #ccc; padding-bottom: 20px; color: #555; }
+        h2 { font-size: 1.5rem; margin-bottom: 20px; color: #777; letter-spacing: 1px; font-weight: normal; }
+
+        .row-wrapper {
+            display: flex;
+            gap: 40px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .phone-container {
+            display: flex; flex-direction: column; align-items: center; gap: 10px;
+        }
+        .mode-label { font-weight: bold; text-transform: uppercase; color: #888; font-size: 12px; letter-spacing: 1px; }
+
+        /* =========================================
+           SHARED ORGANIC STYLES
+           ========================================= */
+        .organic-frame {
+            width: 320px; height: 640px;
+            border-radius: 35px;
+            display: flex; flex-direction: column;
+            overflow: hidden;
+            position: relative;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.08);
+            font-family: sans-serif;
+        }
+
+        /* --- LIGHT MODE (Morning Mist) --- */
+        .light-mode {
+            background-color: #f4f1ea;
+            color: #4a4a4a;
+        }
+        .light-mode .o-blob { background: #e6e0d5; }
+        .light-mode .o-card { background: rgba(255,255,255,0.7); box-shadow: 0 4px 15px rgba(0,0,0,0.03); }
+        .light-mode .o-text-main { color: #5a6b53; } /* Moss */
+        .light-mode .o-text-sub { color: #888; }
+        .light-mode .o-accent-bg { background: #d4a373; color: #fff; } /* Terracotta */
+        .light-mode .o-accent-border { border-color: #d4a373; }
+        .light-mode .o-nav { background: rgba(255,255,255,0.8); }
+        .light-mode .o-nav-item.active { color: #d4a373; }
+
+        /* --- DARK MODE (Deep Forest) --- */
+        .dark-mode {
+            background-color: #1a1c18;
+            color: #e0e0e0;
+        }
+        .dark-mode .o-blob { background: #252922; }
+        .dark-mode .o-card { background: rgba(45, 50, 40, 0.6); box-shadow: 0 4px 20px rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.05); }
+        .dark-mode .o-text-main { color: #a8c69f; } /* Sage */
+        .dark-mode .o-text-sub { color: #888; }
+        .dark-mode .o-accent-bg { background: #e0c088; color: #2a2a2a; } /* Muted Gold */
+        .dark-mode .o-accent-border { border-color: #e0c088; }
+        .dark-mode .o-nav { background: rgba(30, 33, 28, 0.9); border-top: 1px solid rgba(255,255,255,0.05); }
+        .dark-mode .o-nav-item.active { color: #e0c088; }
+
+
+        /* Common Components */
+        .o-blob {
+            position: absolute; top: -80px; right: -80px;
+            width: 300px; height: 300px;
+            border-radius: 50%; z-index: 0;
+        }
+
+        .o-content { position: relative; z-index: 1; padding: 30px 20px; flex: 1; overflow-y: auto; }
+
+        .o-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; }
+        .o-h1 { font-size: 24px; font-weight: bold; }
+        .o-avatar { width: 36px; height: 36px; border-radius: 50%; background: #ccc; }
+
+        .o-card-row { display: flex; gap: 12px; margin-bottom: 24px; overflow-x: auto; padding-bottom: 4px; }
+        .o-stat-card {
+            min-width: 100px; padding: 16px; border-radius: 20px;
+            display: flex; flex-direction: column; gap: 4px;
+        }
+        .o-stat-val { font-size: 22px; font-weight: bold; }
+        .o-stat-lbl { font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; opacity: 0.7; }
+
+        .o-section-title { font-size: 16px; font-weight: 600; margin-bottom: 12px; opacity: 0.9; }
+
+        .o-item {
+            padding: 16px; border-radius: 20px; margin-bottom: 10px;
+            display: flex; align-items: center; gap: 16px;
+        }
+        .o-check {
+            width: 24px; height: 24px; border-radius: 50%; border: 2px solid;
+            display: flex; align-items: center; justify-content: center;
+            opacity: 0.4;
+        }
+        .o-item.done .o-check { background: currentColor; opacity: 1; border: none; }
+        .o-item.done .o-check::after { content: "✓"; color: #fff; font-size: 12px; }
+        .dark-mode .o-item.done .o-check::after { color: #000; } /* Dark mode checkmark color */
+
+        .o-nav {
+            position: relative; z-index: 2;
+            display: flex; justify-content: space-around; padding: 16px;
+            backdrop-filter: blur(10px);
+        }
+        .o-nav-item {
+            display: flex; flex-direction: column; align-items: center; gap: 4px;
+            font-size: 10px; font-weight: 600; opacity: 0.5;
+        }
+        .o-nav-item.active { opacity: 1; }
+        .o-icon { width: 20px; height: 20px; background: currentColor; border-radius: 4px; }
+
+        /* Calendar Specific */
+        .o-cal-strip { display: flex; justify-content: space-between; margin-bottom: 24px; }
+        .o-day {
+            width: 40px; height: 54px; border-radius: 18px;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            font-size: 12px; opacity: 0.6; border: 1px solid transparent;
+        }
+        .o-day span:last-child { font-size: 16px; font-weight: bold; margin-top: 2px; }
+        .o-day.active { opacity: 1; background: currentColor; color: #fff; box-shadow: 0 4px 12px rgba(0,0,0,0.15); }
+        .dark-mode .o-day.active { color: #000; }
+
+        /* Settings Specific */
+        .o-pill-row { display: flex; gap: 8px; margin-bottom: 20px; }
+        .o-pill { padding: 8px 16px; border-radius: 20px; font-size: 12px; font-weight: 600; opacity: 0.5; border: 1px solid currentColor; }
+        .o-pill.active { opacity: 1; background: currentColor; color: #fff; }
+        .dark-mode .o-pill.active { color: #000; }
+
+        .o-set-card { padding: 16px; border-radius: 18px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; }
+        .o-edit-btn { width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; opacity: 0.2; background: currentColor; }
+
+    </style>
+</head>
+<body>
+
+    <h1>Organic Flow: Mode Comparison</h1>
+
+    <!-- DASHBOARD -->
+    <h2>1. Dashboard</h2>
+    <div class="row-wrapper">
+        <div class="phone-container">
+            <div class="mode-label">Morning Mist (Light)</div>
+            <div class="organic-frame light-mode">
+                <div class="o-blob"></div>
+                <div class="o-content">
+                    <div class="o-header">
+                        <div class="o-text-main o-h1">Dashboard</div>
+                        <div class="o-avatar"></div>
+                    </div>
+                    <div class="o-card-row">
+                        <div class="o-stat-card o-card">
+                            <div class="o-stat-lbl o-text-sub">Completion</div>
+                            <div class="o-stat-val o-text-main">84%</div>
+                        </div>
+                        <div class="o-stat-card o-accent-bg">
+                            <div class="o-stat-lbl" style="color:rgba(255,255,255,0.8)">Streak</div>
+                            <div class="o-stat-val">12</div>
+                        </div>
+                    </div>
+                    <div class="o-section-title o-text-main">Habit Progress</div>
+                    <div class="o-item o-card done">
+                        <div class="o-check o-accent-border o-text-main"></div>
+                        <div class="o-text-sub">Morning Meditation</div>
+                    </div>
+                    <div class="o-item o-card">
+                        <div class="o-check o-accent-border"></div>
+                        <div class="o-text-sub">Read 10 Pages</div>
+                    </div>
+                </div>
+                <div class="o-nav">
+                    <div class="o-nav-item active"><div class="o-icon"></div>Dash</div>
+                    <div class="o-nav-item"><div class="o-icon"></div>Today</div>
+                    <div class="o-nav-item"><div class="o-icon"></div>Settings</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="phone-container">
+            <div class="mode-label">Deep Forest (Dark)</div>
+            <div class="organic-frame dark-mode">
+                <div class="o-blob"></div>
+                <div class="o-content">
+                    <div class="o-header">
+                        <div class="o-text-main o-h1">Dashboard</div>
+                        <div class="o-avatar" style="background:#444"></div>
+                    </div>
+                    <div class="o-card-row">
+                        <div class="o-stat-card o-card">
+                            <div class="o-stat-lbl o-text-sub">Completion</div>
+                            <div class="o-stat-val o-text-main">84%</div>
+                        </div>
+                        <div class="o-stat-card o-accent-bg">
+                            <div class="o-stat-lbl" style="color:rgba(0,0,0,0.6)">Streak</div>
+                            <div class="o-stat-val">12</div>
+                        </div>
+                    </div>
+                    <div class="o-section-title o-text-main">Habit Progress</div>
+                    <div class="o-item o-card done">
+                        <div class="o-check o-accent-border o-text-main"></div>
+                        <div class="o-text-sub">Morning Meditation</div>
+                    </div>
+                    <div class="o-item o-card">
+                        <div class="o-check o-accent-border"></div>
+                        <div class="o-text-sub">Read 10 Pages</div>
+                    </div>
+                </div>
+                <div class="o-nav">
+                    <div class="o-nav-item active"><div class="o-icon"></div>Dash</div>
+                    <div class="o-nav-item"><div class="o-icon"></div>Today</div>
+                    <div class="o-nav-item"><div class="o-icon"></div>Settings</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- TODAY -->
+    <h2 style="margin-top:60px">2. Today View</h2>
+    <div class="row-wrapper">
+        <div class="phone-container">
+            <div class="mode-label">Morning Mist (Light)</div>
+            <div class="organic-frame light-mode">
+                <div class="o-content">
+                    <div class="o-header">
+                        <div class="o-text-main o-h1">Thursday</div>
+                        <div class="o-text-sub" style="font-weight:bold">Dec 04</div>
+                    </div>
+                    
+                    <div class="o-cal-strip">
+                        <div class="o-day o-card"><span>Tu</span><span>02</span></div>
+                        <div class="o-day o-card"><span>We</span><span>03</span></div>
+                        <div class="o-day active o-accent-bg"><span>Th</span><span>04</span></div>
+                        <div class="o-day o-card"><span>Fr</span><span>05</span></div>
+                        <div class="o-day o-card"><span>Sa</span><span>06</span></div>
+                    </div>
+
+                    <div class="o-section-title o-text-main">Morning Rituals</div>
+                    <div class="o-item o-card done">
+                        <div class="o-check o-accent-border o-text-main"></div>
+                        <div class="o-text-main" style="font-weight:600">Make Bed</div>
+                    </div>
+                    <div class="o-item o-card">
+                        <div class="o-check o-accent-border"></div>
+                        <div class="o-text-main" style="font-weight:600">Hydrate</div>
+                    </div>
+                </div>
+                <div class="o-nav">
+                    <div class="o-nav-item"><div class="o-icon"></div>Dash</div>
+                    <div class="o-nav-item active"><div class="o-icon"></div>Today</div>
+                    <div class="o-nav-item"><div class="o-icon"></div>Settings</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="phone-container">
+            <div class="mode-label">Deep Forest (Dark)</div>
+            <div class="organic-frame dark-mode">
+                <div class="o-content">
+                    <div class="o-header">
+                        <div class="o-text-main o-h1">Thursday</div>
+                        <div class="o-text-sub" style="font-weight:bold">Dec 04</div>
+                    </div>
+                    
+                    <div class="o-cal-strip">
+                        <div class="o-day o-card"><span>Tu</span><span>02</span></div>
+                        <div class="o-day o-card"><span>We</span><span>03</span></div>
+                        <div class="o-day active o-accent-bg"><span>Th</span><span>04</span></div>
+                        <div class="o-day o-card"><span>Fr</span><span>05</span></div>
+                        <div class="o-day o-card"><span>Sa</span><span>06</span></div>
+                    </div>
+
+                    <div class="o-section-title o-text-main">Morning Rituals</div>
+                    <div class="o-item o-card done">
+                        <div class="o-check o-accent-border o-text-main"></div>
+                        <div class="o-text-main" style="font-weight:600">Make Bed</div>
+                    </div>
+                    <div class="o-item o-card">
+                        <div class="o-check o-accent-border"></div>
+                        <div class="o-text-main" style="font-weight:600">Hydrate</div>
+                    </div>
+                </div>
+                <div class="o-nav">
+                    <div class="o-nav-item"><div class="o-icon"></div>Dash</div>
+                    <div class="o-nav-item active"><div class="o-icon"></div>Today</div>
+                    <div class="o-nav-item"><div class="o-icon"></div>Settings</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- SETTINGS -->
+    <h2 style="margin-top:60px">3. Settings</h2>
+    <div class="row-wrapper">
+        <div class="phone-container">
+            <div class="mode-label">Morning Mist (Light)</div>
+            <div class="organic-frame light-mode">
+                 <div class="o-content">
+                    <div class="o-header">
+                        <div class="o-text-main o-h1">Habits</div>
+                    </div>
+                    
+                    <div class="o-pill-row">
+                        <div class="o-pill active o-accent-border o-text-main">Daily</div>
+                        <div class="o-pill o-card">Weekly</div>
+                        <div class="o-pill o-card">Custom</div>
+                    </div>
+
+                    <div class="o-section-title o-text-main">Morning Routine</div>
+                    <div class="o-set-card o-card">
+                        <div class="o-text-main" style="font-weight:600">No Snooze</div>
+                        <div class="o-edit-btn o-text-main">✎</div>
+                    </div>
+                    <div class="o-set-card o-card">
+                        <div class="o-text-main" style="font-weight:600">Protein Bar</div>
+                        <div class="o-edit-btn o-text-main">✎</div>
+                    </div>
+                </div>
+                <div class="o-nav">
+                    <div class="o-nav-item"><div class="o-icon"></div>Dash</div>
+                    <div class="o-nav-item"><div class="o-icon"></div>Today</div>
+                    <div class="o-nav-item active"><div class="o-icon"></div>Settings</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="phone-container">
+            <div class="mode-label">Deep Forest (Dark)</div>
+            <div class="organic-frame dark-mode">
+                 <div class="o-content">
+                    <div class="o-header">
+                        <div class="o-text-main o-h1">Habits</div>
+                    </div>
+                    
+                    <div class="o-pill-row">
+                        <div class="o-pill active o-accent-border o-text-main">Daily</div>
+                        <div class="o-pill o-card">Weekly</div>
+                        <div class="o-pill o-card">Custom</div>
+                    </div>
+
+                    <div class="o-section-title o-text-main">Morning Routine</div>
+                    <div class="o-set-card o-card">
+                        <div class="o-text-main" style="font-weight:600">No Snooze</div>
+                        <div class="o-edit-btn o-text-main">✎</div>
+                    </div>
+                    <div class="o-set-card o-card">
+                        <div class="o-text-main" style="font-weight:600">Protein Bar</div>
+                        <div class="o-edit-btn o-text-main">✎</div>
+                    </div>
+                </div>
+                <div class="o-nav">
+                    <div class="o-nav-item"><div class="o-icon"></div>Dash</div>
+                    <div class="o-nav-item"><div class="o-icon"></div>Today</div>
+                    <div class="o-nav-item active"><div class="o-icon"></div>Settings</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</body>
+</html>

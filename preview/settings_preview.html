@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Settings UI Redesign Options</title>
+    <style>
+        /* Base Reset */
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: #222; 
+            color: #eee; 
+            padding: 40px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 80px;
+        }
+
+        h1 { margin-bottom: 20px; text-align: center; width: 100%; border-bottom: 1px solid #444; padding-bottom: 20px; }
+
+        .concept-wrapper {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+        }
+        
+        .label { font-size: 1.5rem; font-weight: bold; color: #aaa; text-transform: uppercase; letter-spacing: 2px; }
+
+        /* =========================================
+           1. TANGIBLE HIGH-TECH (LINEAR STYLE)
+           ========================================= */
+        .frame-1 {
+            width: 360px; height: 500px;
+            background: #0f0f10;
+            border: 1px solid #333;
+            border-radius: 24px;
+            padding: 24px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+            font-family: 'Inter', sans-serif;
+            position: relative;
+            display: flex; flex-direction: column;
+            overflow: hidden;
+        }
+        .frame-1::before {
+            content: ""; position: absolute; inset: 0; pointer-events: none;
+            background-image: radial-gradient(#fff 1px, transparent 0); background-size: 4px 4px; opacity: 0.03;
+        }
+
+        .c1-header { font-size: 18px; font-weight: 600; color: #eee; margin-bottom: 20px; }
+
+        /* Search Bar */
+        .c1-search {
+            background: #161617; border: 1px solid #333;
+            padding: 10px 14px; border-radius: 12px;
+            color: #888; font-size: 13px; margin-bottom: 20px;
+            display: flex; align-items: center; gap: 8px;
+        }
+        
+        /* Frequency Chips */
+        .c1-chips { display: flex; gap: 8px; margin-bottom: 20px; overflow-x: auto; padding-bottom: 4px; }
+        .c1-chip {
+            padding: 6px 12px; border-radius: 20px; font-size: 11px; font-weight: 600;
+            background: #161617; border: 1px solid #333; color: #888; white-space: nowrap;
+        }
+        .c1-chip.active { background: #5e6ad2; color: #fff; border-color: #5e6ad2; box-shadow: 0 0 10px rgba(94, 106, 210, 0.4); }
+
+        /* Collapsible Section */
+        .c1-section { margin-bottom: 16px; }
+        .c1-sec-header {
+            display: flex; justify-content: space-between; align-items: center;
+            font-size: 11px; text-transform: uppercase; letter-spacing: 1px; color: #666; font-weight: 700;
+            margin-bottom: 8px; cursor: pointer;
+        }
+        .c1-sec-header:hover { color: #eee; }
+
+        .c1-habit-row {
+            display: flex; justify-content: space-between; align-items: center;
+            background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.05);
+            padding: 12px; border-radius: 10px; margin-bottom: 8px;
+        }
+        .c1-h-name { font-size: 13px; color: #ccc; font-weight: 500; }
+        .c1-h-meta { font-size: 10px; color: #666; display: flex; gap: 8px; align-items: center; }
+        .c1-edit-icon { opacity: 0.5; cursor: pointer; }
+
+
+        /* =========================================
+           2. SWISS BRUTALISM
+           ========================================= */
+        .frame-2 {
+            width: 360px; height: 500px;
+            background: #fff;
+            border: 4px solid #000;
+            padding: 0;
+            font-family: monospace;
+            color: #000;
+            display: flex; flex-direction: column;
+            overflow-y: auto;
+        }
+
+        .c2-header-block {
+            padding: 20px; border-bottom: 4px solid #000;
+            background: #000; color: #fff;
+        }
+        .c2-title { font-size: 24px; font-weight: 900; letter-spacing: -1px; text-transform: uppercase; }
+
+        /* Tabs as big blocks */
+        .c2-tabs { display: grid; grid-template-columns: 1fr 1fr; border-bottom: 4px solid #000; }
+        .c2-tab {
+            padding: 15px; text-align: center; font-weight: 900; font-size: 12px; cursor: pointer;
+        }
+        .c2-tab.active { background: #ccff00; border-right: 4px solid #000; }
+        .c2-tab:last-child { border-right: none; }
+
+        /* List */
+        .c2-list-header {
+            padding: 10px 20px; font-weight: 900; font-size: 12px; text-decoration: underline; margin-top: 10px;
+        }
+        
+        .c2-item {
+            padding: 15px 20px; border-bottom: 2px solid #000;
+            display: flex; justify-content: space-between; align-items: center;
+        }
+        .c2-text { font-weight: 700; font-size: 14px; text-transform: uppercase; }
+        .c2-freq-tag {
+            background: #000; color: #fff; padding: 2px 6px; font-size: 10px; font-weight: bold;
+        }
+
+
+        /* =========================================
+           3. ORGANIC FLOW
+           ========================================= */
+        .frame-3 {
+            width: 360px; height: 500px;
+            background: #f4f1ea;
+            border-radius: 30px;
+            padding: 30px;
+            font-family: sans-serif;
+            color: #4a4a4a;
+            position: relative; overflow: hidden;
+            display: flex; flex-direction: column;
+        }
+        .frame-3::before {
+            content: ""; position: absolute; top: -50px; left: -50px; width: 200px; height: 200px;
+            background: #e6e0d5; border-radius: 50%; z-index: 0;
+        }
+
+        .c3-title { font-size: 22px; font-weight: bold; color: #5a6b53; margin-bottom: 20px; position: relative; z-index: 1; }
+
+        /* Filter Pills */
+        .c3-pills { display: flex; gap: 10px; margin-bottom: 24px; position: relative; z-index: 1; overflow-x: auto; }
+        .c3-pill {
+            padding: 8px 16px; border-radius: 20px; background: #fff; 
+            font-size: 13px; font-weight: 600; color: #888;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.05); white-space: nowrap;
+        }
+        .c3-pill.active { background: #d4a373; color: #fff; }
+
+        /* Cards */
+        .c3-card-group { margin-bottom: 20px; position: relative; z-index: 1; }
+        .c3-group-title { font-size: 14px; color: #aaa; font-weight: 600; margin-bottom: 10px; margin-left: 5px; }
+        
+        .c3-card {
+            background: #fff; padding: 16px; border-radius: 18px; margin-bottom: 10px;
+            display: flex; justify-content: space-between; align-items: center;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.02);
+        }
+        .c3-h-name { font-weight: 600; color: #555; font-size: 15px; }
+        .c3-edit-btn {
+            width: 32px; height: 32px; border-radius: 50%; background: #f4f1ea;
+            display: flex; align-items: center; justify-content: center; color: #5a6b53; font-size: 18px;
+        }
+
+    </style>
+</head>
+<body>
+
+    <div class="concept-wrapper">
+        <div class="label">1. Tangible High-Tech</div>
+        <div class="frame-1">
+            <div class="c1-header">Manage Habits</div>
+            <div class="c1-search">🔍 Search habits...</div>
+            
+            <div class="c1-chips">
+                <div class="c1-chip active">All</div>
+                <div class="c1-chip">Daily</div>
+                <div class="c1-chip">Weekly</div>
+                <div class="c1-chip">Weekends</div>
+            </div>
+
+            <div class="c1-section">
+                <div class="c1-sec-header">
+                    <span>MORNING ROUTINE</span>
+                    <span>▼</span>
+                </div>
+                <div class="c1-habit-row">
+                    <span class="c1-h-name">Stop alarm without snooze</span>
+                    <div class="c1-h-meta">
+                        <span>Daily</span>
+                        <span class="c1-edit-icon">✎</span>
+                    </div>
+                </div>
+                <div class="c1-habit-row">
+                    <span class="c1-h-name">Eat protein bar</span>
+                    <div class="c1-h-meta">
+                        <span>Daily</span>
+                        <span class="c1-edit-icon">✎</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="c1-section">
+                <div class="c1-sec-header">
+                    <span>EVENING ROUTINE</span>
+                    <span>▼</span>
+                </div>
+                <div class="c1-habit-row">
+                    <span class="c1-h-name">Read Book</span>
+                    <div class="c1-h-meta">
+                        <span>Daily</span>
+                        <span class="c1-edit-icon">✎</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <div class="concept-wrapper">
+        <div class="label">2. Swiss Brutalism</div>
+        <div class="frame-2">
+            <div class="c2-header-block">
+                <div class="c2-title">SETTINGS</div>
+            </div>
+            
+            <div class="c2-tabs">
+                <div class="c2-tab active">DAILY</div>
+                <div class="c2-tab">WEEKLY</div>
+            </div>
+
+            <div class="c2-list-header">MORNING</div>
+            <div class="c2-item">
+                <div class="c2-text">01. NO SNOOZE</div>
+                <div class="c2-freq-tag">DAILY</div>
+            </div>
+            <div class="c2-item">
+                <div class="c2-text">02. PROTEIN BAR</div>
+                <div class="c2-freq-tag">M-F</div>
+            </div>
+
+            <div class="c2-list-header" style="margin-top: 30px;">EVENING</div>
+            <div class="c2-item">
+                <div class="c2-text">01. READ BOOK</div>
+                <div class="c2-freq-tag">DAILY</div>
+            </div>
+            <div class="c2-item">
+                <div class="c2-text">02. JOURNAL</div>
+                <div class="c2-freq-tag">WEEKLY</div>
+            </div>
+        </div>
+    </div>
+
+
+    <div class="concept-wrapper">
+        <div class="label">3. Organic Flow</div>
+        <div class="frame-3">
+            <div class="c3-title">Your Habits</div>
+            
+            <div class="c3-pills">
+                <div class="c3-pill active">Everything</div>
+                <div class="c3-pill">Morning</div>
+                <div class="c3-pill">Evening</div>
+            </div>
+
+            <div class="c3-card-group">
+                <div class="c3-group-title">Daily Habits</div>
+                <div class="c3-card">
+                    <div class="c3-h-name">Stop alarm immediately</div>
+                    <div class="c3-edit-btn">✎</div>
+                </div>
+                <div class="c3-card">
+                    <div class="c3-h-name">Read Book</div>
+                    <div class="c3-edit-btn">✎</div>
+                </div>
+            </div>
+
+            <div class="c3-card-group">
+                <div class="c3-group-title">Weekly Goals</div>
+                <div class="c3-card">
+                    <div class="c3-h-name">Gym Session (3x)</div>
+                    <div class="c3-edit-btn">✎</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</body>
+</html>

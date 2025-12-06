@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calendar UI & Controls Redesign</title>
+    <style>
+        /* Base Reset */
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: #222; 
+            color: #eee; 
+            padding: 40px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 80px;
+        }
+
+        h1 { margin-bottom: 20px; text-align: center; width: 100%; border-bottom: 1px solid #444; padding-bottom: 20px; }
+
+        .concept-wrapper {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+        }
+        
+        .label { font-size: 1.5rem; font-weight: bold; color: #aaa; text-transform: uppercase; letter-spacing: 2px; }
+
+        /* =========================================
+           1. TANGIBLE HIGH-TECH (LINEAR STYLE)
+           ========================================= */
+        .frame-1 {
+            width: 360px; height: 420px;
+            background: #0f0f10;
+            border: 1px solid #333;
+            border-radius: 24px;
+            padding: 24px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+            font-family: 'Inter', sans-serif;
+            position: relative;
+            display: flex; flex-direction: column;
+        }
+        .frame-1::before {
+            content: ""; position: absolute; inset: 0; pointer-events: none;
+            background-image: radial-gradient(#fff 1px, transparent 0); background-size: 4px 4px; opacity: 0.03;
+        }
+
+        /* Header */
+        .c1-control-bar {
+            display: flex; align-items: center; justify-content: space-between;
+            margin-bottom: 20px;
+            padding: 8px; border-radius: 12px;
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.05);
+        }
+        .c1-btn {
+            width: 28px; height: 28px; border-radius: 6px; background: #161617; border: 1px solid #333;
+            display: flex; align-items: center; justify-content: center; color: #888; cursor: pointer;
+        }
+        .c1-month-text { font-size: 14px; font-weight: 600; color: #eee; letter-spacing: 0.5px; }
+
+        /* Grid */
+        .c1-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; }
+        .c1-head { font-size: 10px; color: #555; text-align: center; font-weight: 700; margin-bottom: 8px; }
+        
+        .c1-day {
+            aspect-ratio: 1; border-radius: 8px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 12px; color: #666; font-weight: 500;
+            border: 1px solid transparent; position: relative;
+        }
+        .c1-day:hover { background: rgba(255,255,255,0.05); }
+        
+        /* Selected State: Pressed Key Look */
+        .c1-day.selected {
+            background: #111;
+            border: 1px solid #333;
+            color: #fff;
+            box-shadow: inset 0 2px 5px rgba(0,0,0,0.8);
+        }
+        /* Data Indicator */
+        .c1-day.has-data::after {
+            content: ""; position: absolute; bottom: 4px; width: 4px; height: 4px; 
+            background: #5e6ad2; border-radius: 50%; box-shadow: 0 0 6px #5e6ad2;
+        }
+        /* Today Marker */
+        .c1-day.today { border-top: 2px solid #5e6ad2; color: #eee; }
+
+        .c1-today-btn {
+            margin-top: auto; align-self: center;
+            padding: 8px 16px; border-radius: 20px;
+            background: #111; border: 1px solid #333;
+            color: #5e6ad2; font-size: 11px; font-weight: 700; text-transform: uppercase;
+        }
+
+
+        /* =========================================
+           2. SWISS BRUTALISM
+           ========================================= */
+        .frame-2 {
+            width: 360px; height: 420px;
+            background: #fff;
+            border: 4px solid #000;
+            padding: 0;
+            font-family: monospace;
+            color: #000;
+            display: flex; flex-direction: column;
+        }
+
+        .c2-nav-block {
+            border-bottom: 4px solid #000;
+            display: grid; grid-template-columns: 50px 1fr 50px;
+            height: 50px;
+        }
+        .c2-arrow { display: flex; align-items: center; justify-content: center; font-weight: 900; font-size: 20px; cursor: pointer; }
+        .c2-arrow:first-child { border-right: 4px solid #000; }
+        .c2-arrow:last-child { border-left: 4px solid #000; }
+        .c2-date-box { display: flex; align-items: center; justify-content: center; font-weight: 900; font-size: 18px; }
+
+        .c2-grid { display: grid; grid-template-columns: repeat(7, 1fr); border-bottom: 4px solid #000; }
+        
+        /* Headers */
+        .c2-head { 
+            text-align: center; font-weight: 900; font-size: 10px; padding: 5px 0; 
+            background: #000; color: #fff; border-right: 1px solid #fff; 
+        }
+
+        /* Cells */
+        .c2-day {
+            aspect-ratio: 1; border-right: 2px solid #000; border-bottom: 2px solid #000;
+            display: flex; align-items: center; justify-content: center;
+            font-weight: 700; font-size: 14px; position: relative;
+        }
+        .c2-day:nth-child(7n) { border-right: none; } /* No border on right edge */
+        
+        .c2-day.selected { background: #000; color: #fff; }
+        
+        /* Data Triangle */
+        .c2-day.has-data::after {
+            content: ""; position: absolute; top: 2px; right: 2px;
+            width: 0; height: 0; border-style: solid; border-width: 0 6px 6px 0;
+            border-color: transparent #000 transparent transparent;
+        }
+        .c2-day.selected.has-data::after { border-color: transparent #ccff00 transparent transparent; }
+
+        .c2-footer { margin-top: auto; border-top: 4px solid #000; padding: 15px; text-align: center; font-weight: 900; background: #ccff00; }
+
+
+        /* =========================================
+           3. ORGANIC FLOW
+           ========================================= */
+        .frame-3 {
+            width: 360px; height: 420px;
+            background: #f4f1ea;
+            border-radius: 30px;
+            padding: 30px;
+            font-family: sans-serif;
+            color: #4a4a4a;
+            position: relative; overflow: hidden;
+            display: flex; flex-direction: column;
+        }
+        .frame-3::before {
+            content: ""; position: absolute; top: -50px; left: -50px; width: 200px; height: 200px;
+            background: #e6e0d5; border-radius: 50%; z-index: 0;
+        }
+
+        .c3-header { position: relative; z-index: 1; display: flex; justify-content: space-between; margin-bottom: 20px; }
+        .c3-month { font-size: 18px; font-weight: bold; color: #5a6b53; }
+        .c3-arrs { display: flex; gap: 10px; color: #888; font-weight: bold; }
+
+        .c3-grid { position: relative; z-index: 1; display: grid; grid-template-columns: repeat(7, 1fr); row-gap: 10px; }
+        .c3-head { text-align: center; font-size: 11px; color: #aaa; font-weight: 600; margin-bottom: 10px; }
+        
+        .c3-day {
+            aspect-ratio: 1; display: flex; flex-direction: column; align-items: center; justify-content: center;
+            font-size: 13px; color: #666; position: relative;
+        }
+        
+        /* Selected: Hand drawn circle */
+        .c3-day.selected { color: #d4a373; font-weight: bold; }
+        .c3-day.selected::before {
+            content: ""; position: absolute; inset: 2px; 
+            border: 2px solid #d4a373; border-radius: 50% 40% 60% 50% / 40% 60% 50% 60%;
+            transform: rotate(-10deg);
+        }
+        
+        /* Data Dot */
+        .c3-day.has-data::after {
+            content: ""; width: 4px; height: 4px; background: #5a6b53; border-radius: 50%; margin-top: 2px;
+        }
+
+        .c3-today-fab {
+            margin-top: auto; align-self: center; position: relative; z-index: 1;
+            padding: 10px 20px; background: #d4a373; color: #fff;
+            border-radius: 30px; font-weight: bold; font-size: 13px;
+            box-shadow: 0 5px 15px rgba(212, 163, 115, 0.4);
+        }
+
+    </style>
+</head>
+<body>
+
+    <div class="concept-wrapper">
+        <div class="label">1. Tangible High-Tech</div>
+        <div class="frame-1">
+            <div class="c1-control-bar">
+                <div class="c1-btn">‹</div>
+                <span class="c1-month-text">DECEMBER 2025</span>
+                <div class="c1-btn">›</div>
+            </div>
+
+            <div class="c1-grid">
+                <!-- Headers -->
+                <div class="c1-head">S</div><div class="c1-head">M</div><div class="c1-head">T</div><div class="c1-head">W</div><div class="c1-head">T</div><div class="c1-head">F</div><div class="c1-head">S</div>
+                <!-- Days -->
+                <div class="c1-day">30</div><div class="c1-day">1</div><div class="c1-day has-data">2</div><div class="c1-day has-data">3</div><div class="c1-day selected has-data">4</div><div class="c1-day today">5</div><div class="c1-day">6</div>
+                <div class="c1-day">7</div><div class="c1-day">8</div><div class="c1-day">9</div><div class="c1-day">10</div><div class="c1-day">11</div><div class="c1-day">12</div><div class="c1-day">13</div>
+                <div class="c1-day">14</div><div class="c1-day">15</div><div class="c1-day">16</div><div class="c1-day">17</div><div class="c1-day">18</div><div class="c1-day">19</div><div class="c1-day">20</div>
+            </div>
+
+            <div class="c1-today-btn">Return to Today</div>
+        </div>
+    </div>
+
+
+    <div class="concept-wrapper">
+        <div class="label">2. Swiss Brutalism</div>
+        <div class="frame-2">
+            <div class="c2-nav-block">
+                <div class="c2-arrow">←</div>
+                <div class="c2-date-box">DEC 2025</div>
+                <div class="c2-arrow">→</div>
+            </div>
+
+            <div class="c2-grid">
+                <!-- Headers -->
+                <div class="c2-head">SU</div><div class="c2-head">MO</div><div class="c2-head">TU</div><div class="c2-head">WE</div><div class="c2-head">TH</div><div class="c2-head">FR</div><div class="c2-head">SA</div>
+                <!-- Days -->
+                <div class="c2-day" style="opacity:0.3">30</div><div class="c2-day">01</div><div class="c2-day has-data">02</div><div class="c2-day has-data">03</div><div class="c2-day selected has-data">04</div><div class="c2-day">05</div><div class="c2-day">06</div>
+                <div class="c2-day">07</div><div class="c2-day">08</div><div class="c2-day">09</div><div class="c2-day">10</div><div class="c2-day">11</div><div class="c2-day">12</div><div class="c2-day">13</div>
+                <div class="c2-day">14</div><div class="c2-day">15</div><div class="c2-day">16</div><div class="c2-day">17</div><div class="c2-day">18</div><div class="c2-day">19</div><div class="c2-day">20</div>
+            </div>
+
+            <div class="c2-footer">GO TO TODAY</div>
+        </div>
+    </div>
+
+
+    <div class="concept-wrapper">
+        <div class="label">3. Organic Flow</div>
+        <div class="frame-3">
+            <div class="c3-header">
+                <div class="c3-month">December</div>
+                <div class="c3-arrs">← →</div>
+            </div>
+
+            <div class="c3-grid">
+                <!-- Headers -->
+                <div class="c3-head">S</div><div class="c3-head">M</div><div class="c3-head">T</div><div class="c3-head">W</div><div class="c3-head">T</div><div class="c3-head">F</div><div class="c3-head">S</div>
+                <!-- Days -->
+                <div class="c3-day" style="opacity:0.3">30</div><div class="c3-day">1</div><div class="c3-day has-data">2</div><div class="c3-day has-data">3</div><div class="c3-day selected">4</div><div class="c3-day has-data">5</div><div class="c3-day">6</div>
+                <div class="c3-day">7</div><div class="c3-day">8</div><div class="c3-day">9</div><div class="c3-day">10</div><div class="c3-day">11</div><div class="c3-day">12</div><div class="c3-day">13</div>
+                <div class="c3-day">14</div><div class="c3-day">15</div><div class="c3-day">16</div><div class="c3-day">17</div><div class="c3-day">18</div><div class="c3-day">19</div><div class="c3-day">20</div>
+            </div>
+
+            <div class="c3-today-fab">Today</div>
+        </div>
+    </div>
+
+</body>
+</html>

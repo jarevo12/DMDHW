@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard Data Visualization Styles</title>
+    <style>
+        /* Base Reset */
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: #222; 
+            color: #eee; 
+            padding: 40px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 80px;
+        }
+
+        h1 { margin-bottom: 20px; text-align: center; width: 100%; border-bottom: 1px solid #444; padding-bottom: 20px; }
+
+        .concept-wrapper {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+        }
+        
+        .label { font-size: 1.5rem; font-weight: bold; color: #aaa; text-transform: uppercase; letter-spacing: 2px; }
+
+        /* =========================================
+           1. TANGIBLE HIGH-TECH (LINEAR STYLE)
+           ========================================= */
+        .frame-1 {
+            width: 360px;
+            background: #0f0f10;
+            border: 1px solid #333;
+            border-radius: 24px;
+            padding: 24px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+            font-family: 'Inter', sans-serif;
+            position: relative;
+        }
+        /* Noise Overlay */
+        .frame-1::before {
+            content: ""; position: absolute; inset: 0; pointer-events: none;
+            background-image: radial-gradient(#fff 1px, transparent 0); background-size: 4px 4px; opacity: 0.03;
+        }
+
+        .c1-section-title { font-size: 11px; color: #666; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 16px; }
+
+        /* Chart 1 */
+        .c1-chart-box {
+            height: 160px;
+            background: linear-gradient(180deg, rgba(255,255,255,0.02) 0%, rgba(0,0,0,0) 100%);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 12px;
+            margin-bottom: 30px;
+            position: relative;
+            display: flex; align-items: flex-end; justify-content: space-between;
+            padding: 0 10px;
+        }
+        .c1-bar { width: 6px; background: #333; border-radius: 4px; position: relative; }
+        .c1-bar::after { 
+            content: ""; position: absolute; bottom: 0; left: 0; right: 0; 
+            background: #5e6ad2; border-radius: 4px;
+            box-shadow: 0 0 10px rgba(94, 106, 210, 0.5);
+        }
+        
+        /* Simulated Trend Line */
+        .c1-line-path {
+            position: absolute; top: 40px; left: 10px; right: 10px; height: 80px;
+            border-top: 2px solid #5e6ad2;
+            filter: drop-shadow(0 0 4px #5e6ad2);
+            border-radius: 50%; /* Fake curve */
+            transform: scaleY(-0.5); /* Invert curve look */
+        }
+
+        /* Habit Rate 1 */
+        .c1-habit { margin-bottom: 20px; }
+        .c1-habit-header { display: flex; justify-content: space-between; margin-bottom: 8px; align-items: center; }
+        .c1-habit-name { font-size: 13px; color: #eee; font-weight: 500; }
+        
+        .c1-badges { display: flex; gap: 6px; }
+        .c1-badge { 
+            font-size: 10px; padding: 2px 6px; border-radius: 4px; 
+            background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: #888; 
+            display: flex; align-items: center; gap: 3px;
+        }
+        .c1-badge.best { color: #d2a65e; background: rgba(210, 166, 94, 0.1); border-color: rgba(210, 166, 94, 0.2); }
+        .c1-icon { width: 8px; height: 8px; background: currentColor; clip-path: polygon(50% 0%, 0% 100%, 100% 100%); } /* Triangle */
+
+        .c1-progress-bg { height: 6px; background: #222; border-radius: 3px; overflow: hidden; }
+        .c1-progress-fill { height: 100%; background: #5e6ad2; width: 75%; box-shadow: 0 0 10px rgba(94, 106, 210, 0.4); }
+
+
+        /* =========================================
+           2. SWISS BRUTALISM
+           ========================================= */
+        .frame-2 {
+            width: 360px;
+            background: #fff;
+            border: 4px solid #000;
+            padding: 20px;
+            font-family: monospace;
+            color: #000;
+        }
+
+        .c2-title { background: #000; color: #fff; display: inline-block; padding: 4px 8px; font-weight: bold; font-size: 12px; margin-bottom: 20px; }
+
+        /* Chart 2 (Step Chart) */
+        .c2-chart-area {
+            height: 140px;
+            border-left: 2px solid #000;
+            border-bottom: 2px solid #000;
+            margin-bottom: 40px;
+            position: relative;
+        }
+        .c2-step-line {
+            position: absolute; bottom: 20px; left: 0; width: 100%; height: 50%;
+            border-top: 2px solid #000;
+            border-right: 2px solid #000;
+            /* Just a fake zig zag using gradients */
+            background: repeating-linear-gradient(45deg, transparent, transparent 10px, #000 10px, #000 11px);
+            opacity: 0.1; /* Texture */
+        }
+        /* The actual jagged line representation */
+        .c2-jagged {
+            position: absolute; bottom: 0; left: 0; right: 0; top: 0;
+            clip-path: polygon(0 80%, 20% 80%, 20% 40%, 40% 40%, 40% 60%, 60% 60%, 60% 20%, 80% 20%, 80% 50%, 100% 50%, 100% 100%, 0 100%);
+            background: #ccff00; /* Acid Green fill */
+            opacity: 0.5;
+            border-top: 2px solid #000; /* Attempting to fake a border via CSS is hard, simulating style mostly */
+        }
+
+        /* Habit Rate 2 */
+        .c2-habit-row {
+            display: grid; grid-template-columns: 100px 1fr 60px; 
+            align-items: center; gap: 10px; margin-bottom: 15px; border-bottom: 1px dashed #000; padding-bottom: 15px;
+        }
+        .c2-name { font-weight: bold; font-size: 12px; text-transform: uppercase; }
+        
+        .c2-bar-outer { height: 20px; border: 2px solid #000; width: 100%; position: relative; }
+        .c2-bar-inner { height: 100%; background: #000; width: 82%; }
+        
+        .c2-stats { display: flex; flex-direction: column; font-size: 10px; font-weight: bold; text-align: right; }
+        .c2-streak-val { background: #ccff00; padding: 2px; }
+
+
+        /* =========================================
+           3. ORGANIC FLOW
+           ========================================= */
+        .frame-3 {
+            width: 360px;
+            background: #f4f1ea;
+            border-radius: 30px;
+            padding: 30px;
+            font-family: sans-serif;
+            color: #4a4a4a;
+            position: relative; overflow: hidden;
+        }
+        /* Soft Blob */
+        .frame-3::before {
+            content: ""; position: absolute; top: -50px; left: -50px; width: 200px; height: 200px;
+            background: #e8e4de; border-radius: 50%; z-index: 0;
+        }
+
+        .c3-title { font-size: 18px; font-weight: bold; color: #5a6b53; margin-bottom: 20px; position: relative; z-index: 1; }
+
+        /* Chart 3 (Smooth Curve) */
+        .c3-chart-cont {
+            height: 140px;
+            background: rgba(255,255,255,0.5);
+            backdrop-filter: blur(5px);
+            border-radius: 20px;
+            margin-bottom: 30px;
+            position: relative; z-index: 1;
+            overflow: hidden;
+            display: flex; align-items: flex-end;
+        }
+        /* CSS hack for smooth curve shape */
+        .c3-curve {
+            width: 100%; height: 70%;
+            background: #5a6b53;
+            opacity: 0.2;
+            border-radius: 50% 50% 0 0 / 100% 100% 0 0;
+            transform: scaleX(1.2);
+        }
+        .c3-dot {
+            position: absolute; width: 12px; height: 12px; background: #5a6b53; border-radius: 50%; border: 3px solid #fff;
+            top: 30%; left: 50%; box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        }
+
+        /* Habit Rate 3 */
+        .c3-habit-item {
+            background: #fff; padding: 15px; border-radius: 16px; margin-bottom: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.02); position: relative; z-index: 1;
+        }
+        .c3-top-row { display: flex; justify-content: space-between; margin-bottom: 10px; }
+        .c3-h-name { font-weight: 600; font-size: 14px; color: #5a6b53; }
+        
+        .c3-streak-pill { 
+            background: #f0eadd; padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: 600; color: #d4a373;
+            display: flex; gap: 4px; align-items: center;
+        }
+        .c3-flame { font-size: 12px; }
+
+        .c3-track { height: 8px; background: #f0f0f0; border-radius: 10px; overflow: hidden; }
+        .c3-fill { height: 100%; background: #d4a373; width: 65%; border-radius: 10px; }
+
+    </style>
+</head>
+<body>
+
+    <div class="concept-wrapper">
+        <div class="label">1. Tangible High-Tech</div>
+        <div class="frame-1">
+            <div class="c1-section-title">Daily Trend</div>
+            <div class="c1-chart-box">
+                <!-- Faking a chart with bars for HTML/CSS -->
+                <div class="c1-bar" style="height: 30%"><div style="height:100%; width:100%; background: #333; position:absolute; bottom:0; opacity:0.5;"></div></div>
+                <div class="c1-bar" style="height: 50%"></div>
+                <div class="c1-bar" style="height: 40%"></div>
+                <div class="c1-bar" style="height: 70%"></div>
+                <div class="c1-bar" style="height: 60%"></div>
+                <div class="c1-bar" style="height: 85%"></div>
+                <div class="c1-bar" style="height: 65%"></div>
+                <div class="c1-line-path"></div>
+            </div>
+
+            <div class="c1-section-title">Completion Rates</div>
+            
+            <div class="c1-habit">
+                <div class="c1-habit-header">
+                    <span class="c1-habit-name">Morning Meditation</span>
+                    <div class="c1-badges">
+                        <div class="c1-badge"><div class="c1-icon"></div> 12d</div>
+                        <div class="c1-badge best"><div class="c1-icon"></div> Best: 45d</div>
+                    </div>
+                </div>
+                <div class="c1-progress-bg">
+                    <div class="c1-progress-fill" style="width: 82%"></div>
+                </div>
+            </div>
+
+            <div class="c1-habit">
+                <div class="c1-habit-header">
+                    <span class="c1-habit-name">Read Book</span>
+                    <div class="c1-badges">
+                        <div class="c1-badge"><div class="c1-icon"></div> 5d</div>
+                        <div class="c1-badge best"><div class="c1-icon"></div> Best: 14d</div>
+                    </div>
+                </div>
+                <div class="c1-progress-bg">
+                    <div class="c1-progress-fill" style="width: 45%; background: #d25e93; box-shadow: 0 0 10px rgba(210, 94, 147, 0.4);"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <div class="concept-wrapper">
+        <div class="label">2. Swiss Brutalism</div>
+        <div class="frame-2">
+            <div class="c2-title">TREND ANALYSIS</div>
+            <div class="c2-chart-area">
+                <div class="c2-jagged"></div>
+            </div>
+
+            <div class="c2-title">HABIT PERFORMANCE</div>
+            
+            <div class="c2-habit-row">
+                <div class="c2-name">MEDITATION</div>
+                <div class="c2-bar-outer">
+                    <div class="c2-bar-inner"></div>
+                </div>
+                <div class="c2-stats">
+                    <span class="c2-streak-val">STRK: 12</span>
+                    <span>BEST: 45</span>
+                </div>
+            </div>
+
+            <div class="c2-habit-row">
+                <div class="c2-name">READING</div>
+                <div class="c2-bar-outer">
+                    <div class="c2-bar-inner" style="width: 45%"></div>
+                </div>
+                <div class="c2-stats">
+                    <span class="c2-streak-val">STRK: 05</span>
+                    <span>BEST: 14</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <div class="concept-wrapper">
+        <div class="label">3. Organic Flow</div>
+        <div class="frame-3">
+            <div class="c3-title">Your Progress</div>
+            <div class="c3-chart-cont">
+                <div class="c3-curve"></div>
+                <div class="c3-dot"></div>
+            </div>
+
+            <div class="c3-title" style="font-size: 16px; margin-bottom: 15px;">Habit Consistency</div>
+            
+            <div class="c3-habit-item">
+                <div class="c3-top-row">
+                    <span class="c3-h-name">Morning Meditation</span>
+                    <div class="c3-streak-pill">
+                        <span class="c3-flame">🔥</span> 12 Days
+                    </div>
+                </div>
+                <div class="c3-track">
+                    <div class="c3-fill" style="width: 82%"></div>
+                </div>
+                <div style="font-size: 10px; color: #999; margin-top: 6px; text-align: right;">Personal Best: 45 Days</div>
+            </div>
+
+            <div class="c3-habit-item">
+                <div class="c3-top-row">
+                    <span class="c3-h-name">Read Book</span>
+                    <div class="c3-streak-pill" style="background: #e6f0dd; color: #5a6b53;">
+                        <span class="c3-flame">🌱</span> 5 Days
+                    </div>
+                </div>
+                <div class="c3-track">
+                    <div class="c3-fill" style="width: 45%; background: #5a6b53;"></div>
+                </div>
+                 <div style="font-size: 10px; color: #999; margin-top: 6px; text-align: right;">Personal Best: 14 Days</div>
+            </div>
+
+        </div>
+    </div>
+
+</body>
+</html>

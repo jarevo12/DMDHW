@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Today View Redesign Options</title>
+    <style>
+        /* Base Reset */
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: #222; 
+            color: #eee; 
+            padding: 40px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 80px;
+        }
+
+        h1 { margin-bottom: 20px; text-align: center; width: 100%; border-bottom: 1px solid #444; padding-bottom: 20px; }
+
+        .concept-wrapper {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+        }
+        
+        .label { font-size: 1.5rem; font-weight: bold; color: #aaa; text-transform: uppercase; letter-spacing: 2px; }
+
+        /* =========================================
+           1. TANGIBLE HIGH-TECH (LINEAR STYLE)
+           ========================================= */
+        .frame-1 {
+            width: 360px;
+            background: #0f0f10;
+            border: 1px solid #333;
+            border-radius: 24px;
+            padding: 24px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+            font-family: 'Inter', sans-serif;
+            position: relative;
+        }
+        .frame-1::before {
+            content: ""; position: absolute; inset: 0; pointer-events: none;
+            background-image: radial-gradient(#fff 1px, transparent 0); background-size: 4px 4px; opacity: 0.03;
+        }
+
+        /* Calendar Strip */
+        .c1-cal-strip {
+            display: flex; justify-content: space-between; margin-bottom: 30px;
+            padding: 4px; background: rgba(255,255,255,0.03); border-radius: 12px;
+            border: 1px solid rgba(255,255,255,0.05);
+        }
+        .c1-day {
+            width: 42px; height: 50px; border-radius: 8px;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            font-size: 12px; color: #666; font-weight: 600;
+            transition: all 0.2s;
+        }
+        .c1-day span:first-child { font-size: 10px; margin-bottom: 2px; }
+        .c1-day span:last-child { font-size: 14px; color: #aaa; font-weight: 700; }
+        
+        .c1-day.active {
+            background: #222;
+            border: 1px solid #333;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.1);
+        }
+        .c1-day.active span:last-child { color: #fff; text-shadow: 0 0 10px rgba(255,255,255,0.3); }
+
+        /* Tabs */
+        .c1-tabs {
+            display: flex; gap: 4px; margin-bottom: 20px; background: #161617; padding: 4px; border-radius: 10px; border: 1px solid #2a2a2a;
+        }
+        .c1-tab { flex: 1; text-align: center; padding: 8px; font-size: 12px; font-weight: 600; color: #666; border-radius: 6px; }
+        .c1-tab.active { background: #2a2a2a; color: #eee; box-shadow: 0 2px 4px rgba(0,0,0,0.3); }
+
+        /* Habit Item */
+        .c1-list { display: flex; flex-direction: column; gap: 8px; }
+        .c1-item {
+            background: linear-gradient(180deg, #1a1a1b 0%, #141415 100%);
+            border: 1px solid #2a2a2a;
+            border-radius: 12px;
+            padding: 16px;
+            display: flex; align-items: center; gap: 16px;
+            position: relative;
+        }
+        /* Inner highlight */
+        .c1-item::after {
+            content: ""; position: absolute; inset: 0; border-radius: 12px; pointer-events: none;
+            box-shadow: inset 0 1px 0 rgba(255,255,255,0.05);
+        }
+        
+        .c1-check {
+            width: 22px; height: 22px; border-radius: 6px; 
+            background: #0f0f10; border: 1px solid #333;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.5);
+            display: flex; align-items: center; justify-content: center;
+        }
+        .c1-check.done {
+            background: #5e6ad2; border-color: #5e6ad2;
+            box-shadow: 0 0 15px rgba(94, 106, 210, 0.4);
+        }
+        .c1-check.done::before { content: "✓"; color: #fff; font-size: 12px; font-weight: bold; }
+
+        .c1-text { font-size: 14px; font-weight: 500; color: #ccc; }
+        .c1-item.done .c1-text { color: #555; }
+
+
+        /* =========================================
+           2. SWISS BRUTALISM
+           ========================================= */
+        .frame-2 {
+            width: 360px;
+            background: #fff;
+            border: 4px solid #000;
+            padding: 20px;
+            font-family: monospace;
+            color: #000;
+        }
+
+        /* Calendar Grid */
+        .c2-cal-header {
+            display: flex; justify-content: space-between; border-bottom: 4px solid #000; padding-bottom: 10px; margin-bottom: 15px;
+        }
+        .c2-month { font-weight: 900; font-size: 24px; letter-spacing: -1px; }
+        
+        .c2-days-row { display: grid; grid-template-columns: repeat(5, 1fr); gap: 5px; margin-bottom: 30px; }
+        .c2-day {
+            border: 2px solid #000; height: 40px; display: flex; align-items: center; justify-content: center;
+            font-weight: bold; font-size: 12px;
+        }
+        .c2-day.active { background: #000; color: #fff; }
+
+        .c2-divider { background: #000; color: #fff; font-weight: 900; font-size: 12px; padding: 5px 10px; margin-bottom: 0; }
+        
+        .c2-item {
+            border-bottom: 4px solid #000;
+            padding: 20px 0;
+            display: flex; justify-content: space-between; align-items: center;
+        }
+        .c2-text { font-weight: 900; font-size: 14px; text-transform: uppercase; letter-spacing: -0.5px; }
+        .c2-item.done .c2-text { text-decoration: line-through; text-decoration-thickness: 3px; }
+
+        .c2-box { width: 28px; height: 28px; border: 3px solid #000; background: #fff; }
+        .c2-box.done { background: #000; }
+
+
+        /* =========================================
+           3. ORGANIC FLOW
+           ========================================= */
+        .frame-3 {
+            width: 360px;
+            background: #f4f1ea;
+            border-radius: 30px;
+            padding: 30px;
+            font-family: sans-serif;
+            color: #4a4a4a;
+            position: relative; overflow: hidden;
+        }
+        /* Blob */
+        .frame-3::before {
+            content: ""; position: absolute; top: -100px; right: -50px; width: 300px; height: 300px;
+            background: #e6e0d5; border-radius: 50%; z-index: 0;
+        }
+
+        /* Calendar Bubbles */
+        .c3-cal-cont {
+            position: relative; z-index: 1;
+            display: flex; justify-content: space-between; margin-bottom: 30px;
+        }
+        .c3-day {
+            width: 45px; height: 60px; background: rgba(255,255,255,0.5);
+            border-radius: 25px;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            font-size: 12px; color: #888;
+            border: 1px solid rgba(255,255,255,0.8);
+        }
+        .c3-day span:last-child { font-size: 16px; font-weight: bold; color: #555; margin-top: 4px; }
+
+        .c3-day.active { background: #d4a373; color: #fff; border-color: #d4a373; transform: scale(1.1); box-shadow: 0 5px 15px rgba(212, 163, 115, 0.3); }
+        .c3-day.active span:last-child { color: #fff; }
+
+        /* Tabs */
+        .c3-tabs { 
+            position: relative; z-index: 1; display: flex; gap: 20px; margin-bottom: 20px; border-bottom: 2px solid rgba(0,0,0,0.05); padding-bottom: 10px; 
+        }
+        .c3-tab { font-size: 16px; font-weight: bold; color: #aaa; padding-bottom: 5px; }
+        .c3-tab.active { color: #5a6b53; border-bottom: 3px solid #5a6b53; }
+
+        /* Habits */
+        .c3-item {
+            position: relative; z-index: 1;
+            background: #fff; padding: 18px; border-radius: 20px;
+            margin-bottom: 12px; display: flex; align-items: center; gap: 16px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.02);
+            transition: transform 0.2s;
+        }
+        .c3-item:active { transform: scale(0.98); }
+
+        .c3-circle {
+            width: 28px; height: 28px; border-radius: 50%; border: 2px solid #eee;
+            display: flex; align-items: center; justify-content: center; color: #fff;
+        }
+        .c3-circle.done { background: #5a6b53; border-color: #5a6b53; }
+        
+        .c3-text { font-weight: 600; color: #555; font-size: 15px; }
+        .c3-item.done .c3-text { text-decoration: line-through; color: #aaa; }
+
+    </style>
+</head>
+<body>
+
+    <div class="concept-wrapper">
+        <div class="label">1. Tangible High-Tech</div>
+        <div class="frame-1">
+            <div class="c1-cal-strip">
+                <div class="c1-day"><span>MON</span><span>02</span></div>
+                <div class="c1-day"><span>TUE</span><span>03</span></div>
+                <div class="c1-day active"><span>WED</span><span>04</span></div>
+                <div class="c1-day"><span>THU</span><span>05</span></div>
+                <div class="c1-day"><span>FRI</span><span>06</span></div>
+            </div>
+
+            <div class="c1-tabs">
+                <div class="c1-tab active">Morning</div>
+                <div class="c1-tab">Evening</div>
+            </div>
+
+            <div class="c1-list">
+                <div class="c1-item done">
+                    <div class="c1-check done"></div>
+                    <div class="c1-text">Make Bed</div>
+                </div>
+                <div class="c1-item done">
+                    <div class="c1-check done"></div>
+                    <div class="c1-text">Drink Water (500ml)</div>
+                </div>
+                <div class="c1-item">
+                    <div class="c1-check"></div>
+                    <div class="c1-text">Read 10 Pages</div>
+                </div>
+                <div class="c1-item">
+                    <div class="c1-check"></div>
+                    <div class="c1-text">Deep Work (2h)</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <div class="concept-wrapper">
+        <div class="label">2. Swiss Brutalism</div>
+        <div class="frame-2">
+            <div class="c2-cal-header">
+                <div class="c2-month">DECEMBER</div>
+                <div style="font-weight:bold">2025</div>
+            </div>
+            <div class="c2-days-row">
+                <div class="c2-day">02</div>
+                <div class="c2-day">03</div>
+                <div class="c2-day active">04</div>
+                <div class="c2-day">05</div>
+                <div class="c2-day">06</div>
+            </div>
+
+            <div class="c2-divider">MORNING ROUTINE</div>
+            
+            <div class="c2-item done">
+                <div class="c2-text">01. MAKE BED</div>
+                <div class="c2-box done"></div>
+            </div>
+            <div class="c2-item done">
+                <div class="c2-text">02. DRINK WATER</div>
+                <div class="c2-box done"></div>
+            </div>
+            <div class="c2-divider" style="margin-top: 10px;">EVENING ROUTINE</div>
+            <div class="c2-item">
+                <div class="c2-text">03. READ BOOK</div>
+                <div class="c2-box"></div>
+            </div>
+        </div>
+    </div>
+
+
+    <div class="concept-wrapper">
+        <div class="label">3. Organic Flow</div>
+        <div class="frame-3">
+            <div class="c3-cal-cont">
+                <div class="c3-day"><span>Mon</span><span>02</span></div>
+                <div class="c3-day"><span>Tue</span><span>03</span></div>
+                <div class="c3-day active"><span>Wed</span><span>04</span></div>
+                <div class="c3-day"><span>Thu</span><span>05</span></div>
+                <div class="c3-day"><span>Fri</span><span>06</span></div>
+            </div>
+
+            <div class="c3-tabs">
+                <div class="c3-tab active">Morning</div>
+                <div class="c3-tab">Evening</div>
+            </div>
+
+            <div class="c3-item done">
+                <div class="c3-circle done">✓</div>
+                <div class="c3-text">Make Bed</div>
+            </div>
+            <div class="c3-item">
+                <div class="c3-circle"></div>
+                <div class="c3-text">Drink Water</div>
+            </div>
+            <div class="c3-item">
+                <div class="c3-circle"></div>
+                <div class="c3-text">Stretch 10 min</div>
+            </div>
+        </div>
+    </div>
+
+</body>
+</html>

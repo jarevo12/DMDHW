@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Habit Tracker Redesign Options</title>
+    <style>
+        :root {
+            --bg-dark: #121212;
+            --text-light: #ffffff;
+        }
+        
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        
+        body { 
+            font-family: system-ui, -apple-system, sans-serif;
+            background-color: #222; 
+            color: #eee; 
+            padding: 40px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 80px;
+        }
+
+        h1 { margin-bottom: 20px; text-align: center; width: 100%; border-bottom: 1px solid #444; padding-bottom: 20px; }
+        
+        .concept-wrapper {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+        }
+        
+        .label { font-size: 1.5rem; font-weight: bold; color: #aaa; text-transform: uppercase; letter-spacing: 2px; }
+        .desc { color: #666; margin-bottom: 20px; max-width: 300px; text-align: center; }
+
+        /* =========================================
+           1. TANGIBLE HIGH-TECH (LINEAR STYLE)
+           ========================================= */
+        .phone-1 {
+            width: 340px; height: 680px;
+            background: #0f0f10;
+            border-radius: 40px;
+            border: 8px solid #2a2a2a;
+            box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5);
+            overflow: hidden;
+            font-family: 'Inter', sans-serif;
+            position: relative;
+        }
+        /* Noise Texture Simulation */
+        .phone-1::before {
+            content: ""; position: absolute; inset: 0;
+            background-image: radial-gradient(#fff 1px, transparent 0);
+            background-size: 4px 4px;
+            opacity: 0.03; pointer-events: none;
+        }
+        
+        .p1-nav { padding: 40px 24px 20px; display: flex; justify-content: space-between; align-items: center; }
+        .p1-title { font-size: 18px; font-weight: 600; color: #eee; }
+        .p1-date { font-size: 12px; color: #666; font-weight: 500; margin-bottom: 4px; }
+        
+        .p1-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; padding: 0 24px 24px; }
+        .p1-card {
+            background: linear-gradient(180deg, rgba(255,255,255,0.04) 0%, rgba(255,255,255,0) 100%);
+            border: 1px solid rgba(255,255,255,0.06);
+            padding: 16px; border-radius: 16px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+        }
+        .p1-lbl { font-size: 11px; color: #666; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
+        .p1-val { font-size: 28px; font-weight: 600; color: #fff; margin: 8px 0; }
+        
+        .p1-list { padding: 0 24px; display: flex; flex-direction: column; gap: 12px; }
+        .p1-item {
+            background: #161617; border: 1px solid rgba(255,255,255,0.06);
+            padding: 16px; border-radius: 12px; display: flex; align-items: center; gap: 16px;
+        }
+        .p1-check { 
+            width: 20px; height: 20px; border-radius: 6px; background: #222; border: 1px solid #333; 
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.3);
+        }
+        .p1-check.done { background: #5e6ad2; border-color: #5e6ad2; box-shadow: 0 0 12px rgba(94, 106, 210, 0.4); }
+        .p1-text { color: #ccc; font-size: 14px; font-weight: 500; }
+
+        /* =========================================
+           2. SWISS BRUTALISM (DESIGNER STYLE)
+           ========================================= */
+        .phone-2 {
+            width: 340px; height: 680px;
+            background: #ffffff;
+            border: 8px solid #000;
+            overflow: hidden;
+            font-family: 'Courier New', monospace;
+            color: #000;
+        }
+        .p2-header { padding: 40px 20px 20px; border-bottom: 4px solid #000; }
+        .p2-big { font-size: 42px; font-weight: 900; line-height: 0.85; letter-spacing: -2px; font-family: sans-serif; }
+        
+        .p2-stat-row { display: flex; border-bottom: 4px solid #000; }
+        .p2-stat { flex: 1; padding: 20px; border-right: 4px solid #000; }
+        .p2-stat:last-child { border-right: none; background: #ccff00; }
+        
+        .p2-lbl { font-size: 12px; font-weight: 900; margin-bottom: 5px; }
+        .p2-val { font-size: 32px; font-weight: 900; font-family: sans-serif; letter-spacing: -1px; }
+        
+        .p2-sec { background: #000; color: #fff; padding: 10px 20px; font-weight: 900; font-size: 12px; }
+        
+        .p2-item { padding: 20px; border-bottom: 4px solid #000; display: flex; justify-content: space-between; align-items: center; }
+        .p2-text { font-weight: 900; font-size: 14px; text-transform: uppercase; }
+        .p2-box { width: 24px; height: 24px; border: 3px solid #000; }
+        .p2-box.fill { background: #000; }
+
+        /* =========================================
+           3. ORGANIC FLOW (WELLNESS STYLE)
+           ========================================= */
+        .phone-3 {
+            width: 340px; height: 680px;
+            background: #f2efeb; /* Sand */
+            border-radius: 40px;
+            border: 8px solid #e6e2dd;
+            box-shadow: 0 25px 50px -12px rgba(0,0,0,0.2);
+            overflow: hidden;
+            font-family: sans-serif;
+            position: relative;
+            color: #4a4a4a;
+        }
+        /* Blob Background */
+        .p3-blob {
+            position: absolute; top: -80px; right: -80px;
+            width: 350px; height: 350px;
+            background: #e8e4de; border-radius: 50%; z-index: 0;
+        }
+        
+        .p3-content { position: relative; z-index: 1; padding: 50px 24px; }
+        .p3-head { font-size: 28px; font-weight: bold; color: #3f4a3b; margin-bottom: 30px; }
+        
+        .p3-card {
+            background: rgba(255,255,255,0.6);
+            backdrop-filter: blur(10px);
+            padding: 24px; border-radius: 24px;
+            margin-bottom: 24px;
+            box-shadow: 0 10px 30px rgba(63, 74, 59, 0.05);
+        }
+        .p3-lbl { font-size: 13px; color: #888; font-weight: 600; letter-spacing: 0.5px; margin-bottom: 5px; }
+        .p3-val { font-size: 32px; font-weight: bold; color: #3f4a3b; }
+        
+        .p3-item {
+            background: #fff; padding: 16px 20px; border-radius: 50px;
+            margin-bottom: 12px; display: flex; align-items: center; gap: 16px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.03);
+        }
+        .p3-circle { 
+            width: 24px; height: 24px; border-radius: 50%; border: 2px solid #eee; 
+            display: flex; align-items: center; justify-content: center; font-size: 12px; color: #fff;
+        }
+        .p3-circle.done { background: #d4a373; border-color: #d4a373; } /* Terra Cotta */
+        .p3-text { font-weight: 600; color: #555; }
+
+    </style>
+</head>
+<body>
+
+    <h1>Which Style Fits Your Vision?</h1>
+
+    <div class="concept-wrapper">
+        <div class="label">1. Tangible High-Tech</div>
+        <div class="desc">Matte surfaces, noise texture, inner shadows. Feels like a premium physical tool. (Inspired by Linear/Apple)</div>
+        <div class="phone-1">
+            <div class="p1-nav">
+                <div>
+                    <div class="p1-date">SATURDAY</div>
+                    <div class="p1-title">Dashboard</div>
+                </div>
+            </div>
+            <div class="p1-grid">
+                <div class="p1-card">
+                    <div class="p1-lbl">Weekly</div>
+                    <div class="p1-val">84%</div>
+                </div>
+                <div class="p1-card">
+                    <div class="p1-lbl">Streak</div>
+                    <div class="p1-val">12</div>
+                </div>
+            </div>
+            <div class="p1-list">
+                <div class="p1-item">
+                    <div class="p1-check done"></div>
+                    <div class="p1-text">Morning Meditation</div>
+                </div>
+                <div class="p1-item">
+                    <div class="p1-check"></div>
+                    <div class="p1-text">Read 10 Pages</div>
+                </div>
+                <div class="p1-item">
+                    <div class="p1-check"></div>
+                    <div class="p1-text">Deep Work Session</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="concept-wrapper">
+        <div class="label">2. Swiss Brutalism</div>
+        <div class="desc">Stark black & white, massive typography, raw grid lines. Feels bold and confident.</div>
+        <div class="phone-2">
+            <div class="p2-header">
+                <div class="p2-big">YOUR<br>STATS</div>
+            </div>
+            <div class="p2-stat-row">
+                <div class="p2-stat">
+                    <div class="p2-lbl">RATE</div>
+                    <div class="p2-val">84%</div>
+                </div>
+                <div class="p2-stat">
+                    <div class="p2-lbl">STREAK</div>
+                    <div class="p2-val">12d</div>
+                </div>
+            </div>
+            <div class="p2-sec">// TODAY'S LOG</div>
+            <div class="p2-item">
+                <div class="p2-text">01. MEDITATION</div>
+                <div class="p2-box fill"></div>
+            </div>
+            <div class="p2-item">
+                <div class="p2-text">02. READ BOOK</div>
+                <div class="p2-box"></div>
+            </div>
+            <div class="p2-item">
+                <div class="p2-text">03. DEEP WORK</div>
+                <div class="p2-box"></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="concept-wrapper">
+        <div class="label">3. Organic Flow</div>
+        <div class="desc">Soft shapes, earth tones, blurred glass. Feels calm and restorative.</div>
+        <div class="phone-3">
+            <div class="p3-blob"></div>
+            <div class="p3-content">
+                <div class="p3-head">Good Morning</div>
+                <div class="p3-card">
+                    <div class="p3-lbl">Current Streak</div>
+                    <div class="p3-val">12 Days</div>
+                </div>
+                <div class="p3-item">
+                    <div class="p3-circle done">✓</div>
+                    <div class="p3-text">Morning Meditation</div>
+                </div>
+                <div class="p3-item">
+                    <div class="p3-circle"></div>
+                    <div class="p3-text">Read 10 Pages</div>
+                </div>
+                <div class="p3-item">
+                    <div class="p3-circle"></div>
+                    <div class="p3-text">Drink Water</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</body>
+</html>
