@@ -96,17 +96,40 @@
         <div id="main-screen" class="screen">
             <!-- Header -->
             <header class="app-header">
-                <button class="btn-icon" id="prev-date" aria-label="Previous day">
-                    <span>&#8249;</span>
+                <button class="btn-icon" id="toggle-calendar" aria-label="Toggle calendar">
+                    <span>&#128197;</span>
                 </button>
                 <div class="date-display" id="current-date">
                     <span class="date-text">Today</span>
                     <span class="date-full">Thu, Dec 5, 2025</span>
                 </div>
-                <button class="btn-icon" id="next-date" aria-label="Next day">
-                    <span>&#8250;</span>
+                <button class="btn-icon" id="today-btn" aria-label="Go to today">
+                    <span>&#8226;</span>
                 </button>
             </header>
+
+            <!-- Calendar Picker -->
+            <div id="calendar-picker" class="calendar-picker hidden">
+                <div class="calendar-picker-header">
+                    <button class="btn-icon" id="prev-month" aria-label="Previous month">
+                        <span>&#8249;</span>
+                    </button>
+                    <span id="calendar-month-year" class="calendar-month-label"></span>
+                    <button class="btn-icon" id="next-month" aria-label="Next month">
+                        <span>&#8250;</span>
+                    </button>
+                </div>
+                <div class="calendar-weekdays">
+                    <span>Su</span>
+                    <span>Mo</span>
+                    <span>Tu</span>
+                    <span>We</span>
+                    <span>Th</span>
+                    <span>Fr</span>
+                    <span>Sa</span>
+                </div>
+                <div id="calendar-days" class="calendar-days-grid"></div>
+            </div>
 
             <!-- Tab Navigation -->
             <nav class="tab-nav">
@@ -444,6 +467,14 @@
         let currentEntry = null;
         let unsubscribeHabits = null;
         let unsubscribeEntry = null;
+
+        // Calendar state
+        let calendarState = {
+            isOpen: false,
+            currentMonth: new Date().getMonth(),
+            currentYear: new Date().getFullYear(),
+            entriesData: {}
+        };
 
         // Onboarding state
         let onboardingStep = 1;
@@ -1838,6 +1869,104 @@
             });
         }
 
+        // ========== TODAY CALENDAR ==========
+        async function renderTodayCalendar() {
+            const monthDate = new Date(calendarState.currentYear, calendarState.currentMonth, 1);
+            const lastDay = new Date(calendarState.currentYear, calendarState.currentMonth + 1, 0);
+            const startDayOfWeek = monthDate.getDay();
+            const today = formatDate(new Date());
+            const selectedString = formatDate(currentDate);
+
+            // Update month label
+            document.getElementById('calendar-month-year').textContent = monthDate.toLocaleDateString('en-US', {
+                month: 'long',
+                year: 'numeric'
+            });
+
+            // Fetch entries for this month
+            const entriesRef = collection(db, `users/${currentUser.uid}/entries`);
+            const entriesSnapshot = await getDocs(entriesRef);
+            const entriesMap = {};
+            entriesSnapshot.forEach(doc => {
+                entriesMap[doc.id] = doc.data();
+            });
+            calendarState.entriesData = entriesMap;
+
+            // Build calendar grid
+            const allHabits = [...habits.morning, ...habits.evening];
+            const totalHabits = allHabits.length;
+            const days = [];
+
+            // Empty cells before first day
+            for (let i = 0; i < startDayOfWeek; i++) {
+                days.push('<button class="calendar-day-btn empty" disabled></button>');
+            }
+
+            // Days of the month
+            for (let day = 1; day <= lastDay.getDate(); day++) {
+                const dateString = formatDate(new Date(calendarState.currentYear, calendarState.currentMonth, day));
+                const entry = entriesMap[dateString];
+                const isToday = dateString === today;
+                const isSelected = dateString === selectedString;
+                const isFuture = new Date(dateString) > new Date();
+
+                let classes = 'calendar-day-btn';
+                if (isToday) classes += ' today';
+                if (isSelected) classes += ' selected';
+
+                // Add data indicator
+                if (entry && totalHabits > 0) {
+                    let completedCount = 0;
+                    allHabits.forEach(habit => {
+                        const type = habit.type;
+                        if (entry[type] && entry[type].includes(habit.id)) {
+                            completedCount++;
+                        }
+                    });
+
+                    if (completedCount === totalHabits) {
+                        classes += ' has-data';
+                    } else if (completedCount > 0) {
+                        classes += ' partial-data';
+                    }
+                }
+
+                days.push(`
+                    <button
+                        class="${classes}"
+                        data-date="${dateString}"
+                        ${isFuture ? 'disabled' : ''}
+                        onclick="selectCalendarDate('${dateString}')"
+                    >
+                        ${day}
+                    </button>
+                `);
+            }
+
+            document.getElementById('calendar-days').innerHTML = days.join('');
+
+            // Disable next month if it's in the future
+            const nextMonth = new Date(calendarState.currentYear, calendarState.currentMonth + 1, 1);
+            const thisMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+            document.getElementById('next-month').disabled = nextMonth.getTime() > thisMonth.getTime();
+        }
+
+        function selectCalendarDate(dateString) {
+            currentDate = new Date(dateString);
+            updateDateDisplay();
+            subscribeToEntry();
+
+            // Close calendar
+            if (calendarState.isOpen) {
+                calendarState.isOpen = false;
+                document.getElementById('calendar-picker').classList.add('hidden');
+                document.getElementById('toggle-calendar').classList.remove('active');
+            }
+        }
+
+        // Make selectCalendarDate globally accessible
+        window.selectCalendarDate = selectCalendarDate;
+
         // ========== MODALS ==========
         let habitToEdit = null;
         let habitToDelete = null;
@@ -2035,20 +2164,49 @@
             });
 
             // Date navigation
-            document.getElementById('prev-date').addEventListener('click', () => {
-                currentDate.setDate(currentDate.getDate() - 1);
-                updateDateDisplay();
-                subscribeToEntry();
+            // Calendar toggle
+            document.getElementById('toggle-calendar').addEventListener('click', () => {
+                calendarState.isOpen = !calendarState.isOpen;
+                const picker = document.getElementById('calendar-picker');
+                picker.classList.toggle('hidden', !calendarState.isOpen);
+                document.getElementById('toggle-calendar').classList.toggle('active', calendarState.isOpen);
+
+                if (calendarState.isOpen) {
+                    calendarState.currentMonth = currentDate.getMonth();
+                    calendarState.currentYear = currentDate.getFullYear();
+                    renderTodayCalendar();
+                }
             });
 
-            document.getElementById('next-date').addEventListener('click', () => {
-                const tomorrow = new Date(currentDate);
-                tomorrow.setDate(tomorrow.getDate() + 1);
-                if (tomorrow <= new Date()) {
-                    currentDate = tomorrow;
-                    updateDateDisplay();
-                    subscribeToEntry();
+            // Go to today button
+            document.getElementById('today-btn').addEventListener('click', () => {
+                currentDate = new Date();
+                updateDateDisplay();
+                subscribeToEntry();
+                if (calendarState.isOpen) {
+                    calendarState.isOpen = false;
+                    document.getElementById('calendar-picker').classList.add('hidden');
+                    document.getElementById('toggle-calendar').classList.remove('active');
                 }
+            });
+
+            // Calendar month navigation
+            document.getElementById('prev-month').addEventListener('click', () => {
+                calendarState.currentMonth--;
+                if (calendarState.currentMonth < 0) {
+                    calendarState.currentMonth = 11;
+                    calendarState.currentYear--;
+                }
+                renderTodayCalendar();
+            });
+
+            document.getElementById('next-month').addEventListener('click', () => {
+                calendarState.currentMonth++;
+                if (calendarState.currentMonth > 11) {
+                    calendarState.currentMonth = 0;
+                    calendarState.currentYear++;
+                }
+                renderTodayCalendar();
             });
 
             // Tab navigation
