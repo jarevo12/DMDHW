@@ -96,16 +96,26 @@
         <div id="main-screen" class="screen">
             <!-- Header -->
             <header class="app-header">
-                <button class="btn-icon" id="toggle-calendar" aria-label="Toggle calendar">
-                    <span>&#128197;</span>
-                </button>
+                <div class="header-left">
+                    <button class="btn-icon" id="toggle-calendar" aria-label="Toggle calendar">
+                        <span>&#128197;</span>
+                    </button>
+                    <button class="btn-icon" id="prev-date" aria-label="Previous day">
+                        <span>&#8249;</span>
+                    </button>
+                </div>
                 <div class="date-display" id="current-date">
                     <span class="date-text">Today</span>
                     <span class="date-full">Thu, Dec 5, 2025</span>
                 </div>
-                <button class="btn-icon" id="today-btn" aria-label="Go to today">
-                    <span>&#8226;</span>
-                </button>
+                <div class="header-right">
+                    <button class="btn-icon" id="next-date" aria-label="Next day">
+                        <span>&#8250;</span>
+                    </button>
+                    <button class="btn-icon today-indicator" id="today-btn" aria-label="Go to today" title="Return to today">
+                        <span style="font-size: 0.7rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em;">Today</span>
+                    </button>
+                </div>
             </header>
 
             <!-- Calendar Picker -->
@@ -842,13 +852,15 @@
             const dateString = formatDate(currentDate);
             const entryRef = doc(db, `users/${currentUser.uid}/entries`, dateString);
 
-            const completed = currentEntry[type] || [];
+            // Get current entry data or use empty arrays
+            const completed = currentEntry?.[type] || [];
             const isCompleted = completed.includes(habitId);
 
             const newCompleted = isCompleted
                 ? completed.filter(id => id !== habitId)
                 : [...completed, habitId];
 
+            // Allow toggling for any date (past, present)
             await setDoc(entryRef, {
                 date: dateString,
                 [type]: newCompleted
@@ -1420,6 +1432,7 @@
             const isToday = formatDate(currentDate) === formatDate(today);
             const dateText = document.querySelector('#current-date .date-text');
             const dateFull = document.querySelector('#current-date .date-full');
+            const nextBtn = document.getElementById('next-date');
 
             if (isToday) {
                 dateText.textContent = 'Today';
@@ -1435,8 +1448,12 @@
                 weekday: 'short', month: 'short', day: 'numeric', year: 'numeric'
             });
 
-            document.getElementById('next-date').disabled = isToday;
-            document.getElementById('next-date').style.opacity = isToday ? '0.3' : '1';
+            // Disable next button if viewing today
+            if (nextBtn) {
+                nextBtn.disabled = isToday;
+                nextBtn.style.opacity = isToday ? '0.3' : '1';
+                nextBtn.style.cursor = isToday ? 'not-allowed' : 'pointer';
+            }
         }
 
         function renderEditableHabits() {
@@ -1952,9 +1969,12 @@
         }
 
         function selectCalendarDate(dateString) {
-            currentDate = new Date(dateString);
+            // Parse date string properly to avoid timezone issues
+            const [year, month, day] = dateString.split('-').map(Number);
+            currentDate = new Date(year, month - 1, day);
             updateDateDisplay();
             subscribeToEntry();
+            renderHabits();
 
             // Close calendar
             if (calendarState.isOpen) {
@@ -2164,6 +2184,31 @@
             });
 
             // Date navigation
+            // Previous day
+            document.getElementById('prev-date').addEventListener('click', () => {
+                const newDate = new Date(currentDate);
+                newDate.setDate(newDate.getDate() - 1);
+                currentDate = newDate;
+                updateDateDisplay();
+                subscribeToEntry();
+                renderHabits();
+            });
+
+            // Next day
+            document.getElementById('next-date').addEventListener('click', () => {
+                const today = new Date();
+                const newDate = new Date(currentDate);
+                newDate.setDate(newDate.getDate() + 1);
+
+                // Don't allow future dates
+                if (formatDate(newDate) <= formatDate(today)) {
+                    currentDate = newDate;
+                    updateDateDisplay();
+                    subscribeToEntry();
+                    renderHabits();
+                }
+            });
+
             // Calendar toggle
             document.getElementById('toggle-calendar').addEventListener('click', () => {
                 calendarState.isOpen = !calendarState.isOpen;

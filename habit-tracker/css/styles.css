@@ -573,12 +573,25 @@ svg.logo-icon {
 }
 
 .btn-icon:active {
-    transform: scale(0.95);
+    transform: scale(0.92);
+    background: rgba(255, 107, 157, 0.2);
+    transition: all 50ms ease;
 }
 
 .btn-icon svg {
     width: 20px;
     height: 20px;
+}
+
+.btn-icon.today-indicator {
+    width: auto;
+    padding: 0 var(--spacing-md);
+    font-size: 0.7rem;
+    font-weight: 700;
+}
+
+.btn-icon.today-indicator:hover {
+    background: rgba(255, 107, 157, 0.15);
 }
 
 /* ===== Auth Message ===== */
@@ -634,6 +647,7 @@ svg.logo-icon {
     position: sticky;
     top: 0;
     z-index: 100;
+    gap: var(--spacing-sm);
 }
 
 .app-header h1 {
@@ -642,14 +656,31 @@ svg.logo-icon {
     letter-spacing: -0.02em;
 }
 
+.header-left,
+.header-right {
+    display: flex;
+    gap: var(--spacing-sm); /* 8px for better touch target spacing */
+    align-items: center;
+}
+
 .date-display {
     text-align: center;
     flex: 1;
+    min-width: 0; /* Prevent overflow on small screens */
 }
 
 .date-text {
     display: block;
-    font-size: 1.1rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+}
+
+.date-full {
+    display: block;
+    font-size: 1rem;
     font-weight: 700;
     letter-spacing: -0.02em;
     background: var(--gradient-aurora);
@@ -658,29 +689,27 @@ svg.logo-icon {
     background-clip: text;
 }
 
-.date-full {
-    display: block;
-    font-size: 0.75rem;
-    color: var(--text-muted);
-    font-weight: 500;
-}
-
 /* ===== Calendar Picker ===== */
 .calendar-picker {
     background: var(--glass-bg);
     backdrop-filter: blur(20px);
     -webkit-backdrop-filter: blur(20px);
     border-bottom: 1px solid var(--glass-border);
-    padding: var(--spacing-md);
+    padding: 0 var(--spacing-md);
     overflow: hidden;
-    max-height: 0;
     opacity: 0;
-    transition: all var(--transition-normal);
+    transform: translateY(-8px);
+    max-height: 0;
+    transition: opacity 200ms ease, transform 200ms ease, max-height 250ms ease, padding 200ms ease;
+    pointer-events: none;
 }
 
 .calendar-picker:not(.hidden) {
-    max-height: 400px;
     opacity: 1;
+    transform: translateY(0);
+    max-height: 400px;
+    padding: var(--spacing-md);
+    pointer-events: auto;
 }
 
 .calendar-picker-header {
@@ -704,34 +733,35 @@ svg.logo-icon {
     display: grid;
     grid-template-columns: repeat(7, 1fr);
     gap: 4px;
-    margin-bottom: var(--spacing-sm);
-    padding: 0 2px;
+    margin-bottom: var(--spacing-md);
+    padding: var(--spacing-sm) 2px;
+    border-bottom: 1px solid var(--glass-border);
 }
 
 .calendar-weekdays span {
     text-align: center;
-    font-size: 0.7rem;
-    font-weight: 600;
+    font-size: 0.65rem;
+    font-weight: 700;
     color: var(--text-muted);
     text-transform: uppercase;
-    padding: var(--spacing-xs) 0;
+    letter-spacing: 0.08em;
 }
 
 .calendar-days-grid {
     display: grid;
     grid-template-columns: repeat(7, 1fr);
-    gap: 6px;
+    gap: 4px;
 }
 
 .calendar-day-btn {
     aspect-ratio: 1;
-    min-height: 44px;
+    min-height: 48px;
     border-radius: var(--radius-md);
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 0.85rem;
-    font-weight: 500;
+    font-size: 0.95rem;
+    font-weight: 600;
     color: var(--text-primary);
     background: var(--bg-input);
     border: 2px solid transparent;
@@ -739,6 +769,26 @@ svg.logo-icon {
     transition: all var(--transition-normal);
     position: relative;
     overflow: hidden;
+}
+
+/* Calendar day button focus states */
+.calendar-day-btn:focus-visible {
+    outline: 2px solid var(--aurora-pink);
+    outline-offset: 2px;
+    box-shadow: 0 0 0 4px rgba(255, 107, 157, 0.25);
+    z-index: 3;
+}
+
+/* Tablet and desktop - smaller, more compact calendar */
+@media (min-width: 600px) {
+    .calendar-days-grid {
+        gap: 6px;
+    }
+
+    .calendar-day-btn {
+        min-height: 44px;
+        font-size: 0.85rem;
+    }
 }
 
 .calendar-day-btn:disabled {
@@ -778,6 +828,18 @@ svg.logo-icon {
     background: var(--aurora-cyan);
     border-radius: 50%;
     box-shadow: 0 0 6px var(--aurora-cyan);
+}
+
+/* Combined state: selected AND today */
+.calendar-day-btn.selected.today {
+    box-shadow:
+        0 4px 15px rgba(255, 107, 157, 0.3),
+        inset 0 0 0 2px var(--aurora-cyan);
+}
+
+.calendar-day-btn.selected.today::after {
+    background: white;
+    box-shadow: 0 0 4px white;
 }
 
 .calendar-day-btn.has-data::before {
