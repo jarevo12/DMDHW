@@ -397,7 +397,7 @@ function updateDateDisplay() {
 
     // Update calendar if open
     if (calendarState.isOpen) {
-        renderCalendar();
+        renderCalendar(state.currentDate, state.habits);
     }
 }
 
@@ -427,92 +427,7 @@ function goToToday() {
     }
 }
 
-// Navigate calendar month
-function navigateCalendarMonth(direction) {
-    calendarState.currentMonth += direction;
-
-    if (calendarState.currentMonth > 11) {
-        calendarState.currentMonth = 0;
-        calendarState.currentYear++;
-    } else if (calendarState.currentMonth < 0) {
-        calendarState.currentMonth = 11;
-        calendarState.currentYear--;
-    }
-
-    renderCalendar();
-}
-
-// Render calendar
-async function renderCalendar() {
-    const monthDate = new Date(calendarState.currentYear, calendarState.currentMonth, 1);
-    const lastDay = new Date(calendarState.currentYear, calendarState.currentMonth + 1, 0);
-    const startDayOfWeek = monthDate.getDay();
-    const today = new Date();
-    const todayString = formatDate(today);
-    const selectedString = formatDate(state.currentDate);
-
-    // Update month label
-    elements.calendarMonthYear.textContent = monthDate.toLocaleDateString('en-US', {
-        month: 'long',
-        year: 'numeric'
-    });
-
-    // Fetch entries for this month
-    const { getEntriesForMonth } = await import('./entries.js');
-    const entries = await getEntriesForMonth(calendarState.currentYear, calendarState.currentMonth);
-    calendarState.entriesData = entries;
-
-    // Build calendar grid
-    const days = [];
-
-    // Empty cells before first day
-    for (let i = 0; i < startDayOfWeek; i++) {
-        days.push('<button class="calendar-day-btn empty" disabled></button>');
-    }
-
-    // Days of the month
-    const totalHabits = state.habits.morning.length + state.habits.evening.length;
-
-    for (let day = 1; day <= lastDay.getDate(); day++) {
-        const dateString = formatDate(new Date(calendarState.currentYear, calendarState.currentMonth, day));
-        const entry = entries[dateString];
-        const isToday = dateString === todayString;
-        const isSelected = dateString === selectedString;
-        const isFuture = new Date(dateString) > today;
-
-        let classes = 'calendar-day-btn';
-        if (isToday) classes += ' today';
-        if (isSelected) classes += ' selected';
-
-        // Add data indicator
-        if (entry && totalHabits > 0) {
-            const completed = (entry.morning?.length || 0) + (entry.evening?.length || 0);
-            if (completed === totalHabits) {
-                classes += ' has-data';
-            } else if (completed > 0) {
-                classes += ' partial-data';
-            }
-        }
-
-        days.push(`
-            <button
-                class="${classes}"
-                data-date="${dateString}"
-                ${isFuture ? 'disabled' : ''}
-                onclick="window.habitTrackerApp.selectDate('${dateString}')"
-            >
-                ${day}
-            </button>
-        `);
-    }
-
-    elements.calendarDays.innerHTML = days.join('');
-
-    // Disable next month if it's in the future
-    const nextMonth = new Date(calendarState.currentYear, calendarState.currentMonth + 1, 1);
-    const thisMonth = new Date(today.getFullYear(), today.getMonth(), 1);
-    elements.nextMonth.disabled = nextMonth > thisMonth;
-}
+// Navigate calendar month (removed - using imported functions)
 
 // Select date from calendar
 function selectDate(dateString) {
@@ -571,7 +486,7 @@ async function handleMonthChange(e) {
 }
 
 // Handle dashboard type change
-function handleDashTypeChange(type) {
+async function handleDashTypeChange(type) {
     elements.dashTabs.forEach(btn => {
         btn.classList.toggle('active', btn.dataset.type === type);
     });

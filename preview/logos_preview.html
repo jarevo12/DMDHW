@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Swiss Brutalism: Logo Proposals</title>
+    <style>
+        /* Base Reset */
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: #444; 
+            color: #eee; 
+            padding: 40px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 60px;
+        }
+
+        h1 { margin-bottom: 20px; text-align: center; width: 100%; border-bottom: 1px solid #666; padding-bottom: 20px; }
+        h2 { font-size: 1.5rem; text-transform: uppercase; margin-bottom: 20px; color: #ccc; letter-spacing: 2px; margin-top: 40px; }
+
+        .row-wrapper {
+            display: flex;
+            gap: 60px;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-bottom: 40px;
+        }
+
+        .logo-container {
+            display: flex; flex-direction: column; align-items: center; gap: 20px;
+        }
+        .mode-label { font-weight: bold; text-transform: uppercase; color: #888; font-size: 0.9rem; }
+
+        /* Logo Box Container */
+        .logo-box {
+            width: 200px; height: 200px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+            border: 4px solid;
+        }
+        
+        /* App Icon Preview (Rounded Rect for Context) */
+        .app-icon-preview {
+            width: 120px; height: 120px;
+            border-radius: 22px; /* iOS style approximation */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border: 1px solid #888;
+            overflow: hidden;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.3);
+        }
+
+
+        /* --- LIGHT MODE COLORS --- */
+        .light-mode-bg { background-color: #ffffff; border-color: #000000; color: #000000; }
+        .light-accent-bg { background-color: #ccff00; border-color: #000000; color: #000000; }
+        .light-black-bg { background-color: #000000; border-color: #000000; color: #ffffff; }
+
+        /* --- DARK MODE COLORS --- */
+        .dark-mode-bg { background-color: #000000; border-color: #ffffff; color: #ffffff; }
+        .dark-accent-bg { background-color: #6a00ff; border-color: #ffffff; color: #ffffff; }
+        .dark-white-bg { background-color: #ffffff; border-color: #ffffff; color: #000000; }
+
+
+        /* =========================================
+           LOGO CONCEPTS
+           ========================================= */
+
+        /* Concept 1: The Monogram "H" */
+        .logo-h {
+            font-family: sans-serif;
+            font-weight: 900;
+            font-size: 120px;
+            line-height: 1;
+            letter-spacing: -5px;
+        }
+        
+        /* Concept 2: The "Check-Beam" */
+        .logo-beam-svg {
+            width: 60%;
+            height: 60%;
+        }
+
+        /* Concept 3: The "Grid" */
+        .logo-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            grid-template-rows: 1fr 1fr;
+            gap: 8px;
+            width: 100px;
+            height: 100px;
+        }
+        .grid-cell {
+            width: 100%;
+            height: 100%;
+            border: 4px solid currentColor;
+        }
+        .grid-cell.filled {
+            background-color: currentColor;
+        }
+
+        /* Concept 4: The Pyramid (Original) */
+        .logo-pyramid-svg { width: 65%; height: 65%; }
+
+        /* Concept 5: The North Star */
+        .logo-spark-svg { width: 70%; height: 70%; }
+
+        /* Concept 6: The Orbit */
+        .logo-orbit-svg { width: 70%; height: 70%; }
+
+        /* Concept 4b: The "Block-Step" (Tetris-style) */
+        .logo-blockstep-svg { width: 65%; height: 65%; }
+
+        /* Concept 4c: The "Monolith" Triangle */
+        .logo-monolith-svg { width: 70%; height: 70%; }
+
+    </style>
+</head>
+<body>
+
+    <h1>Swiss Brutalism: App Logo Proposals</h1>
+    <p style="max-width: 600px; text-align: center; color: #aaa; line-height: 1.5;">
+        Exploration of "Pyramid" concepts to avoid Adidas similarities, plus original concepts.
+    </p>
+
+    <!-- CONCEPT 4 (ORIGINAL) -->
+    <h2>Concept 4a: The Stepped Pyramid (Original)</h2>
+    <p style="margin-bottom: 20px; color: #aaa;">Classic stepped form. Risk: Adidas resemblance if not careful.</p>
+    <div class="row-wrapper">
+        <div class="logo-container">
+            <div class="mode-label">Dark: Accent</div>
+            <div class="app-icon-preview dark-accent-bg">
+                <svg class="logo-pyramid-svg" viewBox="0 0 100 100" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+                    <rect x="10" y="70" width="80" height="20" />
+                    <rect x="25" y="45" width="50" height="20" />
+                    <rect x="40" y="20" width="20" height="20" />
+                </svg>
+            </div>
+        </div>
+    </div>
+
+    <!-- CONCEPT 4b: BLOCK-STEP -->
+    <h2>Concept 4b: The "Block-Step"</h2>
+    <p style="margin-bottom: 20px; color: #aaa;">
+        <b>Solution 1:</b> Use a contiguous "Ziggurat" shape that is a single solid polygon rather than separate floating bars. 
+        This removes the "stripes" entirely.
+    </p>
+    <div class="row-wrapper">
+        <!-- Light Mode -->
+        <div class="logo-container">
+            <div class="mode-label">Light: Accent</div>
+            <div class="app-icon-preview light-accent-bg">
+                <svg class="logo-blockstep-svg" viewBox="0 0 100 100" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M10 90 H90 V70 H70 V50 H50 V30 H30 V90 Z" /> 
+                    <!-- A solid stair-step block -->
+                </svg>
+            </div>
+        </div>
+        <div class="logo-container">
+            <div class="mode-label">Light: Black</div>
+            <div class="app-icon-preview light-black-bg">
+                <svg class="logo-blockstep-svg" viewBox="0 0 100 100" fill="currentColor" xmlns="http://www.w3.org/2000/svg" style="color:#ccff00;">
+                    <path d="M10 90 H90 V70 H70 V50 H50 V30 H30 V90 Z" />
+                </svg>
+            </div>
+        </div>
+         <!-- Dark Mode -->
+         <div class="logo-container">
+            <div class="mode-label">Dark: Accent</div>
+            <div class="app-icon-preview dark-accent-bg">
+                <svg class="logo-blockstep-svg" viewBox="0 0 100 100" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M10 90 H90 V70 H70 V50 H50 V30 H30 V90 Z" />
+                </svg>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- CONCEPT 4c: MONOLITH -->
+    <h2>Concept 4c: The "Monolith" Triangle</h2>
+    <p style="margin-bottom: 20px; color: #aaa;">
+        <b>Solution 2:</b> Use a solid triangle with a "cut-out" or negative space step. 
+        This is purely geometric and avoids the "stacked lines" look.
+    </p>
+    <div class="row-wrapper">
+        <!-- Light Mode -->
+        <div class="logo-container">
+            <div class="mode-label">Light: Accent</div>
+            <div class="app-icon-preview light-accent-bg">
+                <svg class="logo-monolith-svg" viewBox="0 0 100 100" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+                    <!-- Main Triangle -->
+                    <path d="M50 15 L10 85 H90 L50 15 Z" />
+                    <!-- Cutout "Step" -->
+                    <rect x="42" y="55" width="16" height="30" fill="#ccff00" /> 
+                    <!-- Note: This fill color trick only works if background is known. Better to use masks in production. -->
+                </svg>
+            </div>
+        </div>
+         <div class="logo-container">
+            <div class="mode-label">Light: Black</div>
+            <div class="app-icon-preview light-black-bg">
+                 <svg class="logo-monolith-svg" viewBox="0 0 100 100" fill="currentColor" xmlns="http://www.w3.org/2000/svg" style="color:#ccff00;">
+                    <path d="M50 15 L10 85 H90 L50 15 Z" />
+                    <rect x="42" y="55" width="16" height="30" fill="#000000" />
+                </svg>
+            </div>
+        </div>
+
+        <!-- Dark Mode -->
+        <div class="logo-container">
+            <div class="mode-label">Dark: Accent</div>
+            <div class="app-icon-preview dark-accent-bg">
+                <svg class="logo-monolith-svg" viewBox="0 0 100 100" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M50 15 L10 85 H90 L50 15 Z" />
+                     <rect x="42" y="55" width="16" height="30" fill="#6a00ff" />
+                </svg>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- CONCEPT 4d: OFFSET STACK -->
+    <h2>Concept 4d: The "Offset Stack"</h2>
+    <p style="margin-bottom: 20px; color: #aaa;">
+        <b>Solution 3:</b> Stacked squares that are *offset* rather than centered. 
+        This creates a "staircase" effect rather than a "pyramid" effect.
+    </p>
+    <div class="row-wrapper">
+         <!-- Light Mode -->
+         <div class="logo-container">
+            <div class="mode-label">Light: Accent</div>
+            <div class="app-icon-preview light-accent-bg">
+                <svg class="logo-blockstep-svg" viewBox="0 0 100 100" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+                     <rect x="20" y="60" width="30" height="30" />
+                     <rect x="50" y="45" width="30" height="30" />
+                     <rect x="35" y="15" width="30" height="30" />
+                </svg>
+            </div>
+        </div>
+        <!-- Dark Mode -->
+        <div class="logo-container">
+            <div class="mode-label">Dark: Clean</div>
+            <div class="app-icon-preview dark-mode-bg">
+                 <svg class="logo-blockstep-svg" viewBox="0 0 100 100" fill="currentColor" xmlns="http://www.w3.org/2000/svg" style="color:#6a00ff;">
+                     <rect x="20" y="60" width="30" height="30" />
+                     <rect x="50" y="45" width="30" height="30" />
+                     <rect x="35" y="15" width="30" height="30" />
+                </svg>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- PREVIOUS CONCEPTS (Keep for reference) -->
+    <h2 style="margin-top: 80px; border-top: 1px dashed #666; padding-top: 40px;">Other Concepts (For Reference)</h2>
+
+    <!-- CONCEPT 1 -->
+    <h2>Concept 1: The Heavy "H"</h2>
+    <div class="row-wrapper">
+        <div class="logo-container">
+            <div class="mode-label">Light: Accent</div>
+            <div class="app-icon-preview light-accent-bg">
+                <div class="logo-h">H</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- CONCEPT 5 -->
+    <h2>Concept 5: The North Star</h2>
+    <div class="row-wrapper">
+         <div class="logo-container">
+            <div class="mode-label">Light: Clean</div>
+            <div class="app-icon-preview light-mode-bg">
+                <svg class="logo-spark-svg" viewBox="0 0 100 100" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M50 0 L65 35 L100 50 L65 65 L50 100 L35 65 L0 50 L35 35 Z" />
+                </svg>
+            </div>
+        </div>
+    </div>
+
+</body>
+</html>
