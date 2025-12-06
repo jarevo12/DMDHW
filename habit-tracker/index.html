@@ -20,6 +20,9 @@
 
     <!-- Styles -->
     <link rel="stylesheet" href="css/styles.css">
+
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 </head>
 <body>
     <!-- App Container -->
@@ -195,6 +198,14 @@
                     <button class="dash-tab active" data-type="morning">Morning</button>
                     <button class="dash-tab" data-type="evening">Evening</button>
                 </div>
+
+                <!-- Daily Completion Chart -->
+                <section class="chart-section">
+                    <h2>Daily Completion Trend</h2>
+                    <div class="chart-container">
+                        <canvas id="completion-chart"></canvas>
+                    </div>
+                </section>
 
                 <!-- Habit Completion Rates -->
                 <section class="chart-section">
@@ -1488,11 +1499,47 @@
                     }
                 }
 
+                // Calculate current streak for this habit
+                let currentHabitStreak = 0;
+                const todayDate = new Date();
+                for (let i = 0; i <= 365; i++) {
+                    const checkDate = new Date(todayDate);
+                    checkDate.setDate(checkDate.getDate() - i);
+                    const dateString = formatDate(checkDate);
+                    const entry = entriesMap[dateString];
+
+                    if (entry && entry[currentType]?.includes(habit.id)) {
+                        currentHabitStreak++;
+                    } else {
+                        if (i === 0) continue; // Today not logged yet
+                        break;
+                    }
+                }
+
+                // Calculate best streak for this habit
+                let bestHabitStreak = 0;
+                let tempHabitStreak = 0;
+                for (let i = 0; i < 365; i++) {
+                    const checkDate = new Date(todayDate);
+                    checkDate.setDate(checkDate.getDate() - i);
+                    const dateString = formatDate(checkDate);
+                    const entry = entriesMap[dateString];
+
+                    if (entry && entry[currentType]?.includes(habit.id)) {
+                        tempHabitStreak++;
+                        bestHabitStreak = Math.max(bestHabitStreak, tempHabitStreak);
+                    } else {
+                        tempHabitStreak = 0;
+                    }
+                }
+
                 return {
                     habit,
                     completed,
                     possible,
-                    rate: possible > 0 ? Math.round((completed / possible) * 100) : 0
+                    rate: possible > 0 ? Math.round((completed / possible) * 100) : 0,
+                    currentStreak: currentHabitStreak,
+                    bestStreak: bestHabitStreak
                 };
             });
 
@@ -1503,7 +1550,23 @@
             } else {
                 ratesContainer.innerHTML = habitStats.map(stat => `
                     <div class="rate-item">
-                        <span class="rate-label">${escapeHtml(stat.habit.name)}</span>
+                        <div class="rate-header">
+                            <span class="rate-label">${escapeHtml(stat.habit.name)}</span>
+                            <div class="rate-streaks">
+                                <span class="streak-badge" title="Current streak">
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                        <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"></path>
+                                    </svg>
+                                    ${stat.currentStreak} days
+                                </span>
+                                <span class="streak-badge best" title="Best streak">
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                        <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+                                    </svg>
+                                    ${stat.bestStreak} days
+                                </span>
+                            </div>
+                        </div>
                         <div class="rate-bar-container">
                             <div class="rate-bar">
                                 <div class="rate-fill" style="width: ${stat.rate}%"></div>
@@ -1513,6 +1576,9 @@
                     </div>
                 `).join('');
             }
+
+            // Render completion chart
+            renderCompletionChart(year, month, lastDay, entriesMap);
 
             // Calculate overall completion rate
             let totalCompleted = 0;
@@ -1630,6 +1696,146 @@
 
             html += '</div>';
             container.innerHTML = html;
+        }
+
+        // Global chart instance
+        let completionChartInstance = null;
+
+        function renderCompletionChart(year, month, lastDay, entriesMap) {
+            const canvas = document.getElementById('completion-chart');
+            if (!canvas) return;
+
+            const labels = [];
+            const data = [];
+            const allHabits = [...habits.morning, ...habits.evening];
+            const totalHabitsCount = allHabits.length;
+
+            if (totalHabitsCount === 0) {
+                // No habits, hide chart
+                if (completionChartInstance) {
+                    completionChartInstance.destroy();
+                    completionChartInstance = null;
+                }
+                return;
+            }
+
+            // Calculate completion percentage for each day
+            for (let day = 1; day <= lastDay; day++) {
+                const dateString = formatDate(new Date(year, month, day));
+                const entry = entriesMap[dateString];
+
+                labels.push(day);
+
+                let completedCount = 0;
+                if (entry) {
+                    allHabits.forEach(habit => {
+                        const type = habit.type;
+                        if (entry[type] && entry[type].includes(habit.id)) {
+                            completedCount++;
+                        }
+                    });
+                }
+
+                const percentage = Math.round((completedCount / totalHabitsCount) * 100);
+                data.push(percentage);
+            }
+
+            // Destroy existing chart if it exists
+            if (completionChartInstance) {
+                completionChartInstance.destroy();
+            }
+
+            // Create new chart
+            const ctx = canvas.getContext('2d');
+            completionChartInstance = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels,
+                    datasets: [{
+                        label: 'Completion %',
+                        data,
+                        borderColor: 'rgb(255, 107, 157)',
+                        backgroundColor: 'rgba(255, 107, 157, 0.1)',
+                        borderWidth: 3,
+                        fill: true,
+                        tension: 0.4,
+                        pointRadius: 4,
+                        pointHoverRadius: 6,
+                        pointBackgroundColor: 'rgb(255, 107, 157)',
+                        pointBorderColor: '#0f0f14',
+                        pointBorderWidth: 2,
+                        pointHoverBackgroundColor: 'rgb(100, 255, 218)',
+                        pointHoverBorderColor: 'rgb(255, 107, 157)',
+                        pointHoverBorderWidth: 3
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        tooltip: {
+                            backgroundColor: 'rgba(15, 15, 20, 0.95)',
+                            titleColor: '#ffffff',
+                            bodyColor: '#b4b4c0',
+                            borderColor: 'rgba(255, 107, 157, 0.3)',
+                            borderWidth: 1,
+                            padding: 12,
+                            displayColors: false,
+                            callbacks: {
+                                title: (context) => {
+                                    const day = context[0].label;
+                                    const monthName = new Date(year, month, day).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+                                    return monthName;
+                                },
+                                label: (context) => {
+                                    return `${context.parsed.y}% completed`;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            grid: {
+                                color: 'rgba(255, 255, 255, 0.03)',
+                                drawBorder: false
+                            },
+                            ticks: {
+                                color: '#6c6c7a',
+                                font: {
+                                    size: 11,
+                                    weight: '500'
+                                },
+                                maxRotation: 0,
+                                autoSkip: true,
+                                maxTicksLimit: 10
+                            }
+                        },
+                        y: {
+                            min: 0,
+                            max: 100,
+                            grid: {
+                                color: 'rgba(255, 255, 255, 0.03)',
+                                drawBorder: false
+                            },
+                            ticks: {
+                                color: '#6c6c7a',
+                                font: {
+                                    size: 11,
+                                    weight: '500'
+                                },
+                                callback: (value) => value + '%'
+                            }
+                        }
+                    },
+                    interaction: {
+                        intersect: false,
+                        mode: 'index'
+                    }
+                }
+            });
         }
 
         // ========== MODALS ==========
