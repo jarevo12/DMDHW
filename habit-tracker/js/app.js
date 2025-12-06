@@ -99,7 +99,7 @@ function cacheElements() {
     elements.authError = document.getElementById('auth-error');
     elements.tryAgain = document.getElementById('try-again');
 
-    elements.currentDate = document.getElementById('current-date-btn');
+    elements.currentDate = document.getElementById('current-date');
     elements.toggleCalendar = document.getElementById('toggle-calendar');
     elements.todayShortcut = document.getElementById('today-shortcut');
     elements.calendarPicker = document.getElementById('calendar-picker');
@@ -636,22 +636,6 @@ function updateSettingsScreen() {
     renderEditableHabits();
 }
 
-// Open habit modal
-function openHabitModal(habit, type) {
-    elements.habitId.value = habit?.id || '';
-    elements.habitType.value = type;
-    elements.habitName.value = habit?.name || '';
-    elements.modalTitle.textContent = habit ? 'Edit Habit' : 'Add Habit';
-    elements.habitModal.classList.remove('hidden');
-    elements.habitName.focus();
-}
-
-// Close habit modal
-function closeHabitModal() {
-    elements.habitModal.classList.add('hidden');
-    elements.habitForm.reset();
-}
-
 // Handle habit form submission
 async function handleHabitSubmit(e) {
     e.preventDefault();
@@ -675,27 +659,13 @@ async function handleHabitSubmit(e) {
     }
 }
 
-// Delete modal state
-let habitToDelete = null;
-
-// Open delete modal
-function openDeleteModal(habitId) {
-    habitToDelete = habitId;
-    elements.deleteModal.classList.remove('hidden');
-}
-
-// Close delete modal
-function closeDeleteModal() {
-    habitToDelete = null;
-    elements.deleteModal.classList.add('hidden');
-}
-
 // Set up delete confirmation
 elements.confirmDelete?.addEventListener('click', async () => {
-    if (!habitToDelete) return;
+    const habitId = getHabitToDelete();
+    if (!habitId) return;
 
     try {
-        await deleteHabit(habitToDelete);
+        await deleteHabit(habitId);
         closeDeleteModal();
     } catch (error) {
         console.error('Delete error:', error);
