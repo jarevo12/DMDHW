@@ -1,6 +1,7 @@
 // Habits Management Module
 import { getFirestoreDb } from './firebase-config.js';
 import { getUserId } from './auth.js';
+import { DEFAULT_MORNING_HABITS, DEFAULT_EVENING_HABITS } from './constants.js';
 
 // Firebase Firestore functions
 let collection, doc, getDocs, addDoc, updateDoc, deleteDoc, query, orderBy, onSnapshot, serverTimestamp, writeBatch;
@@ -13,31 +14,6 @@ let habitsCache = {
 
 // Listeners for habit changes
 const habitListeners = [];
-
-// Default habits from user's Excel file
-const DEFAULT_MORNING_HABITS = [
-    "Stop alarm without snooze and get up",
-    "Go to bathroom and wash face with soap",
-    "Eat protein bar/fruit",
-    "Look phone (only messages)",
-    "5-10 minute stretching & get changed",
-    "Go to the gym",
-    "Complete scheduled gym session",
-    "Go home, prepare breakfast & have shower",
-    "Eat breakfast + phone (social/news)",
-    "Get changed & go to uni"
-];
-
-const DEFAULT_EVENING_HABITS = [
-    "Send messages to Adri",
-    "Check calendar + gym session next day",
-    "Set up alarm & Airplane mode",
-    "Prepare bag & clothes for next day",
-    "Wash face + apply Roche Possay",
-    "Take pill",
-    "Read 5-10 pages book",
-    "Turn lights off"
-];
 
 // Initialize habits module
 async function initHabits() {
@@ -118,7 +94,7 @@ function getHabitById(habitId) {
 }
 
 // Add a new habit
-async function addHabit(name, type) {
+async function addHabit(name, type, schedule = { type: 'daily' }) {
     const userId = getUserId();
     if (!userId) throw new Error('Not authenticated');
 
@@ -135,6 +111,7 @@ async function addHabit(name, type) {
         name: name.trim(),
         type: type,
         order: maxOrder + 1,
+        schedule,
         createdAt: serverTimestamp(),
         archived: false
     };
@@ -225,6 +202,7 @@ async function initializeDefaultHabits() {
             name: DEFAULT_MORNING_HABITS[i],
             type: 'morning',
             order: i + 1,
+            schedule: { type: 'daily' },
             createdAt: serverTimestamp(),
             archived: false
         });
@@ -236,6 +214,7 @@ async function initializeDefaultHabits() {
             name: DEFAULT_EVENING_HABITS[i],
             type: 'evening',
             order: i + 1,
+            schedule: { type: 'daily' },
             createdAt: serverTimestamp(),
             archived: false
         });
@@ -282,7 +261,5 @@ export {
     reorderHabits,
     initializeDefaultHabits,
     addHabitListener,
-    removeHabitListener,
-    DEFAULT_MORNING_HABITS,
-    DEFAULT_EVENING_HABITS
+    removeHabitListener
 };
