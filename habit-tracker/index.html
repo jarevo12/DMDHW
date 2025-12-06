@@ -123,6 +123,18 @@
                 <div id="evening-habits" class="habit-list">
                     <!-- Habits will be rendered here -->
                 </div>
+
+                <!-- Not Today Section -->
+                <div id="not-today-section" class="not-today-section collapsed hidden">
+                    <button class="not-today-header" id="toggle-not-today">
+                        <span>Not scheduled today</span>
+                        <span class="not-today-count">(0)</span>
+                        <span class="chevron">&#8250;</span>
+                    </button>
+                    <div id="not-today-habits">
+                        <!-- Unscheduled habits rendered here -->
+                    </div>
+                </div>
             </main>
 
             <!-- Progress Bar -->
@@ -270,6 +282,57 @@
                 </button>
             </nav>
         </div>
+
+        <!-- Onboarding Screen -->
+        <div id="onboarding-screen" class="screen">
+            <div class="onboarding-container">
+                <!-- Progress Steps -->
+                <div class="onboarding-progress">
+                    <div class="progress-steps">
+                        <span class="step active" data-step="1">1</span>
+                        <span class="step" data-step="2">2</span>
+                        <span class="step" data-step="3">3</span>
+                        <span class="step" data-step="4">4</span>
+                    </div>
+                    <div class="progress-bar-mini">
+                        <div class="progress-fill-mini" id="onboarding-progress-fill"></div>
+                    </div>
+                </div>
+
+                <!-- Dynamic Content -->
+                <div id="onboarding-content" class="onboarding-content">
+                    <!-- Content rendered by JS -->
+                </div>
+
+                <!-- Navigation -->
+                <div class="onboarding-nav">
+                    <button class="btn btn-secondary" id="onboarding-back" style="display: none;">Back</button>
+                    <button class="btn btn-link" id="onboarding-skip">Skip</button>
+                    <button class="btn btn-primary" id="onboarding-next">Get Started</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Schedule Picker Modal -->
+    <div id="schedule-modal" class="modal hidden">
+        <div class="modal-overlay"></div>
+        <div class="modal-content schedule-modal-content">
+            <h2>Set Schedule</h2>
+            <div class="schedule-type-selector">
+                <button class="schedule-type-btn active" data-type="daily">Daily</button>
+                <button class="schedule-type-btn" data-type="specific_days">Specific Days</button>
+                <button class="schedule-type-btn" data-type="weekly_goal">Weekly Goal</button>
+                <button class="schedule-type-btn" data-type="interval">Interval</button>
+            </div>
+            <div id="schedule-options" class="schedule-options">
+                <!-- Dynamic options based on type -->
+            </div>
+            <div class="modal-actions">
+                <button class="btn btn-secondary" id="cancel-schedule">Cancel</button>
+                <button class="btn btn-primary" id="save-schedule">Save</button>
+            </div>
+        </div>
     </div>
 
     <!-- Add/Edit Habit Modal -->
@@ -282,6 +345,11 @@
                 <input type="hidden" id="habit-type">
                 <div class="input-group">
                     <input type="text" id="habit-name" placeholder="Habit name" required maxlength="100">
+                </div>
+                <div class="schedule-field">
+                    <label>Schedule</label>
+                    <button type="button" class="schedule-picker-btn" id="habit-schedule-btn">Daily</button>
+                    <input type="hidden" id="habit-schedule" value='{"type":"daily"}'>
                 </div>
                 <div class="modal-actions">
                     <button type="button" class="btn btn-secondary" id="cancel-habit">Cancel</button>
@@ -364,6 +432,141 @@
         let unsubscribeHabits = null;
         let unsubscribeEntry = null;
 
+        // Onboarding state
+        let onboardingStep = 1;
+        let onboardingHabits = { morning: [], evening: [] };
+        let currentScheduleCallback = null;
+        let currentScheduleHabit = null;
+
+        // Schedule constants
+        const DAY_NAMES = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+        const DAY_SHORTS = ['S', 'M', 'T', 'W', 'T', 'F', 'S'];
+
+        // ========== SCHEDULE UTILITIES ==========
+        function isHabitScheduledForDate(habit, dateString) {
+            const schedule = habit.schedule || { type: 'daily' };
+            const date = new Date(dateString + 'T00:00:00');
+            const dayOfWeek = date.getDay(); // 0-6 (Sun-Sat)
+
+            switch (schedule.type) {
+                case 'daily':
+                    return true;
+
+                case 'specific_days':
+                    return (schedule.days || [0,1,2,3,4,5,6]).includes(dayOfWeek);
+
+                case 'weekly_goal':
+                    // For weekly goal, always show - tracking is separate
+                    return true;
+
+                case 'interval':
+                    const startDate = new Date((schedule.intervalStartDate || dateString) + 'T00:00:00');
+                    const diffTime = date - startDate;
+                    const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+                    const interval = schedule.intervalDays || 1;
+                    return diffDays >= 0 && diffDays % interval === 0;
+
+                default:
+                    return true;
+            }
+        }
+
+        function getScheduledHabitsForDate(allHabits, dateString) {
+            return {
+                morning: allHabits.morning.filter(h => isHabitScheduledForDate(h, dateString)),
+                evening: allHabits.evening.filter(h => isHabitScheduledForDate(h, dateString))
+            };
+        }
+
+        function getUnscheduledHabitsForDate(allHabits, dateString) {
+            return {
+                morning: allHabits.morning.filter(h => !isHabitScheduledForDate(h, dateString)),
+                evening: allHabits.evening.filter(h => !isHabitScheduledForDate(h, dateString))
+            };
+        }
+
+        function getScheduleLabel(schedule) {
+            if (!schedule) return 'Daily';
+
+            switch (schedule.type) {
+                case 'daily':
+                    return 'Daily';
+                case 'specific_days':
+                    const days = schedule.days || [];
+                    if (days.length === 7) return 'Daily';
+                    if (days.length === 5 && !days.includes(0) && !days.includes(6)) {
+                        return 'Weekdays';
+                    }
+                    if (days.length === 2 && days.includes(0) && days.includes(6)) {
+                        return 'Weekends';
+                    }
+                    return days.map(d => DAY_NAMES[d].substring(0, 3)).join(', ');
+                case 'weekly_goal':
+                    return `${schedule.timesPerWeek}x/week`;
+                case 'interval':
+                    return `Every ${schedule.intervalDays} days`;
+                default:
+                    return 'Daily';
+            }
+        }
+
+        function getExpectedCompletionsForMonth(habit, year, month) {
+            const schedule = habit.schedule || { type: 'daily' };
+            const daysInMonth = new Date(year, month + 1, 0).getDate();
+            const today = new Date();
+            const isCurrentMonth = year === today.getFullYear() && month === today.getMonth();
+            const lastDay = isCurrentMonth ? today.getDate() : daysInMonth;
+
+            let expected = 0;
+
+            for (let day = 1; day <= lastDay; day++) {
+                const dateString = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+                if (isHabitScheduledForDate(habit, dateString)) {
+                    expected++;
+                }
+            }
+
+            // For weekly goal, cap at target per week
+            if (schedule.type === 'weekly_goal') {
+                const weeksInPeriod = Math.ceil(lastDay / 7);
+                expected = Math.min(expected, weeksInPeriod * (schedule.timesPerWeek || 3));
+            }
+
+            return expected;
+        }
+
+        // ========== USER PROFILE ==========
+        async function getUserProfile() {
+            try {
+                const profileRef = doc(db, `users/${currentUser.uid}/profile`, 'main');
+                const snapshot = await getDoc(profileRef);
+                return snapshot.exists() ? snapshot.data() : null;
+            } catch (error) {
+                console.error('Error getting user profile:', error);
+                return null;
+            }
+        }
+
+        async function setUserProfile(data) {
+            try {
+                const profileRef = doc(db, `users/${currentUser.uid}/profile`, 'main');
+                await setDoc(profileRef, {
+                    ...data,
+                    updatedAt: serverTimestamp()
+                }, { merge: true });
+            } catch (error) {
+                console.error('Error setting user profile:', error);
+            }
+        }
+
+        async function completeOnboarding() {
+            await setUserProfile({
+                onboardingCompleted: true,
+                onboardingCompletedAt: serverTimestamp(),
+                createdAt: serverTimestamp()
+            });
+        }
+
         // ========== INITIALIZATION ==========
         async function init() {
             updateLoadingStatus('Connecting to server...');
@@ -408,20 +611,31 @@
 
             if (user) {
                 console.log('User signed in:', user.email);
-                updateLoadingStatus('Loading your habits...');
+                updateLoadingStatus('Loading your profile...');
 
-                // Initialize default habits for new users
-                await initializeDefaultHabits();
+                // Check if user has completed onboarding
+                const profile = await getUserProfile();
 
-                // Subscribe to data
-                subscribeToHabits();
-                subscribeToEntry();
+                if (!profile || !profile.onboardingCompleted) {
+                    // New user - show onboarding
+                    console.log('New user - starting onboarding');
+                    initializeOnboarding();
+                    showScreen('onboarding');
+                } else {
+                    // Existing user - normal flow
+                    console.log('Existing user - loading dashboard');
+                    updateLoadingStatus('Loading your habits...');
 
-                // Update UI
-                document.getElementById('user-email').textContent = user.email;
-                showScreen('dashboard');
-                updateDateDisplay();
-                renderDashboard();
+                    // Subscribe to data
+                    subscribeToHabits();
+                    subscribeToEntry();
+
+                    // Update UI
+                    document.getElementById('user-email').textContent = user.email;
+                    showScreen('dashboard');
+                    updateDateDisplay();
+                    renderDashboard();
+                }
 
             } else {
                 console.log('No user signed in');
@@ -528,7 +742,7 @@
             });
         }
 
-        async function addHabit(name, type) {
+        async function addHabit(name, type, schedule = { type: 'daily' }) {
             const habitsRef = collection(db, `users/${currentUser.uid}/habits`);
             const maxOrder = habits[type].length > 0
                 ? Math.max(...habits[type].map(h => h.order || 0))
@@ -538,14 +752,18 @@
                 name: name.trim(),
                 type: type,
                 order: maxOrder + 1,
+                schedule: schedule,
                 createdAt: serverTimestamp(),
                 archived: false
             });
         }
 
-        async function updateHabitName(habitId, name) {
+        async function updateHabit(habitId, name, schedule) {
             const habitRef = doc(db, `users/${currentUser.uid}/habits`, habitId);
-            await updateDoc(habitRef, { name: name.trim() });
+            await updateDoc(habitRef, {
+                name: name.trim(),
+                schedule: schedule
+            });
         }
 
         async function deleteHabit(habitId) {
@@ -595,12 +813,430 @@
 
         // ========== UI RENDERING ==========
         function showScreen(screenName) {
-            ['loading', 'auth', 'main', 'dashboard', 'settings'].forEach(name => {
+            ['loading', 'auth', 'main', 'dashboard', 'settings', 'onboarding'].forEach(name => {
                 const screen = document.getElementById(`${name}-screen`);
                 if (screen) {
                     screen.classList.toggle('active', name === screenName);
                 }
             });
+        }
+
+        // ========== ONBOARDING ==========
+        function initializeOnboarding() {
+            onboardingStep = 1;
+            onboardingHabits = {
+                morning: DEFAULT_MORNING_HABITS.map((name, i) => ({
+                    name,
+                    type: 'morning',
+                    order: i + 1,
+                    selected: true,
+                    schedule: { type: 'daily' }
+                })),
+                evening: DEFAULT_EVENING_HABITS.map((name, i) => ({
+                    name,
+                    type: 'evening',
+                    order: i + 1,
+                    selected: true,
+                    schedule: { type: 'daily' }
+                }))
+            };
+            renderOnboardingStep();
+        }
+
+        function renderOnboardingStep() {
+            updateOnboardingProgress();
+            const content = document.getElementById('onboarding-content');
+
+            switch(onboardingStep) {
+                case 1:
+                    content.innerHTML = renderWelcomeStep();
+                    break;
+                case 2:
+                    content.innerHTML = renderHabitSetupStep('morning');
+                    attachHabitSetupListeners('morning');
+                    break;
+                case 3:
+                    content.innerHTML = renderHabitSetupStep('evening');
+                    attachHabitSetupListeners('evening');
+                    break;
+                case 4:
+                    content.innerHTML = renderReviewStep();
+                    break;
+            }
+
+            updateOnboardingNavButtons();
+        }
+
+        function updateOnboardingProgress() {
+            // Update step indicators
+            document.querySelectorAll('.progress-steps .step').forEach((step, index) => {
+                step.classList.remove('active', 'completed');
+                if (index + 1 < onboardingStep) {
+                    step.classList.add('completed');
+                } else if (index + 1 === onboardingStep) {
+                    step.classList.add('active');
+                }
+            });
+
+            // Update progress bar
+            const progressFill = document.getElementById('onboarding-progress-fill');
+            if (progressFill) {
+                progressFill.style.width = `${(onboardingStep / 4) * 100}%`;
+            }
+        }
+
+        function updateOnboardingNavButtons() {
+            const backBtn = document.getElementById('onboarding-back');
+            const skipBtn = document.getElementById('onboarding-skip');
+            const nextBtn = document.getElementById('onboarding-next');
+
+            // Back button
+            backBtn.style.display = onboardingStep > 1 ? 'block' : 'none';
+
+            // Skip button - hide on review step
+            skipBtn.style.display = onboardingStep < 4 ? 'block' : 'none';
+
+            // Next button text
+            if (onboardingStep === 1) {
+                nextBtn.textContent = 'Get Started';
+            } else if (onboardingStep === 4) {
+                nextBtn.textContent = 'Start Tracking';
+            } else {
+                nextBtn.textContent = 'Next';
+            }
+        }
+
+        function renderWelcomeStep() {
+            return `
+                <div class="onboarding-welcome">
+                    <div class="logo">
+                        <span class="logo-icon">&#10003;</span>
+                    </div>
+                    <h1>Welcome to Habit Tracker</h1>
+                    <p class="subtitle">Build better habits with flexible scheduling</p>
+
+                    <div class="feature-highlights">
+                        <div class="feature">
+                            <span class="feature-icon">&#9788;</span>
+                            <span>Track morning & evening routines</span>
+                        </div>
+                        <div class="feature">
+                            <span class="feature-icon">&#128197;</span>
+                            <span>Schedule habits your way - daily, weekly, or custom</span>
+                        </div>
+                        <div class="feature">
+                            <span class="feature-icon">&#128200;</span>
+                            <span>See your progress and build streaks</span>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function renderHabitSetupStep(type) {
+            const habitsList = onboardingHabits[type];
+            const icon = type === 'morning' ? '&#9788;' : '&#9790;';
+            const title = type === 'morning' ? 'Morning Routine' : 'Evening Routine';
+
+            return `
+                <div class="habit-setup">
+                    <h2>${icon} Set Up Your ${title}</h2>
+                    <p class="setup-subtitle">Select habits to track and customize their schedules</p>
+
+                    <div class="onboarding-habit-list">
+                        ${habitsList.map((habit, index) => `
+                            <div class="onboarding-habit-item ${habit.selected ? 'selected' : ''}" data-index="${index}">
+                                <div class="habit-checkbox-wrapper">
+                                    <input type="checkbox" ${habit.selected ? 'checked' : ''}
+                                           id="habit-${type}-${index}" data-index="${index}">
+                                </div>
+                                <input type="text" class="habit-name-input" value="${escapeHtml(habit.name)}"
+                                       data-index="${index}" placeholder="Habit name">
+                                <button class="schedule-btn" data-index="${index}" data-type="${type}">
+                                    ${getScheduleLabel(habit.schedule)}
+                                </button>
+                            </div>
+                        `).join('')}
+                    </div>
+
+                    <button class="btn-add-onboarding" id="add-custom-${type}">
+                        <span>+ Add Custom Habit</span>
+                    </button>
+                </div>
+            `;
+        }
+
+        function attachHabitSetupListeners(type) {
+            const habitsList = onboardingHabits[type];
+
+            // Checkbox listeners
+            document.querySelectorAll('.onboarding-habit-item input[type="checkbox"]').forEach(checkbox => {
+                checkbox.addEventListener('change', (e) => {
+                    const index = parseInt(e.target.dataset.index);
+                    habitsList[index].selected = e.target.checked;
+                    e.target.closest('.onboarding-habit-item').classList.toggle('selected', e.target.checked);
+                });
+            });
+
+            // Name input listeners
+            document.querySelectorAll('.habit-name-input').forEach(input => {
+                input.addEventListener('input', (e) => {
+                    const index = parseInt(e.target.dataset.index);
+                    habitsList[index].name = e.target.value;
+                });
+            });
+
+            // Schedule button listeners
+            document.querySelectorAll('.schedule-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    const index = parseInt(e.target.dataset.index);
+                    openScheduleModal(habitsList[index], (newSchedule) => {
+                        habitsList[index].schedule = newSchedule;
+                        e.target.textContent = getScheduleLabel(newSchedule);
+                    });
+                });
+            });
+
+            // Add custom habit button
+            const addBtn = document.getElementById(`add-custom-${type}`);
+            if (addBtn) {
+                addBtn.addEventListener('click', () => {
+                    habitsList.push({
+                        name: '',
+                        type: type,
+                        order: habitsList.length + 1,
+                        selected: true,
+                        schedule: { type: 'daily' }
+                    });
+                    renderOnboardingStep();
+                    // Focus the new input
+                    setTimeout(() => {
+                        const inputs = document.querySelectorAll('.habit-name-input');
+                        if (inputs.length > 0) {
+                            inputs[inputs.length - 1].focus();
+                        }
+                    }, 100);
+                });
+            }
+        }
+
+        function renderReviewStep() {
+            const morningSelected = onboardingHabits.morning.filter(h => h.selected && h.name.trim());
+            const eveningSelected = onboardingHabits.evening.filter(h => h.selected && h.name.trim());
+
+            return `
+                <div class="onboarding-review">
+                    <div class="success-icon">&#10003;</div>
+                    <h2>You're All Set!</h2>
+                    <p class="review-subtitle">Here's your habit tracking plan</p>
+
+                    <div class="review-summary">
+                        <div class="summary-card">
+                            <span class="card-value">${morningSelected.length}</span>
+                            <span class="card-label">Morning</span>
+                        </div>
+                        <div class="summary-card">
+                            <span class="card-value">${eveningSelected.length}</span>
+                            <span class="card-label">Evening</span>
+                        </div>
+                    </div>
+
+                    <div class="review-details">
+                        ${morningSelected.length > 0 ? `
+                            <div class="review-section">
+                                <h3>&#9788; Morning Habits</h3>
+                                ${morningSelected.map(h => `
+                                    <div class="review-habit">
+                                        <span>${escapeHtml(h.name)}</span>
+                                        <span class="schedule-label">${getScheduleLabel(h.schedule)}</span>
+                                    </div>
+                                `).join('')}
+                            </div>
+                        ` : ''}
+                        ${eveningSelected.length > 0 ? `
+                            <div class="review-section">
+                                <h3>&#9790; Evening Habits</h3>
+                                ${eveningSelected.map(h => `
+                                    <div class="review-habit">
+                                        <span>${escapeHtml(h.name)}</span>
+                                        <span class="schedule-label">${getScheduleLabel(h.schedule)}</span>
+                                    </div>
+                                `).join('')}
+                            </div>
+                        ` : ''}
+                        ${morningSelected.length === 0 && eveningSelected.length === 0 ? `
+                            <p style="text-align: center; color: var(--text-muted);">No habits selected. You can add them later in Settings.</p>
+                        ` : ''}
+                    </div>
+                </div>
+            `;
+        }
+
+        async function finishOnboarding() {
+            const nextBtn = document.getElementById('onboarding-next');
+            nextBtn.disabled = true;
+            nextBtn.textContent = 'Saving...';
+
+            try {
+                // Save habits to Firestore
+                const habitsRef = collection(db, `users/${currentUser.uid}/habits`);
+
+                // Save morning habits
+                const morningSelected = onboardingHabits.morning.filter(h => h.selected && h.name.trim());
+                for (let i = 0; i < morningSelected.length; i++) {
+                    const habit = morningSelected[i];
+                    await addDoc(habitsRef, {
+                        name: habit.name.trim(),
+                        type: 'morning',
+                        order: i + 1,
+                        schedule: habit.schedule,
+                        createdAt: serverTimestamp(),
+                        archived: false
+                    });
+                }
+
+                // Save evening habits
+                const eveningSelected = onboardingHabits.evening.filter(h => h.selected && h.name.trim());
+                for (let i = 0; i < eveningSelected.length; i++) {
+                    const habit = eveningSelected[i];
+                    await addDoc(habitsRef, {
+                        name: habit.name.trim(),
+                        type: 'evening',
+                        order: i + 1,
+                        schedule: habit.schedule,
+                        createdAt: serverTimestamp(),
+                        archived: false
+                    });
+                }
+
+                // Mark onboarding complete
+                await completeOnboarding();
+
+                // Transition to dashboard
+                subscribeToHabits();
+                subscribeToEntry();
+                document.getElementById('user-email').textContent = currentUser.email;
+                showScreen('dashboard');
+                updateDateDisplay();
+                renderDashboard();
+
+            } catch (error) {
+                console.error('Error finishing onboarding:', error);
+                nextBtn.disabled = false;
+                nextBtn.textContent = 'Start Tracking';
+                alert('Failed to save habits. Please try again.');
+            }
+        }
+
+        // ========== SCHEDULE MODAL ==========
+        function openScheduleModal(habit, callback) {
+            currentScheduleHabit = habit;
+            currentScheduleCallback = callback;
+
+            const modal = document.getElementById('schedule-modal');
+            modal.classList.remove('hidden');
+
+            // Set active type
+            const schedule = habit.schedule || { type: 'daily' };
+            document.querySelectorAll('.schedule-type-btn').forEach(btn => {
+                btn.classList.toggle('active', btn.dataset.type === schedule.type);
+            });
+
+            renderScheduleOptions(schedule);
+        }
+
+        function closeScheduleModal() {
+            document.getElementById('schedule-modal').classList.add('hidden');
+            currentScheduleHabit = null;
+            currentScheduleCallback = null;
+        }
+
+        function renderScheduleOptions(schedule) {
+            const container = document.getElementById('schedule-options');
+            const type = schedule.type || 'daily';
+
+            switch (type) {
+                case 'daily':
+                    container.innerHTML = `
+                        <p>This habit will be tracked every day</p>
+                    `;
+                    break;
+
+                case 'specific_days':
+                    const days = schedule.days || [1, 2, 3, 4, 5]; // Default to weekdays
+                    container.innerHTML = `
+                        <p>Select which days to track this habit</p>
+                        <div class="day-selector">
+                            ${DAY_NAMES.map((name, i) => `
+                                <button class="day-chip ${days.includes(i) ? 'selected' : ''}" data-day="${i}">
+                                    ${name.substring(0, 3)}
+                                </button>
+                            `).join('')}
+                        </div>
+                    `;
+                    // Add click listeners
+                    container.querySelectorAll('.day-chip').forEach(chip => {
+                        chip.addEventListener('click', () => {
+                            chip.classList.toggle('selected');
+                        });
+                    });
+                    break;
+
+                case 'weekly_goal':
+                    const times = schedule.timesPerWeek || 3;
+                    container.innerHTML = `
+                        <p>How many times per week?</p>
+                        <div class="weekly-goal-input">
+                            <span>Complete</span>
+                            <select id="times-per-week">
+                                ${[1,2,3,4,5,6,7].map(n => `
+                                    <option value="${n}" ${n === times ? 'selected' : ''}>${n}</option>
+                                `).join('')}
+                            </select>
+                            <span>times per week</span>
+                        </div>
+                    `;
+                    break;
+
+                case 'interval':
+                    const intervalDays = schedule.intervalDays || 2;
+                    container.innerHTML = `
+                        <div class="interval-input">
+                            <div class="interval-row">
+                                <span>Every</span>
+                                <input type="number" id="interval-days" min="2" max="30" value="${intervalDays}">
+                                <span>days</span>
+                            </div>
+                        </div>
+                    `;
+                    break;
+            }
+        }
+
+        function getScheduleFromModal() {
+            const activeType = document.querySelector('.schedule-type-btn.active').dataset.type;
+            const schedule = { type: activeType };
+
+            switch (activeType) {
+                case 'specific_days':
+                    schedule.days = Array.from(document.querySelectorAll('.day-chip.selected'))
+                        .map(chip => parseInt(chip.dataset.day));
+                    if (schedule.days.length === 0) {
+                        schedule.days = [0,1,2,3,4,5,6]; // Default to all days if none selected
+                    }
+                    break;
+
+                case 'weekly_goal':
+                    schedule.timesPerWeek = parseInt(document.getElementById('times-per-week').value) || 3;
+                    break;
+
+                case 'interval':
+                    schedule.intervalDays = parseInt(document.getElementById('interval-days').value) || 2;
+                    schedule.intervalStartDate = formatDate(new Date());
+                    break;
+            }
+
+            return schedule;
         }
 
         function showError(message) {
@@ -618,8 +1254,16 @@
         }
 
         function renderHabits() {
-            renderHabitList('morning-habits', habits.morning, 'morning');
-            renderHabitList('evening-habits', habits.evening, 'evening');
+            const dateString = formatDate(currentDate);
+            const scheduled = getScheduledHabitsForDate(habits, dateString);
+            const unscheduled = getUnscheduledHabitsForDate(habits, dateString);
+
+            // Render scheduled habits
+            renderHabitList('morning-habits', scheduled.morning, 'morning');
+            renderHabitList('evening-habits', scheduled.evening, 'evening');
+
+            // Render Not Today section
+            renderNotTodaySection(unscheduled);
         }
 
         function renderHabitList(containerId, habitList, type) {
@@ -630,7 +1274,7 @@
                 container.innerHTML = `
                     <div class="empty-state">
                         <div class="empty-state-icon">${type === 'morning' ? '🌅' : '🌙'}</div>
-                        <p>No ${type} habits yet</p>
+                        <p>No ${type} habits scheduled</p>
                     </div>
                 `;
                 return;
@@ -655,6 +1299,54 @@
             });
 
             updateHabitCheckmarks();
+        }
+
+        function renderNotTodaySection(unscheduled) {
+            const section = document.getElementById('not-today-section');
+            const container = document.getElementById('not-today-habits');
+            const countEl = document.querySelector('.not-today-count');
+
+            const totalUnscheduled = unscheduled.morning.length + unscheduled.evening.length;
+
+            if (totalUnscheduled === 0) {
+                section.classList.add('hidden');
+                return;
+            }
+
+            section.classList.remove('hidden');
+            countEl.textContent = `(${totalUnscheduled})`;
+
+            let html = '';
+
+            if (unscheduled.morning.length > 0) {
+                html += `
+                    <div class="not-today-type">
+                        <span class="type-label">&#9788; Morning</span>
+                        ${unscheduled.morning.map(habit => `
+                            <div class="not-today-habit">
+                                <span class="habit-name">${escapeHtml(habit.name)}</span>
+                                <span class="schedule-badge">${getScheduleLabel(habit.schedule)}</span>
+                            </div>
+                        `).join('')}
+                    </div>
+                `;
+            }
+
+            if (unscheduled.evening.length > 0) {
+                html += `
+                    <div class="not-today-type">
+                        <span class="type-label">&#9790; Evening</span>
+                        ${unscheduled.evening.map(habit => `
+                            <div class="not-today-habit">
+                                <span class="habit-name">${escapeHtml(habit.name)}</span>
+                                <span class="schedule-badge">${getScheduleLabel(habit.schedule)}</span>
+                            </div>
+                        `).join('')}
+                    </div>
+                `;
+            }
+
+            container.innerHTML = html;
         }
 
         function updateHabitCheckmarks() {
@@ -948,6 +1640,12 @@
             document.getElementById('habit-type').value = type;
             document.getElementById('habit-name').value = habit?.name || '';
             document.getElementById('modal-title').textContent = habit ? 'Edit Habit' : 'Add Habit';
+
+            // Set schedule
+            const schedule = habit?.schedule || { type: 'daily' };
+            document.getElementById('habit-schedule').value = JSON.stringify(schedule);
+            document.getElementById('habit-schedule-btn').textContent = getScheduleLabel(schedule);
+
             document.getElementById('habit-modal').classList.remove('hidden');
             document.getElementById('habit-name').focus();
         }
@@ -1189,14 +1887,15 @@
                 const id = document.getElementById('habit-id').value;
                 const type = document.getElementById('habit-type').value;
                 const name = document.getElementById('habit-name').value.trim();
+                const schedule = JSON.parse(document.getElementById('habit-schedule').value);
 
                 if (!name) return;
 
                 try {
                     if (id) {
-                        await updateHabitName(id, name);
+                        await updateHabit(id, name, schedule);
                     } else {
-                        await addHabit(name, type);
+                        await addHabit(name, type, schedule);
                     }
                     closeHabitModal();
                 } catch (error) {
@@ -1207,6 +1906,15 @@
 
             document.getElementById('cancel-habit').addEventListener('click', closeHabitModal);
             document.querySelector('#habit-modal .modal-overlay').addEventListener('click', closeHabitModal);
+
+            // Schedule picker in habit modal
+            document.getElementById('habit-schedule-btn').addEventListener('click', () => {
+                const currentSchedule = JSON.parse(document.getElementById('habit-schedule').value);
+                openScheduleModal({ schedule: currentSchedule }, (newSchedule) => {
+                    document.getElementById('habit-schedule').value = JSON.stringify(newSchedule);
+                    document.getElementById('habit-schedule-btn').textContent = getScheduleLabel(newSchedule);
+                });
+            });
 
             // Delete modal
             document.getElementById('confirm-delete').addEventListener('click', async () => {
@@ -1230,6 +1938,55 @@
             // Offline indicator
             window.addEventListener('online', () => document.getElementById('offline-indicator').classList.add('hidden'));
             window.addEventListener('offline', () => document.getElementById('offline-indicator').classList.remove('hidden'));
+
+            // Onboarding navigation
+            document.getElementById('onboarding-next').addEventListener('click', () => {
+                if (onboardingStep < 4) {
+                    onboardingStep++;
+                    renderOnboardingStep();
+                } else {
+                    finishOnboarding();
+                }
+            });
+
+            document.getElementById('onboarding-back').addEventListener('click', () => {
+                if (onboardingStep > 1) {
+                    onboardingStep--;
+                    renderOnboardingStep();
+                }
+            });
+
+            document.getElementById('onboarding-skip').addEventListener('click', () => {
+                // Skip to review step
+                onboardingStep = 4;
+                renderOnboardingStep();
+            });
+
+            // Schedule modal
+            document.querySelectorAll('.schedule-type-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    document.querySelectorAll('.schedule-type-btn').forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                    renderScheduleOptions({ type: btn.dataset.type });
+                });
+            });
+
+            document.getElementById('save-schedule').addEventListener('click', () => {
+                const schedule = getScheduleFromModal();
+                if (currentScheduleCallback) {
+                    currentScheduleCallback(schedule);
+                }
+                closeScheduleModal();
+            });
+
+            document.getElementById('cancel-schedule').addEventListener('click', closeScheduleModal);
+            document.querySelector('#schedule-modal .modal-overlay').addEventListener('click', closeScheduleModal);
+
+            // Not Today section toggle
+            document.getElementById('toggle-not-today').addEventListener('click', () => {
+                const section = document.getElementById('not-today-section');
+                section.classList.toggle('collapsed');
+            });
 
             // Start the app
             init();
