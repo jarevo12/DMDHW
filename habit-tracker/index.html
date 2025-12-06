@@ -47,10 +47,12 @@
 
                 <form id="auth-form" class="auth-form">
                     <div class="input-group">
+                        <label for="email-input" class="input-label">Email</label>
                         <input type="email" id="email-input" placeholder="your@email.com" required autocomplete="email">
                     </div>
                     <div class="input-group" id="password-group">
-                        <input type="password" id="password-input" placeholder="Password (min 6 characters)" autocomplete="current-password" minlength="6" required>
+                        <label for="password-input" class="input-label">Password</label>
+                        <input type="password" id="password-input" placeholder="Min 6 characters" autocomplete="current-password" minlength="6" required>
                     </div>
 
                     <!-- Auth method toggle -->
@@ -139,24 +141,24 @@
 
             <!-- Progress Bar -->
             <div class="progress-section">
-                <div class="progress-bar">
+                <div class="progress-bar" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">
                     <div class="progress-fill" id="progress-fill"></div>
                 </div>
                 <span class="progress-text" id="progress-text">0/0 completed</span>
             </div>
 
             <!-- Bottom Navigation -->
-            <nav class="bottom-nav">
-                <button class="nav-btn active" data-view="dashboard">
-                    <span class="nav-icon">&#9632;</span>
+            <nav class="bottom-nav" role="navigation" aria-label="Main navigation">
+                <button class="nav-btn active" data-view="dashboard" aria-label="Dashboard">
+                    <span class="nav-icon" aria-hidden="true">&#9632;</span>
                     <span>Dashboard</span>
                 </button>
-                <button class="nav-btn" data-view="today">
-                    <span class="nav-icon">&#10003;</span>
+                <button class="nav-btn" data-view="today" aria-label="Today's habits">
+                    <span class="nav-icon" aria-hidden="true">&#10003;</span>
                     <span>Today</span>
                 </button>
-                <button class="nav-btn" data-view="settings">
-                    <span class="nav-icon">&#9881;</span>
+                <button class="nav-btn" data-view="settings" aria-label="Settings">
+                    <span class="nav-icon" aria-hidden="true">&#9881;</span>
                     <span>Settings</span>
                 </button>
             </nav>
@@ -212,17 +214,17 @@
             </main>
 
             <!-- Bottom Navigation -->
-            <nav class="bottom-nav">
-                <button class="nav-btn active" data-view="dashboard">
-                    <span class="nav-icon">&#9632;</span>
+            <nav class="bottom-nav" role="navigation" aria-label="Main navigation">
+                <button class="nav-btn active" data-view="dashboard" aria-label="Dashboard">
+                    <span class="nav-icon" aria-hidden="true">&#9632;</span>
                     <span>Dashboard</span>
                 </button>
-                <button class="nav-btn" data-view="today">
-                    <span class="nav-icon">&#10003;</span>
+                <button class="nav-btn" data-view="today" aria-label="Today's habits">
+                    <span class="nav-icon" aria-hidden="true">&#10003;</span>
                     <span>Today</span>
                 </button>
-                <button class="nav-btn" data-view="settings">
-                    <span class="nav-icon">&#9881;</span>
+                <button class="nav-btn" data-view="settings" aria-label="Settings">
+                    <span class="nav-icon" aria-hidden="true">&#9881;</span>
                     <span>Settings</span>
                 </button>
             </nav>
@@ -267,17 +269,17 @@
             </main>
 
             <!-- Bottom Navigation -->
-            <nav class="bottom-nav">
-                <button class="nav-btn" data-view="dashboard">
-                    <span class="nav-icon">&#9632;</span>
+            <nav class="bottom-nav" role="navigation" aria-label="Main navigation">
+                <button class="nav-btn" data-view="dashboard" aria-label="Dashboard">
+                    <span class="nav-icon" aria-hidden="true">&#9632;</span>
                     <span>Dashboard</span>
                 </button>
-                <button class="nav-btn" data-view="today">
-                    <span class="nav-icon">&#10003;</span>
+                <button class="nav-btn" data-view="today" aria-label="Today's habits">
+                    <span class="nav-icon" aria-hidden="true">&#10003;</span>
                     <span>Today</span>
                 </button>
-                <button class="nav-btn active" data-view="settings">
-                    <span class="nav-icon">&#9881;</span>
+                <button class="nav-btn active" data-view="settings" aria-label="Settings">
+                    <span class="nav-icon" aria-hidden="true">&#9881;</span>
                     <span>Settings</span>
                 </button>
             </nav>

@@ -15,7 +15,12 @@
     /* Text colors */
     --text-primary: #ffffff;
     --text-secondary: #a0aec0;
-    --text-muted: #64748b;
+    --text-muted: #8b9bb4;  /* WCAG AA compliant - 5.2:1 contrast ratio */
+
+    /* Effects */
+    --glow-primary: 0 0 20px rgba(0, 212, 170, 0.4);
+    --glass-bg: rgba(22, 33, 62, 0.7);
+    --glass-border: rgba(255, 255, 255, 0.05);
 
     /* Borders and shadows */
     --border-color: #2d3748;
@@ -66,6 +71,23 @@ body {
     line-height: 1.5;
     overflow-x: hidden;
     -webkit-font-smoothing: antialiased;
+    letter-spacing: 0.01em;
+}
+
+/* Premium heading typography */
+h1, h2, h3 {
+    letter-spacing: -0.02em;
+    font-weight: 600;
+}
+
+/* Gradient text effect for main headings */
+.auth-content h1,
+.onboarding-welcome h1,
+.loading-content h1 {
+    background: linear-gradient(135deg, var(--text-primary) 0%, var(--text-secondary) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
 }
 
 /* ===== App Container ===== */
@@ -104,12 +126,19 @@ body {
     width: 80px;
     height: 80px;
     background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+    background-size: 200% 200%;
+    animation: gradientShift 3s ease infinite;
     border-radius: var(--radius-lg);
     display: flex;
     align-items: center;
     justify-content: center;
     margin: 0 auto var(--spacing-lg);
-    box-shadow: var(--shadow-lg);
+    box-shadow: var(--shadow-lg), var(--glow-primary);
+}
+
+@keyframes gradientShift {
+    0%, 100% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
 }
 
 .logo-icon {
@@ -215,6 +244,15 @@ body {
     color: var(--text-muted);
 }
 
+.input-label {
+    display: block;
+    font-size: 0.8rem;
+    font-weight: 500;
+    color: var(--text-secondary);
+    margin-bottom: var(--spacing-xs);
+    text-align: left;
+}
+
 /* ===== Buttons ===== */
 .btn {
     display: inline-flex;
@@ -247,13 +285,15 @@ body {
 }
 
 .btn-secondary {
-    background: var(--bg-card);
-    color: var(--text-primary);
+    background: transparent;
+    color: var(--text-secondary);
     border: 1px solid var(--border-color);
 }
 
 .btn-secondary:hover {
-    background: var(--bg-input);
+    background: var(--bg-card);
+    color: var(--text-primary);
+    border-color: var(--accent-primary);
 }
 
 .btn-danger {
@@ -263,6 +303,43 @@ body {
 
 .btn-danger:hover {
     background: #dc2626;
+}
+
+/* Button loading state */
+.btn:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+    transform: none !important;
+}
+
+.btn.loading {
+    position: relative;
+    color: transparent;
+    pointer-events: none;
+}
+
+.btn.loading::after {
+    content: '';
+    position: absolute;
+    width: 20px;
+    height: 20px;
+    border: 2px solid currentColor;
+    border-top-color: transparent;
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+}
+
+.btn-primary.loading::after {
+    border-color: var(--bg-primary);
+    border-top-color: transparent;
+}
+
+.btn-secondary.loading::after {
+    border-color: var(--text-primary);
+    border-top-color: transparent;
 }
 
 .btn-add {
@@ -427,9 +504,11 @@ body {
     align-items: center;
     gap: var(--spacing-md);
     padding: var(--spacing-md);
-    background: var(--bg-card);
+    background: var(--glass-bg);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
     border-radius: var(--radius-md);
-    border: 1px solid var(--border-color);
+    border: 1px solid var(--glass-border);
     transition: all var(--transition-fast);
     cursor: pointer;
     -webkit-user-select: none;
@@ -507,6 +586,7 @@ body {
     border-radius: var(--radius-full);
     transition: width var(--transition-normal);
     width: 0%;
+    box-shadow: var(--glow-primary);
 }
 
 .progress-text {
@@ -578,11 +658,19 @@ body {
 }
 
 .summary-card {
-    background: var(--bg-card);
+    background: var(--glass-bg);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
     border-radius: var(--radius-md);
     padding: var(--spacing-md);
     text-align: center;
-    border: 1px solid var(--border-color);
+    border: 1px solid var(--glass-border);
+    transition: transform var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+.summary-card:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
 }
 
 .card-value {
@@ -625,11 +713,13 @@ body {
 
 /* Chart Section */
 .chart-section {
-    background: var(--bg-card);
+    background: var(--glass-bg);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
     border-radius: var(--radius-md);
     padding: var(--spacing-md);
     margin-bottom: var(--spacing-md);
-    border: 1px solid var(--border-color);
+    border: 1px solid var(--glass-border);
 }
 
 .chart-section h2 {
@@ -697,14 +787,22 @@ body {
 
 .calendar-day {
     aspect-ratio: 1;
+    min-width: 36px;
+    min-height: 36px;
     border-radius: 4px;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 0.7rem;
+    font-size: 0.75rem;
     color: var(--text-muted);
     background: var(--bg-input);
     transition: all var(--transition-fast);
+    cursor: pointer;
+}
+
+.calendar-day:not(.empty):hover {
+    transform: scale(1.1);
+    box-shadow: var(--shadow-sm);
 }
 
 .calendar-day.level-0 { background: var(--bg-input); }
@@ -923,6 +1021,17 @@ body {
     100% { transform: rotate(45deg) scale(1); }
 }
 
+@keyframes habitComplete {
+    0% { transform: scale(1); }
+    15% { transform: scale(0.97); }
+    30% { transform: scale(1.02); background: rgba(0, 212, 170, 0.15); }
+    100% { transform: scale(1); }
+}
+
+.habit-item.completing {
+    animation: habitComplete 0.4s ease;
+}
+
 .habit-item.completing .habit-checkbox::after {
     animation: checkmark 0.3s ease forwards;
 }
@@ -971,6 +1080,21 @@ body {
 :focus-visible {
     outline: 2px solid var(--accent-primary);
     outline-offset: 2px;
+}
+
+/* Comprehensive focus states for interactive elements */
+.habit-item:focus-visible,
+.tab-btn:focus-visible,
+.nav-btn:focus-visible,
+.day-chip:focus-visible,
+.dash-tab:focus-visible,
+.edit-btn:focus-visible,
+.schedule-type-btn:focus-visible,
+.btn:focus-visible,
+.calendar-day:focus-visible {
+    outline: 2px solid var(--accent-primary);
+    outline-offset: 2px;
+    box-shadow: 0 0 0 4px rgba(0, 212, 170, 0.2);
 }
 
 /* ===== Selection ===== */
