@@ -273,39 +273,42 @@
         <!-- Settings Screen -->
         <div id="settings-screen" class="screen">
             <header class="app-header">
-                <h1>Settings</h1>
+                <div style="flex: 1; text-align: center;">
+                    <h1>Settings</h1>
+                    <p style="font-size: 0.7rem; color: var(--text-secondary); text-transform: uppercase; margin-top: 4px;">Organize habits and goals</p>
+                </div>
             </header>
 
             <main class="settings-content">
-                <!-- Edit Habits Section -->
-                <section class="settings-section">
-                    <h2>Morning Habits</h2>
-                    <div id="edit-morning-habits" class="edit-habit-list">
-                        <!-- Editable habits will be rendered here -->
+                <!-- Controls -->
+                <div class="settings-controls">
+                    <div class="search-bar">
+                        <span class="search-icon">🔍</span>
+                        <input type="text" id="settings-search" placeholder="SEARCH HABITS..." autocomplete="off">
                     </div>
-                    <button class="btn btn-add" id="add-morning-habit">
-                        <span>+ Add Morning Habit</span>
-                    </button>
-                </section>
 
-                <section class="settings-section">
-                    <h2>Evening Habits</h2>
-                    <div id="edit-evening-habits" class="edit-habit-list">
-                        <!-- Editable habits will be rendered here -->
+                    <div class="filter-pills">
+                        <button class="filter-pill active" data-filter="all">Everything</button>
+                        <button class="filter-pill" data-filter="morning">Morning</button>
+                        <button class="filter-pill" data-filter="evening">Evening</button>
                     </div>
-                    <button class="btn btn-add" id="add-evening-habit">
-                        <span>+ Add Evening Habit</span>
-                    </button>
-                </section>
+                </div>
+
+                <!-- Dynamic Content -->
+                <div id="settings-habits-container" class="settings-habits-container">
+                    <!-- Groups and Cards will be rendered here -->
+                </div>
 
                 <!-- Account Section -->
-                <section class="settings-section">
+                <section class="settings-section" style="margin-top: 40px; border-top: 4px solid var(--border-color);">
                     <h2>Account</h2>
                     <div class="account-info">
                         <span id="user-email">user@email.com</span>
                     </div>
                     <button class="btn btn-danger" id="logout-btn">Sign Out</button>
                 </section>
+                
+                <div style="height: 100px;"></div> <!-- Spacer -->
             </main>
 
             <!-- Bottom Navigation -->
@@ -481,6 +484,10 @@
             currentYear: new Date().getFullYear(),
             entriesData: {}
         };
+        
+        // Settings state
+        let settingsFilter = 'all';
+        let settingsSearch = '';
 
         // Onboarding state
         let onboardingStep = 1;
@@ -1446,40 +1453,140 @@
         }
 
         function renderEditableHabits() {
-            renderEditableList('edit-morning-habits', habits.morning, 'morning');
-            renderEditableList('edit-evening-habits', habits.evening, 'evening');
-        }
-
-        function renderEditableList(containerId, habitList, type) {
-            const container = document.getElementById(containerId);
+            const container = document.getElementById('settings-habits-container');
             if (!container) return;
+            
+            // 1. Combine and Filter
+            let allHabits = [];
+            if (settingsFilter === 'all' || settingsFilter === 'morning') {
+                allHabits = allHabits.concat(habits.morning.map(h => ({...h, routineType: 'morning'})));
+            }
+            if (settingsFilter === 'all' || settingsFilter === 'evening') {
+                allHabits = allHabits.concat(habits.evening.map(h => ({...h, routineType: 'evening'})));
+            }
+            
+            // Search filter
+            if (settingsSearch.trim()) {
+                const term = settingsSearch.toLowerCase();
+                allHabits = allHabits.filter(h => h.name.toLowerCase().includes(term));
+            }
 
-            if (habitList.length === 0) {
-                container.innerHTML = '<p style="color: var(--text-muted);">No habits yet</p>';
+            if (allHabits.length === 0) {
+                container.innerHTML = '<div class="empty-state"><p>No habits found</p></div>';
                 return;
             }
 
-            container.innerHTML = habitList.map(habit => `
-                <div class="edit-habit-item" data-id="${habit.id}">
-                    <span class="drag-handle">☰</span>
-                    <span class="edit-habit-name">${escapeHtml(habit.name)}</span>
-                    <div class="edit-habit-actions">
-                        <button class="edit-btn edit" data-id="${habit.id}" data-type="${type}">✎</button>
-                        <button class="edit-btn delete" data-id="${habit.id}">×</button>
+            // 2. Group by Schedule
+            const groups = {
+                'daily': { label: 'Daily Habits', items: [] },
+                'weekly_goal': { label: 'Weekly Goals', items: [] },
+                'specific_days': { label: 'Specific Days', items: [] },
+                'interval': { label: 'Interval / Custom', items: [] }
+            };
+
+            allHabits.forEach(habit => {
+                const type = habit.schedule?.type || 'daily';
+                if (groups[type]) {
+                    groups[type].items.push(habit);
+                } else {
+                    groups['interval'].items.push(habit);
+                }
+            });
+
+            // 3. Render Groups
+            let html = '';
+            Object.values(groups).forEach(group => {
+                if (group.items.length > 0) {
+                    html += `
+                        <div class="settings-group">
+                            <h3>${group.label}</h3>
+                            <div class="settings-group-list">
+                                ${group.items.map(habit => renderHabitCard(habit)).join('')}
+                            </div>
+                        </div>
+                    `;
+                }
+            });
+
+            container.innerHTML = html;
+            attachHabitCardListeners();
+        }
+
+        function renderHabitCard(habit) {
+            // Calculate concise schedule chip
+            let scheduleChip = 'Daily';
+            const s = habit.schedule || {type: 'daily'};
+            if (s.type === 'weekly_goal') scheduleChip = `${s.timesPerWeek}x/week`;
+            else if (s.type === 'specific_days') {
+                const days = s.days || [];
+                if (days.length === 5 && !days.includes(0) && !days.includes(6)) scheduleChip = 'Weekdays';
+                else if (days.length === 2 && days.includes(0) && days.includes(6)) scheduleChip = 'Weekends';
+                else scheduleChip = days.map(d => DAY_SHORTS[d]).join('/');
+            }
+            else if (s.type === 'interval') scheduleChip = `Every ${s.intervalDays}d`;
+
+            return `
+                <div class="habit-card" data-id="${habit.id}">
+                    <div class="habit-card-content">
+                        <div class="habit-card-top">
+                            <span class="habit-card-name">${escapeHtml(habit.name)}</span>
+                            <span class="habit-type-badge">${habit.routineType === 'morning' ? 'MORNING' : 'EVENING'}</span>
+                        </div>
+                        <div class="habit-card-details">
+                            <span class="schedule-chip">${scheduleChip}</span>
+                        </div>
+                    </div>
+                    <div class="habit-card-actions">
+                        <button class="card-action-btn move-up" data-id="${habit.id}" data-type="${habit.routineType}" title="Move Up">▲</button>
+                        <button class="card-action-btn move-down" data-id="${habit.id}" data-type="${habit.routineType}" title="Move Down">▼</button>
+                        <button class="card-action-btn edit" data-id="${habit.id}" data-type="${habit.routineType}" title="Edit">✎</button>
                     </div>
                 </div>
-            `).join('');
+            `;
+        }
 
-            container.querySelectorAll('.edit-btn.edit').forEach(btn => {
+        function attachHabitCardListeners() {
+            document.querySelectorAll('.card-action-btn.edit').forEach(btn => {
                 btn.addEventListener('click', () => {
-                    const habit = habits[btn.dataset.type].find(h => h.id === btn.dataset.id);
-                    if (habit) openHabitModal(habit, btn.dataset.type);
+                    const type = btn.dataset.type;
+                    const habit = habits[type].find(h => h.id === btn.dataset.id);
+                    if (habit) openHabitModal(habit, type);
                 });
             });
 
-            container.querySelectorAll('.edit-btn.delete').forEach(btn => {
-                btn.addEventListener('click', () => openDeleteModal(btn.dataset.id));
+            document.querySelectorAll('.card-action-btn.move-up').forEach(btn => {
+                btn.addEventListener('click', () => moveHabit(btn.dataset.id, btn.dataset.type, -1));
             });
+
+            document.querySelectorAll('.card-action-btn.move-down').forEach(btn => {
+                btn.addEventListener('click', () => moveHabit(btn.dataset.id, btn.dataset.type, 1));
+            });
+        }
+
+        async function moveHabit(habitId, type, direction) {
+            const list = habits[type];
+            const index = list.findIndex(h => h.id === habitId);
+            if (index === -1) return;
+            
+            const newIndex = index + direction;
+            if (newIndex < 0 || newIndex >= list.length) return; // Boundary check
+
+            // Swap order
+            const currentHabit = list[index];
+            const swapHabit = list[newIndex];
+
+            // Update in Firestore using batch
+            const currentOrder = currentHabit.order;
+            const swapOrder = swapHabit.order;
+
+            const batch = writeBatch(db);
+            const currentRef = doc(db, `users/${currentUser.uid}/habits`, currentHabit.id);
+            const swapRef = doc(db, `users/${currentUser.uid}/habits`, swapHabit.id);
+
+            batch.update(currentRef, { order: swapOrder });
+            batch.update(swapRef, { order: currentOrder });
+
+            await batch.commit();
         }
 
         // ========== DASHBOARD ==========
@@ -2258,6 +2365,21 @@
                     document.getElementById('evening-habits').classList.toggle('active', currentTab === 'evening');
                     updateProgress();
                 });
+            });
+
+            // Settings controls
+            document.querySelectorAll('.filter-pill').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    document.querySelectorAll('.filter-pill').forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                    settingsFilter = btn.dataset.filter;
+                    renderEditableHabits();
+                });
+            });
+
+            document.getElementById('settings-search').addEventListener('input', (e) => {
+                settingsSearch = e.target.value;
+                renderEditableHabits();
             });
 
             // Bottom navigation
