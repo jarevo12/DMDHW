@@ -292,6 +292,8 @@
                         <button class="filter-pill" data-filter="morning">Morning</button>
                         <button class="filter-pill" data-filter="evening">Evening</button>
                     </div>
+
+                    <button id="add-new-habit" class="btn btn-primary" style="margin-top: 16px;">+ ADD NEW HABIT</button>
                 </div>
 
                 <!-- Dynamic Content -->
@@ -387,7 +389,13 @@
             <h2 id="modal-title">Add Habit</h2>
             <form id="habit-form">
                 <input type="hidden" id="habit-id">
-                <input type="hidden" id="habit-type">
+                <div class="input-group">
+                    <label style="display:block; margin-bottom:4px; font-size:0.7rem; color:#888;">ROUTINE</label>
+                    <select id="habit-type" style="width:100%; padding:10px; background:#000; color:#fff; border:2px solid #fff; font-family:monospace; margin-bottom:16px;">
+                        <option value="morning">MORNING</option>
+                        <option value="evening">EVENING</option>
+                    </select>
+                </div>
                 <div class="input-group">
                     <input type="text" id="habit-name" placeholder="Habit name" required maxlength="100">
                 </div>
@@ -2101,7 +2109,7 @@
         function openHabitModal(habit, type) {
             habitToEdit = habit;
             document.getElementById('habit-id').value = habit?.id || '';
-            document.getElementById('habit-type').value = type;
+            document.getElementById('habit-type').value = type || 'morning';
             document.getElementById('habit-name').value = habit?.name || '';
             document.getElementById('modal-title').textContent = habit ? 'Edit Habit' : 'Add Habit';
 
@@ -2406,8 +2414,10 @@
             });
 
             // Add habit buttons
-            document.getElementById('add-morning-habit').addEventListener('click', () => openHabitModal(null, 'morning'));
-            document.getElementById('add-evening-habit').addEventListener('click', () => openHabitModal(null, 'evening'));
+            document.getElementById('add-new-habit').addEventListener('click', () => {
+                const type = settingsFilter === 'evening' ? 'evening' : 'morning';
+                openHabitModal(null, type);
+            });
 
             // Habit modal
             document.getElementById('habit-form').addEventListener('submit', async (e) => {
