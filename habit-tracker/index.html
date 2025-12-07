@@ -1547,6 +1547,7 @@
                     </div>
                     <div class="habit-card-actions">
                         <button class="card-action-btn edit" data-id="${habit.id}" data-type="${habit.routineType}" title="Edit">✎</button>
+                        <button class="card-action-btn delete" data-id="${habit.id}" title="Delete" style="color: var(--accent-danger);">🗑</button>
                     </div>
                 </div>
             `;
@@ -1562,6 +1563,11 @@
                     const habit = habits[type].find(h => h.id === btn.dataset.id);
                     if (habit) openHabitModal(habit, type);
                 });
+            });
+
+            // Delete
+            document.querySelectorAll('.card-action-btn.delete').forEach(btn => {
+                btn.addEventListener('click', () => openDeleteModal(btn.dataset.id));
             });
 
             // Drag and Drop
