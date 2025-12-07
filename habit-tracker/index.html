@@ -99,10 +99,16 @@
                 <button class="btn-icon" id="toggle-calendar" aria-label="Toggle calendar">
                     <span>&#128197;</span>
                 </button>
+                <button class="btn-icon" id="prev-date" aria-label="Previous day">
+                    <span>&lt;</span>
+                </button>
                 <div class="date-display" id="current-date">
                     <span class="date-text">Today</span>
                     <span class="date-full">Thu, Dec 5, 2025</span>
                 </div>
+                <button class="btn-icon" id="next-date" aria-label="Next day">
+                    <span>&gt;</span>
+                </button>
                 <button class="btn-icon" id="today-btn" aria-label="Go to today">
                     <span>&#8226;</span>
                 </button>
@@ -1963,7 +1969,10 @@
         }
 
         function selectCalendarDate(dateString) {
-            currentDate = new Date(dateString);
+            // Fix: Parse manually to avoid UTC timezone shift
+            const [y, m, d] = dateString.split('-').map(Number);
+            currentDate = new Date(y, m - 1, d);
+            
             updateDateDisplay();
             subscribeToEntry();
 
@@ -2198,6 +2207,26 @@
                     calendarState.isOpen = false;
                     document.getElementById('calendar-picker').classList.add('hidden');
                     document.getElementById('toggle-calendar').classList.remove('active');
+                }
+            });
+
+            // Previous Day
+            document.getElementById('prev-date').addEventListener('click', () => {
+                currentDate.setDate(currentDate.getDate() - 1);
+                updateDateDisplay();
+                subscribeToEntry();
+            });
+
+            // Next Day
+            document.getElementById('next-date').addEventListener('click', () => {
+                const today = new Date();
+                // Check if currentDate is strictly before today (ignoring time)
+                const isToday = formatDate(currentDate) === formatDate(today);
+                
+                if (!isToday) {
+                    currentDate.setDate(currentDate.getDate() + 1);
+                    updateDateDisplay();
+                    subscribeToEntry();
                 }
             });
 
