@@ -1785,19 +1785,19 @@
                     datasets: [{
                         label: 'Completion %',
                         data,
-                        borderColor: 'rgb(255, 107, 157)',
-                        backgroundColor: 'rgba(255, 107, 157, 0.1)',
-                        borderWidth: 3,
-                        fill: true,
-                        tension: 0.4,
-                        pointRadius: 4,
+                        borderColor: '#ffffff',
+                        backgroundColor: 'transparent',
+                        borderWidth: 2,
+                        fill: false,
+                        tension: 0, // Brutalist: sharp lines
+                        pointRadius: 0,
                         pointHoverRadius: 6,
-                        pointBackgroundColor: 'rgb(255, 107, 157)',
-                        pointBorderColor: '#0f0f14',
+                        pointBackgroundColor: '#ffffff',
+                        pointBorderColor: '#000000',
                         pointBorderWidth: 2,
-                        pointHoverBackgroundColor: 'rgb(100, 255, 218)',
-                        pointHoverBorderColor: 'rgb(255, 107, 157)',
-                        pointHoverBorderWidth: 3
+                        pointHoverBackgroundColor: '#6a00ff', // Electric Purple
+                        pointHoverBorderColor: '#ffffff',
+                        pointHoverBorderWidth: 2
                     }]
                 },
                 options: {
@@ -1808,21 +1808,28 @@
                             display: false
                         },
                         tooltip: {
-                            backgroundColor: 'rgba(15, 15, 20, 0.95)',
+                            backgroundColor: '#000000',
                             titleColor: '#ffffff',
-                            bodyColor: '#b4b4c0',
-                            borderColor: 'rgba(255, 107, 157, 0.3)',
-                            borderWidth: 1,
+                            bodyColor: '#ffffff',
+                            borderColor: '#ffffff',
+                            borderWidth: 2,
                             padding: 12,
+                            cornerRadius: 0, // Brutalist: no rounded corners
                             displayColors: false,
+                            titleFont: {
+                                family: 'Courier New'
+                            },
+                            bodyFont: {
+                                family: 'Courier New'
+                            },
                             callbacks: {
                                 title: (context) => {
                                     const day = context[0].label;
                                     const monthName = new Date(year, month, day).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-                                    return monthName;
+                                    return monthName.toUpperCase();
                                 },
                                 label: (context) => {
-                                    return `${context.parsed.y}% completed`;
+                                    return `${context.parsed.y}% COMPLETED`;
                                 }
                             }
                         }
@@ -1830,14 +1837,16 @@
                     scales: {
                         x: {
                             grid: {
-                                color: 'rgba(255, 255, 255, 0.03)',
-                                drawBorder: false
+                                color: '#333333',
+                                drawBorder: false,
+                                tickColor: '#ffffff'
                             },
                             ticks: {
-                                color: '#6c6c7a',
+                                color: '#ffffff',
                                 font: {
-                                    size: 11,
-                                    weight: '500'
+                                    family: 'Courier New',
+                                    size: 10,
+                                    weight: 'bold'
                                 },
                                 maxRotation: 0,
                                 autoSkip: true,
@@ -1848,14 +1857,16 @@
                             min: 0,
                             max: 100,
                             grid: {
-                                color: 'rgba(255, 255, 255, 0.03)',
-                                drawBorder: false
+                                color: '#333333',
+                                drawBorder: false,
+                                tickColor: '#ffffff'
                             },
                             ticks: {
-                                color: '#6c6c7a',
+                                color: '#ffffff',
                                 font: {
-                                    size: 11,
-                                    weight: '500'
+                                    family: 'Courier New',
+                                    size: 10,
+                                    weight: 'bold'
                                 },
                                 callback: (value) => value + '%'
                             }
