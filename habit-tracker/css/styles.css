@@ -829,6 +829,10 @@ button, input, select {
     padding: var(--spacing-md);
 }
 
+#schedule-modal {
+    z-index: 1100; /* Higher than generic modal to appear on top */
+}
+
 .modal-overlay {
     position: absolute;
     inset: 0;
