@@ -1,38 +1,23 @@
-const CACHE_NAME = 'habit-tracker-v2';
+const CACHE_NAME = 'habit-tracker-v1';
 const STATIC_ASSETS = [
     '/',
     '/index.html',
     '/manifest.json',
     '/css/styles.css',
-    // Existing modules
     '/js/firebase-config.js',
     '/js/auth.js',
     '/js/habits.js',
     '/js/entries.js',
     '/js/dashboard.js',
     '/js/app.js',
-    // NEW modules from refactoring
-    '/js/constants.js',
-    '/js/schedule.js',
-    '/js/profile.js',
-    '/js/modals.js',
-    '/js/calendar-picker.js',
-    '/js/onboarding.js',
-    // ALL 8 icon sizes (was missing 6)
-    '/assets/icons/icon-72.png',
-    '/assets/icons/icon-96.png',
-    '/assets/icons/icon-128.png',
-    '/assets/icons/icon-144.png',
-    '/assets/icons/icon-152.png',
     '/assets/icons/icon-192.png',
-    '/assets/icons/icon-384.png',
-    '/assets/icons/icon-512.png',
-    // Chart.js (self-hosted for offline support)
-    '/js/chart.min.js'
+    '/assets/icons/icon-512.png'
 ];
 
-// External resources to cache (empty now - all self-hosted)
-const EXTERNAL_ASSETS = [];
+// External resources to cache
+const EXTERNAL_ASSETS = [
+    'https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js'
+];
 
 // Install event - cache static assets
 self.addEventListener('install', event => {

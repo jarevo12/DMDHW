@@ -9,7 +9,6 @@ import {
     formatDate,
     getTodayString
 } from './entries.js';
-import { getExpectedCompletionsForMonth } from './schedule.js';
 
 // Current dashboard state
 let currentMonth = new Date().getMonth();
@@ -135,38 +134,20 @@ function getBestStreak() {
     return bestStreak;
 }
 
-// Helper: Calculate actual completions for a habit in a month
-function calculateActualCompletions(entries, habitId, type) {
-    let count = 0;
-    Object.values(entries).forEach(entry => {
-        if (entry[type] && entry[type].includes(habitId)) {
-            count++;
-        }
-    });
-    return count;
-}
-
 // Get habit completion rates for current type (with streaks)
 function getHabitRates() {
     if (!dashboardData) return [];
 
-    const { entries, habits, year, month, type } = dashboardData;
+    const { entries, habits, daysInMonth, type } = dashboardData;
     const typeHabits = habits[type] || [];
 
-    return typeHabits.map(habit => {
-        // Calculate schedule-aware expected completions
-        const expected = getExpectedCompletionsForMonth(habit, year, month);
-        const actual = calculateActualCompletions(entries, habit.id, type);
-        const rate = expected > 0 ? Math.round((actual / expected) * 100) : 0;
-
-        return {
-            id: habit.id,
-            name: habit.name,
-            rate: rate,
-            currentStreak: calculateHabitStreak(entries, habit.id, type),
-            bestStreak: calculateHabitBestStreak(entries, habit.id, type)
-        };
-    });
+    return typeHabits.map(habit => ({
+        id: habit.id,
+        name: habit.name,
+        rate: calculateHabitRate(entries, habit.id, type, daysInMonth),
+        currentStreak: calculateHabitStreak(entries, habit.id, type),
+        bestStreak: calculateHabitBestStreak(entries, habit.id, type)
+    }));
 }
 
 // Get daily completion percentages for chart

@@ -4,16 +4,6 @@ import { initAuth, sendMagicLink, logOut, addAuthListener, getUserInfo } from '.
 import { initHabits, subscribeToHabits, getHabits, addHabit, updateHabit, deleteHabit, initializeDefaultHabits } from './habits.js';
 import { initEntries, subscribeToEntry, toggleHabit, formatDate, getTodayString, getCompletionStats } from './entries.js';
 import { initDashboard, renderDashboard, setMonth, setType } from './dashboard.js';
-import { initProfile, getUserProfile, hasCompletedOnboarding } from './profile.js';
-import { initOnboarding, initializeOnboarding, goToNextStep, goToPreviousStep, skipToReview } from './onboarding.js';
-import { getScheduledHabitsForDate, getUnscheduledHabitsForDate, getScheduleLabel } from './schedule.js';
-import {
-    openHabitModal, closeHabitModal, openDeleteModal, closeDeleteModal,
-    getHabitToEdit, getHabitToDelete,
-    openScheduleModal, closeScheduleModal, getScheduleCallback,
-    renderScheduleOptions, getScheduleFromModal
-} from './modals.js';
-import { initCalendarPicker, toggleCalendar, renderCalendar, navigateToPreviousMonth, navigateToNextMonth } from './calendar-picker.js';
 
 // App state
 const state = {
@@ -62,14 +52,8 @@ async function init() {
         // Initialize modules
         await Promise.all([
             initHabits(),
-            initEntries(),
-            initProfile(),
-            initOnboarding(),
-            initCalendarPicker()
+            initEntries()
         ]);
-
-        // Initialize dashboard
-        await initDashboard();
 
         // Initialize auth and wait for auth state
         await initAuth();
@@ -87,7 +71,6 @@ async function init() {
 function cacheElements() {
     elements.loadingScreen = document.getElementById('loading-screen');
     elements.authScreen = document.getElementById('auth-screen');
-    elements.onboardingScreen = document.getElementById('onboarding-screen');
     elements.mainScreen = document.getElementById('main-screen');
     elements.dashboardScreen = document.getElementById('dashboard-screen');
     elements.settingsScreen = document.getElementById('settings-screen');
@@ -99,7 +82,7 @@ function cacheElements() {
     elements.authError = document.getElementById('auth-error');
     elements.tryAgain = document.getElementById('try-again');
 
-    elements.currentDate = document.getElementById('current-date');
+    elements.currentDate = document.getElementById('current-date-btn');
     elements.toggleCalendar = document.getElementById('toggle-calendar');
     elements.todayShortcut = document.getElementById('today-shortcut');
     elements.calendarPicker = document.getElementById('calendar-picker');
@@ -149,16 +132,10 @@ function setupEventListeners() {
     elements.tryAgain?.addEventListener('click', handleTryAgain);
 
     // Calendar navigation
-    elements.toggleCalendar?.addEventListener('click', handleToggleCalendar);
+    elements.toggleCalendar?.addEventListener('click', toggleCalendar);
     elements.todayShortcut?.addEventListener('click', goToToday);
-    elements.prevMonth?.addEventListener('click', () => {
-        navigateToPreviousMonth();
-        renderCalendar(state.currentDate, state.habits);
-    });
-    elements.nextMonth?.addEventListener('click', () => {
-        navigateToNextMonth();
-        renderCalendar(state.currentDate, state.habits);
-    });
+    elements.prevMonth?.addEventListener('click', () => navigateCalendarMonth(-1));
+    elements.nextMonth?.addEventListener('click', () => navigateCalendarMonth(1));
 
     // Tab navigation
     elements.tabBtns.forEach(btn => {
@@ -190,44 +167,6 @@ function setupEventListeners() {
     elements.cancelDelete?.addEventListener('click', closeDeleteModal);
     elements.deleteModal?.querySelector('.modal-overlay')?.addEventListener('click', closeDeleteModal);
 
-    // Onboarding navigation
-    document.getElementById('onboarding-next')?.addEventListener('click', goToNextStep);
-    document.getElementById('onboarding-back')?.addEventListener('click', goToPreviousStep);
-    document.getElementById('onboarding-skip')?.addEventListener('click', skipToReview);
-
-    // Schedule modal
-    const scheduleModal = document.getElementById('schedule-modal');
-    scheduleModal?.querySelector('.modal-overlay')?.addEventListener('click', closeScheduleModal);
-    document.getElementById('cancel-schedule')?.addEventListener('click', closeScheduleModal);
-    document.getElementById('save-schedule')?.addEventListener('click', () => {
-        const schedule = getScheduleFromModal();
-        const callback = getScheduleCallback();
-        if (callback) {
-            callback(schedule);
-        }
-        closeScheduleModal();
-    });
-
-    // Schedule type buttons
-    document.querySelectorAll('.schedule-type-btn').forEach(btn => {
-        btn.addEventListener('click', () => {
-            document.querySelectorAll('.schedule-type-btn').forEach(b => b.classList.remove('active'));
-            btn.classList.add('active');
-            const schedule = {type: btn.dataset.type};
-            renderScheduleOptions(schedule);
-        });
-    });
-
-    // Habit schedule button (in habit modal)
-    document.getElementById('habit-schedule-btn')?.addEventListener('click', () => {
-        const habitToEdit = getHabitToEdit();
-        const currentSchedule = habitToEdit?.schedule || {type: 'daily'};
-        openScheduleModal({schedule: currentSchedule}, (newSchedule) => {
-            document.getElementById('habit-schedule').value = JSON.stringify(newSchedule);
-            document.getElementById('habit-schedule-btn').textContent = getScheduleLabel(newSchedule);
-        });
-    });
-
     // Offline detection
     window.addEventListener('online', () => {
         elements.offlineIndicator?.classList.add('hidden');
@@ -244,26 +183,13 @@ async function handleAuthStateChange(user) {
     if (user) {
         console.log('User signed in:', user.email);
 
-        // Check if user has completed onboarding
-        const profile = await getUserProfile();
-
-        if (!hasCompletedOnboarding(profile)) {
-            // New user - show onboarding
-            console.log('New user - starting onboarding');
-            showScreen('onboarding');
-            initializeOnboarding(() => {
-                // Onboarding complete callback
-                console.log('Onboarding completed');
-                // Subscribe to data and show main screen
-                state.unsubscribeHabits = subscribeToHabits(handleHabitsUpdate);
-                subscribeToCurrentDate();
-                showScreen('main');
-                updateDateDisplay();
-            });
-            return;
+        // Initialize default habits for new users
+        try {
+            await initializeDefaultHabits();
+        } catch (error) {
+            console.log('Default habits already exist or error:', error);
         }
 
-        // Existing user - normal flow
         // Subscribe to habits
         state.unsubscribeHabits = subscribeToHabits(handleHabitsUpdate);
 
@@ -397,21 +323,21 @@ function updateDateDisplay() {
 
     // Update calendar if open
     if (calendarState.isOpen) {
-        renderCalendar(state.currentDate, state.habits);
+        renderCalendar();
     }
 }
 
 // Toggle calendar
-function handleToggleCalendar() {
-    toggleCalendar(state.currentDate, (newDate) => {
-        state.currentDate = newDate;
-        updateDateDisplay();
-        subscribeToCurrentDate();
-    });
+function toggleCalendar() {
+    calendarState.isOpen = !calendarState.isOpen;
+    elements.calendarPicker.classList.toggle('hidden', !calendarState.isOpen);
+    elements.toggleCalendar.classList.toggle('active', calendarState.isOpen);
 
-    // After calendar opens, render it with current habits
-    if (!elements.calendarPicker.classList.contains('hidden')) {
-        renderCalendar(state.currentDate, state.habits);
+    if (calendarState.isOpen) {
+        // Set calendar to current viewed date's month
+        calendarState.currentMonth = state.currentDate.getMonth();
+        calendarState.currentYear = state.currentDate.getFullYear();
+        renderCalendar();
     }
 }
 
@@ -427,7 +353,92 @@ function goToToday() {
     }
 }
 
-// Navigate calendar month (removed - using imported functions)
+// Navigate calendar month
+function navigateCalendarMonth(direction) {
+    calendarState.currentMonth += direction;
+
+    if (calendarState.currentMonth > 11) {
+        calendarState.currentMonth = 0;
+        calendarState.currentYear++;
+    } else if (calendarState.currentMonth < 0) {
+        calendarState.currentMonth = 11;
+        calendarState.currentYear--;
+    }
+
+    renderCalendar();
+}
+
+// Render calendar
+async function renderCalendar() {
+    const monthDate = new Date(calendarState.currentYear, calendarState.currentMonth, 1);
+    const lastDay = new Date(calendarState.currentYear, calendarState.currentMonth + 1, 0);
+    const startDayOfWeek = monthDate.getDay();
+    const today = new Date();
+    const todayString = formatDate(today);
+    const selectedString = formatDate(state.currentDate);
+
+    // Update month label
+    elements.calendarMonthYear.textContent = monthDate.toLocaleDateString('en-US', {
+        month: 'long',
+        year: 'numeric'
+    });
+
+    // Fetch entries for this month
+    const { getEntriesForMonth } = await import('./entries.js');
+    const entries = await getEntriesForMonth(calendarState.currentYear, calendarState.currentMonth);
+    calendarState.entriesData = entries;
+
+    // Build calendar grid
+    const days = [];
+
+    // Empty cells before first day
+    for (let i = 0; i < startDayOfWeek; i++) {
+        days.push('<button class="calendar-day-btn empty" disabled></button>');
+    }
+
+    // Days of the month
+    const totalHabits = state.habits.morning.length + state.habits.evening.length;
+
+    for (let day = 1; day <= lastDay.getDate(); day++) {
+        const dateString = formatDate(new Date(calendarState.currentYear, calendarState.currentMonth, day));
+        const entry = entries[dateString];
+        const isToday = dateString === todayString;
+        const isSelected = dateString === selectedString;
+        const isFuture = new Date(dateString) > today;
+
+        let classes = 'calendar-day-btn';
+        if (isToday) classes += ' today';
+        if (isSelected) classes += ' selected';
+
+        // Add data indicator
+        if (entry && totalHabits > 0) {
+            const completed = (entry.morning?.length || 0) + (entry.evening?.length || 0);
+            if (completed === totalHabits) {
+                classes += ' has-data';
+            } else if (completed > 0) {
+                classes += ' partial-data';
+            }
+        }
+
+        days.push(`
+            <button
+                class="${classes}"
+                data-date="${dateString}"
+                ${isFuture ? 'disabled' : ''}
+                onclick="window.habitTrackerApp.selectDate('${dateString}')"
+            >
+                ${day}
+            </button>
+        `);
+    }
+
+    elements.calendarDays.innerHTML = days.join('');
+
+    // Disable next month if it's in the future
+    const nextMonth = new Date(calendarState.currentYear, calendarState.currentMonth + 1, 1);
+    const thisMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+    elements.nextMonth.disabled = nextMonth > thisMonth;
+}
 
 // Select date from calendar
 function selectDate(dateString) {
@@ -486,7 +497,7 @@ async function handleMonthChange(e) {
 }
 
 // Handle dashboard type change
-async function handleDashTypeChange(type) {
+function handleDashTypeChange(type) {
     elements.dashTabs.forEach(btn => {
         btn.classList.toggle('active', btn.dataset.type === type);
     });
@@ -500,16 +511,8 @@ async function handleDashTypeChange(type) {
 
 // Render habits list
 function renderHabits() {
-    const dateString = formatDate(state.currentDate);
-    const scheduledHabits = getScheduledHabitsForDate(state.habits, dateString);
-    const unscheduledHabits = getUnscheduledHabitsForDate(state.habits, dateString);
-
-    // Render scheduled habits
-    renderHabitList(elements.morningHabits, scheduledHabits.morning, 'morning');
-    renderHabitList(elements.eveningHabits, scheduledHabits.evening, 'evening');
-
-    // TODO: Render "Not Today" section for unscheduled habits
-    // This would require adding a UI element for unscheduled habits
+    renderHabitList(elements.morningHabits, state.habits.morning, 'morning');
+    renderHabitList(elements.eveningHabits, state.habits.evening, 'evening');
 }
 
 // Render single habit list
@@ -636,6 +639,22 @@ function updateSettingsScreen() {
     renderEditableHabits();
 }
 
+// Open habit modal
+function openHabitModal(habit, type) {
+    elements.habitId.value = habit?.id || '';
+    elements.habitType.value = type;
+    elements.habitName.value = habit?.name || '';
+    elements.modalTitle.textContent = habit ? 'Edit Habit' : 'Add Habit';
+    elements.habitModal.classList.remove('hidden');
+    elements.habitName.focus();
+}
+
+// Close habit modal
+function closeHabitModal() {
+    elements.habitModal.classList.add('hidden');
+    elements.habitForm.reset();
+}
+
 // Handle habit form submission
 async function handleHabitSubmit(e) {
     e.preventDefault();
@@ -659,13 +678,27 @@ async function handleHabitSubmit(e) {
     }
 }
 
+// Delete modal state
+let habitToDelete = null;
+
+// Open delete modal
+function openDeleteModal(habitId) {
+    habitToDelete = habitId;
+    elements.deleteModal.classList.remove('hidden');
+}
+
+// Close delete modal
+function closeDeleteModal() {
+    habitToDelete = null;
+    elements.deleteModal.classList.add('hidden');
+}
+
 // Set up delete confirmation
 elements.confirmDelete?.addEventListener('click', async () => {
-    const habitId = getHabitToDelete();
-    if (!habitId) return;
+    if (!habitToDelete) return;
 
     try {
-        await deleteHabit(habitId);
+        await deleteHabit(habitToDelete);
         closeDeleteModal();
     } catch (error) {
         console.error('Delete error:', error);
@@ -687,7 +720,7 @@ async function handleLogout() {
 function showScreen(screenName) {
     state.currentScreen = screenName;
 
-    const screens = ['loading', 'auth', 'onboarding', 'main', 'dashboard', 'settings'];
+    const screens = ['loading', 'auth', 'main', 'dashboard', 'settings'];
     screens.forEach(name => {
         const screen = document.getElementById(`${name}-screen`);
         if (screen) {
