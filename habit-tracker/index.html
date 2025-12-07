@@ -1534,7 +1534,8 @@
             else if (s.type === 'interval') scheduleChip = `Every ${s.intervalDays}d`;
 
             return `
-                <div class="habit-card" data-id="${habit.id}">
+                <div class="habit-card" draggable="true" data-id="${habit.id}" data-type="${habit.routineType}">
+                    <div class="drag-handle">☰</div>
                     <div class="habit-card-content">
                         <div class="habit-card-top">
                             <span class="habit-card-name">${escapeHtml(habit.name)}</span>
@@ -1545,15 +1546,16 @@
                         </div>
                     </div>
                     <div class="habit-card-actions">
-                        <button class="card-action-btn move-up" data-id="${habit.id}" data-type="${habit.routineType}" title="Move Up">▲</button>
-                        <button class="card-action-btn move-down" data-id="${habit.id}" data-type="${habit.routineType}" title="Move Down">▼</button>
                         <button class="card-action-btn edit" data-id="${habit.id}" data-type="${habit.routineType}" title="Edit">✎</button>
                     </div>
                 </div>
             `;
         }
 
+        let draggedItem = null;
+
         function attachHabitCardListeners() {
+            // Edit
             document.querySelectorAll('.card-action-btn.edit').forEach(btn => {
                 btn.addEventListener('click', () => {
                     const type = btn.dataset.type;
@@ -1562,37 +1564,101 @@
                 });
             });
 
-            document.querySelectorAll('.card-action-btn.move-up').forEach(btn => {
-                btn.addEventListener('click', () => moveHabit(btn.dataset.id, btn.dataset.type, -1));
-            });
-
-            document.querySelectorAll('.card-action-btn.move-down').forEach(btn => {
-                btn.addEventListener('click', () => moveHabit(btn.dataset.id, btn.dataset.type, 1));
+            // Drag and Drop
+            const cards = document.querySelectorAll('.habit-card');
+            cards.forEach(card => {
+                card.addEventListener('dragstart', handleDragStart);
+                card.addEventListener('dragover', handleDragOver);
+                card.addEventListener('drop', handleDrop);
+                card.addEventListener('dragend', handleDragEnd);
             });
         }
 
-        async function moveHabit(habitId, type, direction) {
-            const list = habits[type];
-            const index = list.findIndex(h => h.id === habitId);
-            if (index === -1) return;
+        function handleDragStart(e) {
+            draggedItem = this;
+            e.dataTransfer.effectAllowed = 'move';
+            e.dataTransfer.setData('text/plain', this.dataset.id);
+            setTimeout(() => this.classList.add('dragging'), 0);
+        }
+
+        function handleDragOver(e) {
+            e.preventDefault();
+            e.dataTransfer.dropEffect = 'move';
+            const container = this.parentElement;
+            // Ensure we are in the same container
+            if (container !== draggedItem.parentElement) return;
+
+            const afterElement = getDragAfterElement(container, e.clientY);
+            if (afterElement == null) {
+                container.appendChild(draggedItem);
+            } else {
+                container.insertBefore(draggedItem, afterElement);
+            }
+        }
+
+        function handleDrop(e) {
+            e.preventDefault();
+        }
+
+        function handleDragEnd() {
+            this.classList.remove('dragging');
+            if (draggedItem) {
+                const container = draggedItem.parentElement;
+                saveReorder(container);
+                draggedItem = null;
+            }
+        }
+
+        function getDragAfterElement(container, y) {
+            const draggableElements = [...container.querySelectorAll('.habit-card:not(.dragging)')];
+
+            return draggableElements.reduce((closest, child) => {
+                const box = child.getBoundingClientRect();
+                const offset = y - box.top - box.height / 2;
+                if (offset < 0 && offset > closest.offset) {
+                    return { offset: offset, element: child };
+                } else {
+                    return closest;
+                }
+            }, { offset: Number.NEGATIVE_INFINITY }).element;
+        }
+
+        async function saveReorder(container) {
+            // 1. Get new ID order
+            const cards = [...container.querySelectorAll('.habit-card')];
+            const newIdOrder = cards.map(c => c.dataset.id);
             
-            const newIndex = index + direction;
-            if (newIndex < 0 || newIndex >= list.length) return; // Boundary check
+            // 2. Find these habits in memory to get their current 'order' values
+            // We need to search both morning and evening lists because filter might be 'Everything'
+            const affectedHabits = [];
+            [...habits.morning, ...habits.evening].forEach(h => {
+                if (newIdOrder.includes(h.id)) {
+                    affectedHabits.push(h);
+                }
+            });
 
-            // Swap order
-            const currentHabit = list[index];
-            const swapHabit = list[newIndex];
+            // 3. Get available 'order' slots and sort them
+            const availableOrders = affectedHabits.map(h => h.order).sort((a, b) => a - b);
 
-            // Update in Firestore using batch
-            const currentOrder = currentHabit.order;
-            const swapOrder = swapHabit.order;
+            // 4. Map new order: Index 0 gets lowest order value, etc.
+            const updates = [];
+            newIdOrder.forEach((id, index) => {
+                const order = availableOrders[index];
+                // Only update if changed (optimization)
+                const habit = affectedHabits.find(h => h.id === id);
+                if (habit && habit.order !== order) {
+                    updates.push({ id, order });
+                }
+            });
 
+            if (updates.length === 0) return;
+
+            // 5. Batch update
             const batch = writeBatch(db);
-            const currentRef = doc(db, `users/${currentUser.uid}/habits`, currentHabit.id);
-            const swapRef = doc(db, `users/${currentUser.uid}/habits`, swapHabit.id);
-
-            batch.update(currentRef, { order: swapOrder });
-            batch.update(swapRef, { order: currentOrder });
+            updates.forEach(u => {
+                const ref = doc(db, `users/${currentUser.uid}/habits`, u.id);
+                batch.update(ref, { order: u.order });
+            });
 
             await batch.commit();
         }
