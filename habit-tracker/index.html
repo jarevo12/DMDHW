@@ -42,20 +42,23 @@
         <!-- Auth Screen -->
         <div id="auth-screen" class="screen">
             <div class="auth-content">
+                <!-- Top Right Sign Up Button -->
+                <button id="nav-to-signup" class="btn-top-right-signup">Sign Up</button>
+
                 <div class="logo">
                     <span class="logo-icon">&#10003;</span>
                 </div>
                 <h1>Habit Tracker</h1>
                 <p class="subtitle">Track your daily routines</p>
 
-                <form id="auth-form" class="auth-form">
+                <form id="auth-form" class="auth-form" autocomplete="off">
                     <div class="input-group">
                         <label for="email-input" class="input-label">Email</label>
                         <input type="email" id="email-input" placeholder="your@email.com" required autocomplete="email">
                     </div>
                     <div class="input-group" id="password-group">
                         <label for="password-input" class="input-label">Password</label>
-                        <input type="password" id="password-input" placeholder="Min 6 characters" autocomplete="current-password" minlength="6" required>
+                        <input type="password" id="password-input" placeholder="Password" autocomplete="current-password" required>
                     </div>
 
                     <!-- Auth method toggle -->
@@ -69,9 +72,6 @@
                     <div id="password-buttons" style="display: flex; gap: 8px;">
                         <button type="button" class="btn btn-primary" id="signin-btn">
                             <span>Sign In</span>
-                        </button>
-                        <button type="button" class="btn btn-secondary" id="signup-btn">
-                            <span>Sign Up</span>
                         </button>
                     </div>
 
@@ -89,6 +89,56 @@
                 </div>
 
                 <div id="auth-error" class="auth-error hidden"></div>
+            </div>
+        </div>
+
+        <!-- Signup Screen -->
+        <div id="signup-screen" class="screen">
+            <div class="auth-content signup-content">
+                <h2>Create Account</h2>
+                <form id="signup-form" autocomplete="off">
+                    <div class="input-group">
+                        <label class="input-label">First Name</label>
+                        <input type="text" id="signup-firstname" required>
+                    </div>
+                    <div class="input-group">
+                        <label class="input-label">Surname</label>
+                        <input type="text" id="signup-surname" required>
+                    </div>
+                    <div class="input-group">
+                        <label class="input-label">Age</label>
+                        <input type="number" id="signup-age" min="13" max="120" required>
+                    </div>
+                    <div class="input-group">
+                        <label class="input-label">Email</label>
+                        <input type="email" id="signup-email" placeholder="your@email.com" required autocomplete="new-password">
+                    </div>
+                    <div class="input-group">
+                        <label class="input-label">Password</label>
+                        <input type="password" id="signup-password" autocomplete="new-password" required>
+                    </div>
+
+                    <!-- Password Requirements -->
+                    <div class="password-requirements">
+                        <div class="req-item" id="req-length">
+                            <span class="req-checkbox"></span>
+                            <span>More than 8 characters</span>
+                        </div>
+                        <div class="req-item" id="req-uppercase">
+                            <span class="req-checkbox"></span>
+                            <span>At least one uppercase letter</span>
+                        </div>
+                        <div class="req-item" id="req-special">
+                            <span class="req-checkbox"></span>
+                            <span>At least one special character</span>
+                        </div>
+                    </div>
+
+                    <div id="signup-error" class="auth-error hidden" style="margin-bottom: 16px;"></div>
+
+                    <button type="submit" class="btn btn-primary" id="create-account-btn">Create Account</button>
+                    <button type="button" class="btn btn-secondary" id="back-to-login" style="margin-top: 8px;">Back to Sign In</button>
+                </form>
             </div>
         </div>
 
@@ -878,7 +928,7 @@
 
         // ========== UI RENDERING ==========
         function showScreen(screenName) {
-            ['loading', 'auth', 'main', 'dashboard', 'settings', 'onboarding'].forEach(name => {
+            ['loading', 'auth', 'signup', 'main', 'dashboard', 'settings', 'onboarding'].forEach(name => {
                 const screen = document.getElementById(`${name}-screen`);
                 if (screen) {
                     screen.classList.toggle('active', name === screenName);
@@ -2325,42 +2375,93 @@
                 }
             });
 
-            // Sign Up button handler
-            document.getElementById('signup-btn').addEventListener('click', async () => {
-                const email = document.getElementById('email-input').value.trim();
-                const password = document.getElementById('password-input').value;
-                const btn = document.getElementById('signup-btn');
+            // Navigation to Signup Screen
+            document.getElementById('nav-to-signup').addEventListener('click', () => {
+                showScreen('signup');
+            });
 
-                if (!email || !password) {
-                    document.getElementById('auth-error').textContent = 'Please enter email and password.';
-                    document.getElementById('auth-error').classList.remove('hidden');
+            // Back to Login
+            document.getElementById('back-to-login').addEventListener('click', () => {
+                showScreen('auth');
+            });
+
+            // Password Validation Listener
+            const signupPasswordInput = document.getElementById('signup-password');
+            signupPasswordInput.addEventListener('input', (e) => {
+                const password = e.target.value;
+                
+                // Length check
+                const lengthMet = password.length > 8;
+                const reqLength = document.getElementById('req-length');
+                reqLength.classList.toggle('met', lengthMet);
+                
+                // Uppercase check
+                const uppercaseMet = /[A-Z]/.test(password);
+                const reqUppercase = document.getElementById('req-uppercase');
+                reqUppercase.classList.toggle('met', uppercaseMet);
+
+                // Special char check
+                const specialMet = /[!@#$%^&*(),.?":{}|<>´.,\-_+=;:'"\\]/.test(password); // Expanded special characters
+                const reqSpecial = document.getElementById('req-special');
+                reqSpecial.classList.toggle('met', specialMet);
+            });
+
+            // Create Account Form Handler
+            document.getElementById('signup-form').addEventListener('submit', async (e) => {
+                e.preventDefault();
+                
+                const firstName = document.getElementById('signup-firstname').value.trim();
+                const surname = document.getElementById('signup-surname').value.trim();
+                const age = document.getElementById('signup-age').value;
+                const email = document.getElementById('signup-email').value.trim();
+                const password = document.getElementById('signup-password').value;
+                const btn = document.getElementById('create-account-btn');
+                const errorDiv = document.getElementById('signup-error');
+
+                // Validate Requirements
+                if (password.length <= 8 || !/[A-Z]/.test(password) || !/[!@#$%^&*(),.?":{}|<>´.,\-_+=;:'"\\]/.test(password)) { // Expanded special characters
+                    errorDiv.textContent = 'Please meet all password requirements.';
+                    errorDiv.classList.remove('hidden');
                     return;
                 }
 
                 btn.disabled = true;
-                btn.innerHTML = '<span>Creating account...</span>';
-                document.getElementById('auth-error').classList.add('hidden');
+                btn.textContent = 'Creating account...';
+                errorDiv.classList.add('hidden');
 
                 try {
-                    await createUserWithEmailAndPassword(auth, email, password);
-                    // Success - handleAuthStateChange will be triggered automatically
+                    // Create User
+                    const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+                    const user = userCredential.user;
+
+                    // Save Profile Data
+                    await setUserProfile({
+                        firstName,
+                        surname,
+                        age: parseInt(age),
+                        email,
+                        createdAt: serverTimestamp()
+                    });
+
+                    // Start Onboarding (manually trigger since auth state change might happen before profile is ready)
+                    // Note: handleAuthStateChange will fire, but might check profile before we write it.
+                    // We can rely on handleAuthStateChange if we write profile fast enough, or force it.
+                    // Ideally, handleAuthStateChange sees no profile -> Onboarding.
+                    // Here we wrote profile but WITHOUT 'onboardingCompleted: true'.
+                    // So handleAuthStateChange should see !onboardingCompleted and show onboarding.
+                    
                 } catch (error) {
                     console.error('Sign up error:', error);
                     let errorMsg = 'Sign up failed. ';
                     if (error.code === 'auth/email-already-in-use') {
                         errorMsg = 'Email already registered. Please sign in instead.';
-                    } else if (error.code === 'auth/weak-password') {
-                        errorMsg = 'Password must be at least 6 characters.';
-                    } else if (error.code === 'auth/invalid-email') {
-                        errorMsg = 'Please enter a valid email address.';
                     } else if (error.message) {
                         errorMsg = error.message;
                     }
-                    document.getElementById('auth-error').textContent = errorMsg;
-                    document.getElementById('auth-error').classList.remove('hidden');
-                } finally {
+                    errorDiv.textContent = errorMsg;
+                    errorDiv.classList.remove('hidden');
                     btn.disabled = false;
-                    btn.innerHTML = '<span>Sign Up</span>';
+                    btn.textContent = 'Create Account';
                 }
             });
 

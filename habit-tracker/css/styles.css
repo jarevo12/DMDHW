@@ -143,6 +143,7 @@ button, input, select {
     border: var(--border-width) solid var(--border-color);
     padding: var(--spacing-xl) var(--spacing-md);
     text-align: center;
+    position: relative; /* Added for child absolute positioning */
 }
 
 .logo {
@@ -1087,9 +1088,10 @@ button, input, select {
 .habit-type-badge {
     font-size: 0.65rem;
     padding: 2px 4px;
-    border: 1px solid #333;
-    color: var(--text-muted);
+    background: #ffffff;
+    color: #000000;
     text-transform: uppercase;
+    font-weight: 700;
 }
 
 .habit-card-details {
@@ -1161,4 +1163,64 @@ button, input, select {
 
 .settings-group-list {
     min-height: 20px;
+}
+/* ===== Sign Up & Password Requirements ===== */
+.btn-top-right-signup {
+    position: absolute;
+    top: var(--spacing-md);
+    right: var(--spacing-md);
+    background: var(--accent-success); /* Vibrant yellow/green */
+    color: var(--text-inverse); /* Black text */
+    border: 2px solid var(--border-color);
+    padding: 8px 16px;
+    font-weight: 700;
+    text-transform: uppercase;
+    cursor: pointer;
+    font-family: var(--font-mono);
+    z-index: 10;
+    box-shadow: 2px 2px 0 var(--border-color);
+}
+
+.btn-top-right-signup:active {
+    transform: translate(2px, 2px);
+    box-shadow: none;
+}
+
+.signup-content {
+    max-width: 400px;
+    margin: 0 auto;
+    width: 100%;
+}
+
+.password-requirements {
+    margin: var(--spacing-md) 0;
+    border: 1px solid #333;
+    padding: var(--spacing-md);
+    background: #0a0a0a;
+}
+
+.req-item {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+    margin-bottom: 4px;
+    color: var(--text-muted);
+    font-size: 0.8rem;
+}
+
+.req-checkbox {
+    width: 14px;
+    height: 14px;
+    border: 1px solid var(--text-muted);
+    display: inline-block;
+}
+
+.req-item.met {
+    color: var(--accent-success);
+}
+
+.req-item.met .req-checkbox {
+    background: var(--accent-success);
+    border-color: var(--accent-success);
+    box-shadow: 0 0 5px var(--accent-success);
 }
