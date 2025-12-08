@@ -1206,10 +1206,13 @@
                 });
             }
 
-            // Drag and Drop Logic
+            // Drag and Drop Logic (Mouse & Touch)
             let draggedItem = null;
             
             listContainer.querySelectorAll('.onboarding-habit-item').forEach(item => {
+                const handle = item.querySelector('.drag-handle-icon');
+
+                // Mouse Events
                 item.addEventListener('dragstart', function(e) {
                     draggedItem = this;
                     e.dataTransfer.effectAllowed = 'move';
@@ -1219,34 +1222,68 @@
                 item.addEventListener('dragover', function(e) {
                     e.preventDefault();
                     if (this === draggedItem) return;
-                    
-                    const container = this.parentNode;
-                    const items = [...container.querySelectorAll('.onboarding-habit-item')];
-                    const currentIdx = items.indexOf(this);
-                    const draggedIdx = items.indexOf(draggedItem);
-
-                    if (currentIdx > draggedIdx) {
-                        container.insertBefore(draggedItem, this.nextSibling);
-                    } else {
-                        container.insertBefore(draggedItem, this);
-                    }
+                    handleDragOverLogic(this);
                 });
 
                 item.addEventListener('dragend', function() {
                     this.classList.remove('dragging');
                     draggedItem = null;
-                    
-                    // Update Array Order based on DOM
-                    const newOrderIndices = [...listContainer.querySelectorAll('.onboarding-habit-item')]
-                        .map(el => parseInt(el.querySelector('.habit-name-input').dataset.index));
-                    
-                    const reorderedList = newOrderIndices.map(oldIndex => habitsList[oldIndex]);
-                    
-                    onboardingHabits[type] = reorderedList;
-                    
-                    renderOnboardingStep();
+                    updateOrder();
                 });
+
+                // Touch Events (Mobile)
+                if (handle) {
+                    handle.addEventListener('touchstart', function(e) {
+                        // Prevent scrolling if we are dragging
+                        if (e.cancelable) e.preventDefault();
+                        draggedItem = item;
+                        item.classList.add('dragging', 'touch-dragging');
+                    }, { passive: false });
+
+                    handle.addEventListener('touchmove', function(e) {
+                        if (!draggedItem) return;
+                        if (e.cancelable) e.preventDefault(); // Stop scroll
+
+                        const touch = e.touches[0];
+                        const target = document.elementFromPoint(touch.clientX, touch.clientY);
+                        if (!target) return;
+
+                        const closestItem = target.closest('.onboarding-habit-item');
+                        if (closestItem && closestItem !== draggedItem && closestItem.parentNode === listContainer) {
+                            handleDragOverLogic(closestItem);
+                        }
+                    }, { passive: false });
+
+                    handle.addEventListener('touchend', function(e) {
+                        if (!draggedItem) return;
+                        item.classList.remove('dragging', 'touch-dragging');
+                        draggedItem = null;
+                        updateOrder();
+                    });
+                }
             });
+
+            function handleDragOverLogic(targetItem) {
+                const container = listContainer; // Closure closure
+                const items = [...container.querySelectorAll('.onboarding-habit-item')];
+                const currentIdx = items.indexOf(draggedItem);
+                const targetIdx = items.indexOf(targetItem);
+
+                if (currentIdx > targetIdx) {
+                    container.insertBefore(draggedItem, targetItem);
+                } else {
+                    container.insertBefore(draggedItem, targetItem.nextSibling);
+                }
+            }
+
+            function updateOrder() {
+                const newOrderIndices = [...listContainer.querySelectorAll('.onboarding-habit-item')]
+                    .map(el => parseInt(el.querySelector('.habit-name-input').dataset.index));
+                
+                const reorderedList = newOrderIndices.map(oldIndex => habitsList[oldIndex]);
+                onboardingHabits[type] = reorderedList;
+                renderOnboardingStep();
+            }
         }
 
         function renderReviewStep() {

@@ -1299,6 +1299,10 @@ button, input, select {
     border-color: var(--accent-primary);
 }
 
+.touch-dragging {
+    pointer-events: none;
+}
+
 .drag-handle-icon {
     cursor: grab;
     padding: 4px 8px;
