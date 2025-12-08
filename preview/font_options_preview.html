@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Habit Tracker - Font Options Preview</title>
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&family=JetBrains+Mono:wght@400;700&family=Roboto+Mono:wght@400;700&family=Space+Grotesk:wght@400;700&family=Work+Sans:wght@400;700;900&display=swap" rel="stylesheet">
+
+    <style>
+        /* Base Reset & Brutalist Theme */
+        :root {
+            --bg-primary: #000000;
+            --text-primary: #ffffff;
+            --text-secondary: #aaaaaa;
+            --accent-primary: #6a00ff;
+            --accent-success: #ccff00;
+            --border-color: #ffffff;
+            --border-width: 2px;
+            --font-current: 'Courier New', monospace; /* Default */
+        }
+
+        *, *::before, *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background-color: #111;
+            color: var(--text-primary);
+            font-family: var(--font-current);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        /* Font Switcher UI */
+        .font-switcher {
+            position: sticky;
+            top: 20px;
+            z-index: 100;
+            background: #222;
+            border: 2px solid #fff;
+            padding: 10px;
+            margin-bottom: 40px;
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            justify-content: center;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.5);
+        }
+
+        .font-btn {
+            padding: 10px 20px;
+            border: 1px solid #555;
+            background: #000;
+            color: #fff;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.2s;
+        }
+
+        .font-btn:hover, .font-btn.active {
+            background: var(--accent-success);
+            color: #000;
+            border-color: var(--accent-success);
+            font-weight: bold;
+        }
+
+        /* Mock App Container */
+        .app-container {
+            width: 100%;
+            max-width: 400px; /* Mobile width simulation */
+            background: var(--bg-primary);
+            border: 4px solid var(--border-color);
+            min-height: 800px;
+            position: relative;
+        }
+
+        /* --- Dashboard Specific Styles (Recreated) --- */
+        
+        /* Typography Helpers */
+        .text-mono { font-family: 'JetBrains Mono', monospace; } /* Fallback for specific elements if needed */
+
+        h1 {
+            font-weight: 900;
+            text-transform: uppercase;
+            font-size: 1.5rem;
+            letter-spacing: -1px;
+        }
+
+        h2 {
+            font-size: 1rem;
+            text-transform: uppercase;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            font-weight: 700;
+        }
+        
+        h2::before {
+            content: '// ';
+            color: var(--accent-primary);
+            margin-right: 8px;
+        }
+
+        /* Header */
+        .app-header {
+            height: 70px;
+            border-bottom: var(--border-width) solid var(--border-color);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 16px;
+        }
+
+        .month-select {
+            background: transparent;
+            color: var(--text-primary);
+            border: 1px solid var(--border-color);
+            padding: 8px;
+            font-family: inherit;
+            text-transform: uppercase;
+            font-weight: bold;
+        }
+
+        /* Stats Cards */
+        .summary-cards {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            border-bottom: var(--border-width) solid var(--border-color);
+        }
+
+        .summary-card {
+            padding: 20px;
+            border-right: 1px solid var(--border-color);
+            border-bottom: 1px solid var(--border-color);
+        }
+        
+        .summary-card:nth-child(even) { border-right: none; }
+        .summary-card:nth-child(3) { border-bottom: none; border-right: none; grid-column: span 2; display: flex; align-items: center; justify-content: space-between;}
+
+        .card-label {
+            display: block;
+            font-size: 0.7rem;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            margin-bottom: 8px;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+        }
+
+        .card-value {
+            font-size: 2.5rem;
+            font-weight: 900;
+            line-height: 1;
+            display: block;
+        }
+
+        /* Tabs */
+        .dashboard-tabs {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            border-bottom: var(--border-width) solid var(--border-color);
+        }
+
+        .dash-tab {
+            padding: 15px;
+            background: transparent;
+            border: none;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            font-weight: 900;
+            border-right: 1px solid var(--border-color);
+            font-family: inherit;
+        }
+        
+        .dash-tab.active {
+            background: var(--accent-success);
+            color: #000;
+        }
+
+        /* Chart Section */
+        .chart-section {
+            padding: 20px;
+            border-bottom: var(--border-width) solid var(--border-color);
+        }
+
+        .chart-placeholder {
+            height: 150px;
+            border: 1px dashed #333;
+            display: flex;
+            align-items: flex-end;
+            justify-content: space-around;
+            padding-bottom: 10px;
+        }
+        
+        .bar {
+            width: 8px;
+            background: #333;
+        }
+        .bar.active { background: var(--accent-primary); }
+
+        /* Habit Rates */
+        .habit-rates {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .rate-item {
+            border: 1px solid #333;
+            padding: 10px;
+        }
+
+        .rate-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            font-size: 0.85rem;
+            font-weight: 700;
+        }
+
+        .streak-badge {
+            background: var(--accent-primary);
+            color: #fff;
+            padding: 2px 6px;
+            font-size: 0.7rem;
+            border-radius: 2px;
+        }
+
+        .rate-bar-container {
+            height: 8px;
+            background: #222;
+            position: relative;
+        }
+        
+        .rate-fill {
+            background: #fff;
+            height: 100%;
+        }
+
+        .rate-val {
+            font-size: 0.75rem;
+            float: right;
+            margin-top: 4px;
+            color: var(--text-secondary);
+        }
+
+        /* Bottom Nav */
+        .bottom-nav {
+            height: 70px;
+            border-top: var(--border-width) solid var(--border-color);
+            display: flex;
+        }
+
+        .nav-btn {
+            flex: 1;
+            background: transparent;
+            border: none;
+            border-right: 1px solid var(--border-color);
+            color: var(--text-secondary);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 4px;
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            font-weight: 900;
+            font-family: inherit;
+        }
+
+        .nav-btn.active {
+            background: #fff;
+            color: #000;
+        }
+
+        .nav-icon { font-size: 1.2rem; }
+
+        /* --- Font Classes --- */
+        .font-jetbrains {
+            --font-current: 'JetBrains Mono', monospace;
+        }
+        .font-inter {
+            --font-current: 'Inter', sans-serif;
+        }
+        .font-space {
+            --font-current: 'Space Grotesk', sans-serif;
+        }
+        .font-work {
+            --font-current: 'Work Sans', sans-serif;
+        }
+
+        /* Adjustments per font */
+        .font-inter .card-value { letter-spacing: -2px; }
+        .font-space .card-value { letter-spacing: -1px; }
+        
+    </style>
+</head>
+<body class="font-jetbrains">
+
+    <!-- Font Switcher -->
+    <div class="font-switcher">
+        <button class="font-btn active" onclick="switchFont('font-jetbrains', this)">
+            Option 1: JetBrains Mono<br><small>(Refined Tech)</small>
+        </button>
+        <button class="font-btn" onclick="switchFont('font-space', this)">
+            Option 2: Space Grotesk<br><small>(Brutalist Display)</small>
+        </button>
+        <button class="font-btn" onclick="switchFont('font-inter', this)">
+            Option 3: Inter<br><small>(Swiss Neutral)</small>
+        </button>
+        <button class="font-btn" onclick="switchFont('font-work', this)">
+            Option 4: Work Sans<br><small>(Modern UI)</small>
+        </button>
+    </div>
+
+    <!-- App Simulation -->
+    <div class="app-container">
+        
+        <!-- Header -->
+        <header class="app-header">
+            <h1>Dashboard</h1>
+            <div class="month-select">DEC 2025</div>
+        </header>
+
+        <!-- Summary Cards -->
+        <div class="summary-cards">
+            <div class="summary-card">
+                <span class="card-value">84%</span>
+                <span class="card-label">Overall Rate</span>
+            </div>
+            <div class="summary-card">
+                <span class="card-value">12</span>
+                <span class="card-label">Day Streak</span>
+            </div>
+            <div class="summary-card" style="padding: 15px;">
+                <div>
+                    <span class="card-value" style="font-size: 1.5rem;">28</span>
+                    <span class="card-label" style="margin:0;">Best Streak</span>
+                </div>
+                <div style="font-size: 2rem; opacity: 0.2;">🏆</div>
+            </div>
+        </div>
+
+        <!-- Dashboard Tabs -->
+        <div class="dashboard-tabs">
+            <button class="dash-tab active">Morning</button>
+            <button class="dash-tab">Evening</button>
+        </div>
+
+        <!-- Completion Chart -->
+        <section class="chart-section">
+            <h2>Daily Trend</h2>
+            <div class="chart-placeholder">
+                <div class="bar" style="height: 40%"></div>
+                <div class="bar active" style="height: 60%"></div>
+                <div class="bar active" style="height: 80%"></div>
+                <div class="bar active" style="height: 70%"></div>
+                <div class="bar" style="height: 30%"></div>
+                <div class="bar active" style="height: 90%"></div>
+                <div class="bar active" style="height: 100%"></div>
+                <div class="bar active" style="height: 85%"></div>
+                <div class="bar" style="height: 50%"></div>
+                <div class="bar active" style="height: 75%"></div>
+            </div>
+        </section>
+
+        <!-- Rates -->
+        <section class="chart-section" style="border-bottom: none;">
+            <h2>Completion Rates</h2>
+            <div class="habit-rates">
+                
+                <div class="rate-item">
+                    <div class="rate-header">
+                        <span>GYM SESSION</span>
+                        <span class="streak-badge">🔥 12 days</span>
+                    </div>
+                    <div class="rate-bar-container">
+                        <div class="rate-fill" style="width: 92%"></div>
+                    </div>
+                    <span class="rate-val">92%</span>
+                </div>
+
+                <div class="rate-item">
+                    <div class="rate-header">
+                        <span>READ 10 PAGES</span>
+                        <span class="streak-badge" style="background:#333; color:#888;">0 days</span>
+                    </div>
+                    <div class="rate-bar-container">
+                        <div class="rate-fill" style="width: 45%; background: var(--text-secondary);"></div>
+                    </div>
+                    <span class="rate-val">45%</span>
+                </div>
+
+                <div class="rate-item">
+                    <div class="rate-header">
+                        <span>MEDITATION</span>
+                        <span class="streak-badge">🔥 4 days</span>
+                    </div>
+                    <div class="rate-bar-container">
+                        <div class="rate-fill" style="width: 78%"></div>
+                    </div>
+                    <span class="rate-val">78%</span>
+                </div>
+
+            </div>
+        </section>
+
+        <!-- Bottom Nav -->
+        <nav class="bottom-nav">
+            <button class="nav-btn active">
+                <span class="nav-icon">■</span>
+                <span>Dashboard</span>
+            </button>
+            <button class="nav-btn">
+                <span class="nav-icon">✓</span>
+                <span>Today</span>
+            </button>
+            <button class="nav-btn">
+                <span class="nav-icon">⚙</span>
+                <span>Settings</span>
+            </button>
+        </nav>
+
+    </div>
+
+    <script>
+        function switchFont(className, btn) {
+            // Remove all font classes from body
+            document.body.classList.remove('font-jetbrains', 'font-inter', 'font-space', 'font-work');
+            // Add new font class
+            document.body.classList.add(className);
+            
+            // Update buttons
+            document.querySelectorAll('.font-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+        }
+    </script>
+
+</body>
+</html>
