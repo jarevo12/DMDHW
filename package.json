@@ -1,5 +1,9 @@
 {
   "dependencies": {
     "playwright": "^1.57.0"
+  },
+  "devDependencies": {
+    "pdf-lib": "^1.17.1",
+    "puppeteer": "^24.34.0"
   }
 }

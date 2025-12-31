@@ -1,0 +1,1258 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Routines: Market Differentiation Strategy | Habit Tracker</title>
+    <style>
+        /* ========================================
+           SWISS BRUTALISM PRESENTATION SYSTEM
+           ======================================== */
+
+        :root {
+            /* Core Palette */
+            --bg-primary: #000000;
+            --bg-secondary: #0a0a0a;
+            --text-primary: #ffffff;
+            --text-secondary: #c0c0c0;
+            --text-muted: #666666;
+
+            /* Accent Colors */
+            --accent-purple: #a78bfa;
+            --accent-green: #ccff00;
+            --accent-red: #ff0000;
+            --accent-yellow: #ffff00;
+
+            /* Structural */
+            --border-width: 4px;
+            --border-thin: 2px;
+            --border-color: #ffffff;
+
+            /* Typography */
+            --font-mono: 'SF Mono', 'Consolas', 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+            --font-sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html, body {
+            height: 100%;
+            overflow: auto;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            font-family: var(--font-mono);
+        }
+
+        /* ========================================
+           SLIDE CONTAINER
+           ======================================== */
+
+        .presentation {
+            min-height: 100vh;
+            width: 100vw;
+            position: relative;
+            overflow: auto;
+        }
+
+        .slide {
+            display: none;
+            min-height: 100vh;
+            width: 100vw;
+            padding: 60px 60px 80px 60px;
+            flex-direction: column;
+            justify-content: flex-start;
+            position: relative;
+            overflow: auto;
+        }
+
+        .slide.active {
+            display: flex;
+        }
+
+        /* ========================================
+           TYPOGRAPHY
+           ======================================== */
+
+        h1, h2, h3, h4 {
+            font-family: var(--font-sans);
+            font-weight: 900;
+            text-transform: uppercase;
+            letter-spacing: -1px;
+            line-height: 1;
+        }
+
+        h1 {
+            font-size: 4rem;
+            margin-bottom: 24px;
+        }
+
+        h2 {
+            font-size: 2.5rem;
+            margin-bottom: 20px;
+        }
+
+        h3 {
+            font-size: 1.5rem;
+            margin-bottom: 16px;
+        }
+
+        p, li {
+            font-size: 1.1rem;
+            line-height: 1.6;
+        }
+
+        /* Section Labels - Code Comment Style */
+        .section-label {
+            color: var(--accent-purple);
+            font-family: var(--font-mono);
+            font-size: 1.05rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 8px;
+        }
+
+        .section-label::before {
+            content: '// ';
+        }
+
+        /* Tagline */
+        .tagline {
+            font-size: 1.4rem;
+            color: var(--text-secondary);
+            margin-bottom: 40px;
+        }
+
+        /* ========================================
+           LAYOUT COMPONENTS
+           ======================================== */
+
+        .content-grid {
+            display: grid;
+            gap: 40px;
+            flex: 1;
+            align-content: start;
+        }
+
+        .two-col {
+            grid-template-columns: 1fr 1fr;
+        }
+
+        .three-col {
+            grid-template-columns: 1fr 1fr 1fr;
+        }
+
+        /* Cards */
+        .card {
+            border: var(--border-width) solid var(--border-color);
+            padding: 24px;
+            background: var(--bg-primary);
+        }
+
+        .card-header {
+            border-bottom: var(--border-thin) solid var(--border-color);
+            padding-bottom: 12px;
+            margin-bottom: 16px;
+        }
+
+        .card.highlight {
+            border-color: var(--accent-green);
+            background: rgba(204, 255, 0, 0.05);
+        }
+
+        .card.accent {
+            border-color: var(--accent-purple);
+        }
+
+        /* Stat Blocks */
+        .stat-block {
+            text-align: center;
+            padding: 24px;
+            border: var(--border-width) solid var(--border-color);
+        }
+
+        .stat-value {
+            font-family: var(--font-sans);
+            font-size: 3rem;
+            font-weight: 900;
+            line-height: 1;
+            margin-bottom: 8px;
+        }
+
+        .stat-value.green {
+            color: var(--accent-green);
+        }
+
+        .stat-value.purple {
+            color: var(--accent-purple);
+        }
+
+        .stat-label {
+            font-size: 1rem;
+            text-transform: uppercase;
+            color: var(--text-secondary);
+            letter-spacing: 0.5px;
+        }
+
+        /* ========================================
+           TABLES
+           ======================================== */
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 1.05rem;
+        }
+
+        th, td {
+            border: var(--border-thin) solid var(--border-color);
+            padding: 12px 16px;
+            text-align: left;
+        }
+
+        th {
+            background: var(--text-primary);
+            color: var(--bg-primary);
+            font-weight: 900;
+            text-transform: uppercase;
+            font-size: 1rem;
+            letter-spacing: 0.5px;
+        }
+
+        td {
+            background: var(--bg-primary);
+        }
+
+        tr:nth-child(even) td {
+            background: var(--bg-secondary);
+        }
+
+        .check {
+            color: var(--accent-green);
+            font-weight: 900;
+        }
+
+        .cross {
+            color: var(--text-muted);
+        }
+
+        .highlight-row td {
+            background: rgba(106, 0, 255, 0.15);
+            border-color: var(--accent-purple);
+        }
+
+        /* ========================================
+           LISTS
+           ======================================== */
+
+        ul, ol {
+            list-style: none;
+            padding: 0;
+        }
+
+        li {
+            padding: 12px 0;
+            border-bottom: 1px solid #333;
+            position: relative;
+            padding-left: 24px;
+        }
+
+        li::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 8px;
+            height: 8px;
+            background: var(--accent-green);
+        }
+
+        li:last-child {
+            border-bottom: none;
+        }
+
+        /* Problem list variant */
+        .problem-list li::before {
+            background: var(--accent-red);
+        }
+
+        /* ========================================
+           ROADMAP TIMELINE
+           ======================================== */
+
+        .timeline {
+            display: flex;
+            gap: 0;
+            margin-top: 20px;
+        }
+
+        .timeline-phase {
+            flex: 1;
+            border: var(--border-width) solid var(--border-color);
+            padding: 20px;
+            position: relative;
+        }
+
+        .timeline-phase:not(:last-child) {
+            border-right: none;
+        }
+
+        .timeline-phase.active {
+            border-color: var(--accent-green);
+            background: rgba(204, 255, 0, 0.05);
+        }
+
+        .phase-number {
+            font-family: var(--font-sans);
+            font-size: 3rem;
+            font-weight: 900;
+            color: var(--text-muted);
+            line-height: 1;
+            margin-bottom: 12px;
+        }
+
+        .timeline-phase.active .phase-number {
+            color: var(--accent-green);
+        }
+
+        .phase-title {
+            font-weight: 900;
+            text-transform: uppercase;
+            margin-bottom: 12px;
+            font-size: 1rem;
+        }
+
+        .phase-items {
+            font-size: 1rem;
+            color: var(--text-secondary);
+        }
+
+        .phase-items li {
+            padding: 6px 0;
+            padding-left: 16px;
+        }
+
+        .phase-items li::before {
+            width: 6px;
+            height: 6px;
+        }
+
+        /* ========================================
+           REVENUE VISUALIZATION
+           ======================================== */
+
+        .revenue-funnel {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-top: 20px;
+        }
+
+        .funnel-tier {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .funnel-bar {
+            height: 40px;
+            background: var(--accent-purple);
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            padding-right: 16px;
+            font-weight: 700;
+            transition: none;
+        }
+
+        .funnel-tier:nth-child(1) .funnel-bar {
+            width: 100%;
+            background: var(--text-muted);
+        }
+
+        .funnel-tier:nth-child(2) .funnel-bar {
+            width: 60%;
+            background: var(--accent-purple);
+        }
+
+        .funnel-tier:nth-child(3) .funnel-bar {
+            width: 30%;
+            background: var(--accent-green);
+            color: var(--bg-primary);
+        }
+
+        .funnel-label {
+            min-width: 180px;
+            font-size: 1.05rem;
+        }
+
+        .funnel-value {
+            font-family: var(--font-sans);
+            font-weight: 900;
+            min-width: 100px;
+            text-align: right;
+        }
+
+        /* ========================================
+           FEATURE COMPARISON ICONS
+           ======================================== */
+
+        .feature-icon {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 32px;
+            height: 32px;
+            border: var(--border-thin) solid currentColor;
+            font-size: 1.2rem;
+            margin-right: 12px;
+        }
+
+        /* ========================================
+           NAVIGATION
+           ======================================== */
+
+        .nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 60px;
+            background: var(--bg-primary);
+            border-top: var(--border-width) solid var(--border-color);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 40px;
+            z-index: 100;
+        }
+
+        .nav-controls {
+            display: flex;
+            gap: 0;
+        }
+
+        .nav-btn {
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            border: var(--border-thin) solid var(--border-color);
+            padding: 12px 24px;
+            font-family: var(--font-mono);
+            font-size: 1rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            cursor: pointer;
+            transition: none;
+        }
+
+        .nav-btn:not(:last-child) {
+            border-right: none;
+        }
+
+        .nav-btn:hover {
+            background: var(--text-primary);
+            color: var(--bg-primary);
+        }
+
+        .nav-btn:active {
+            transform: translate(2px, 2px);
+        }
+
+        .nav-btn:disabled {
+            opacity: 0.3;
+            cursor: not-allowed;
+        }
+
+        .slide-counter {
+            font-size: 1rem;
+            font-weight: 700;
+            color: var(--text-secondary);
+        }
+
+        .slide-counter .current {
+            color: var(--text-primary);
+            font-size: 1.5rem;
+        }
+
+        .nav-hint {
+            font-size: 0.95rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+        }
+
+        /* ========================================
+           TITLE SLIDE SPECIAL
+           ======================================== */
+
+        .slide.title-slide {
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+        }
+
+        .title-slide h1 {
+            font-size: 5rem;
+            margin-bottom: 16px;
+        }
+
+        .title-slide .tagline {
+            font-size: 1.8rem;
+            max-width: 600px;
+            margin-bottom: 60px;
+        }
+
+        .title-meta {
+            position: absolute;
+            bottom: 100px;
+            display: flex;
+            gap: 40px;
+            font-size: 1rem;
+            color: var(--text-secondary);
+        }
+
+        .title-meta span {
+            border: 1px solid #333;
+            padding: 8px 16px;
+        }
+
+        .brand-mark {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            margin-bottom: 40px;
+        }
+
+        .brand-logo {
+            width: 60px;
+            height: 60px;
+            border: var(--border-width) solid var(--accent-green);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: var(--font-sans);
+            font-weight: 900;
+            font-size: 2rem;
+        }
+
+        .brand-name {
+            font-size: 1.2rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            color: var(--text-secondary);
+        }
+
+        /* ========================================
+           QUOTE BLOCKS
+           ======================================== */
+
+        .quote {
+            border-left: var(--border-width) solid var(--accent-purple);
+            padding-left: 24px;
+            font-style: italic;
+            color: var(--text-secondary);
+            margin: 20px 0;
+        }
+
+        .quote-source {
+            display: block;
+            margin-top: 8px;
+            font-style: normal;
+            font-size: 1rem;
+            color: var(--text-muted);
+        }
+
+        /* ========================================
+           RESPONSIVE / PRINT
+           ======================================== */
+
+        @media print {
+            .nav {
+                display: none;
+            }
+
+            .slide {
+                display: flex !important;
+                page-break-after: always;
+                height: 100vh;
+            }
+
+            .presentation {
+                height: auto;
+            }
+        }
+
+        @media (max-width: 1200px) {
+            .slide {
+                padding: 40px;
+            }
+
+            h1 {
+                font-size: 3rem;
+            }
+
+            .title-slide h1 {
+                font-size: 3.5rem;
+            }
+
+            .two-col {
+                grid-template-columns: 1fr;
+            }
+
+            .timeline {
+                flex-direction: column;
+            }
+
+            .timeline-phase:not(:last-child) {
+                border-right: var(--border-width) solid var(--border-color);
+                border-bottom: none;
+            }
+        }
+
+        /* ========================================
+           ANIMATIONS (Minimal - Brutalist)
+           ======================================== */
+
+        .slide.active {
+            animation: slideIn 0.1s ease-out;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+            }
+            to {
+                opacity: 1;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="presentation">
+
+        <!-- ========================================
+             SLIDE 1: TITLE
+             ======================================== -->
+        <section class="slide title-slide active" data-slide="1">
+            <div class="brand-mark">
+                <div class="brand-logo">HT</div>
+                <span class="brand-name">Habit Tracker</span>
+            </div>
+
+            <h1>Smart Routines</h1>
+            <p class="tagline">Market Differentiation Strategy</p>
+
+            <p class="section-label" style="margin-top: 20px;">Evidence-based habits. No fluff.</p>
+
+            <div class="title-meta">
+                <span>Strategic Analysis</span>
+                <span>Q1 2025</span>
+                <span>Executive Briefing</span>
+            </div>
+        </section>
+
+        <!-- ========================================
+             SLIDE 2: THE PROBLEM
+             ======================================== -->
+        <section class="slide" data-slide="2">
+            <p class="section-label">Market Analysis</p>
+            <h1>The Problems We Solve</h1>
+
+            <div class="content-grid two-col" style="margin-top: 40px;">
+                <div>
+                    <h3 style="color: var(--accent-red); margin-bottom: 24px;">Current Market Failures</h3>
+
+                    <ul class="problem-list">
+                        <li>
+                            <strong style="font-size: 1.3rem;">60% Day-1 Abandonment</strong><br>
+                            <span style="color: var(--text-secondary);">Users face "blank slate paralysis" - they don't know what habits to track or how many</span>
+                        </li>
+                        <li>
+                            <strong style="font-size: 1.3rem;">#1 User Complaint: Streak Anxiety</strong><br>
+                            <span style="color: var(--text-secondary);">"I had a 120-day streak and got the flu. Lost everything. Deleted the app."</span>
+                        </li>
+                        <li>
+                            <strong style="font-size: 1.3rem;">No Actionable Insights</strong><br>
+                            <span style="color: var(--text-secondary);">Apps tell users WHAT they did, not WHY they succeed or fail</span>
+                        </li>
+                    </ul>
+                </div>
+
+                <div>
+                    <h3 style="color: var(--accent-green); margin-bottom: 24px;">Our Opportunity</h3>
+
+                    <div class="stat-block" style="margin-bottom: 20px;">
+                        <div class="stat-value green">0</div>
+                        <div class="stat-label">Competitors offer both science-backed templates AND behavioral insights</div>
+                    </div>
+
+                    <div class="card highlight">
+                        <p style="font-weight: 700; margin-bottom: 12px;">Market Gap:</p>
+                        <p style="color: var(--text-secondary);">No habit tracker starts users with evidence-based routines then helps them understand their personal patterns.</p>
+                        <p style="margin-top: 16px; color: var(--accent-green); font-weight: 700;">We can own this position.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ========================================
+             SLIDE 3: COMPETITIVE LANDSCAPE
+             ======================================== -->
+        <section class="slide" data-slide="3">
+            <p class="section-label">Competitive Analysis</p>
+            <h1>Feature Landscape</h1>
+
+            <div style="margin-top: 40px; overflow-x: auto;">
+                <table>
+                    <thead>
+                        <tr>
+                            <th style="width: 20%;">App</th>
+                            <th>Science-Backed Templates</th>
+                            <th>Behavioral Insights</th>
+                            <th>Flexible Streaks</th>
+                            <th>Cross-Platform</th>
+                            <th>Free Tier</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>Streaks</strong></td>
+                            <td class="cross">-</td>
+                            <td class="cross">-</td>
+                            <td class="cross">-</td>
+                            <td class="cross">iOS Only</td>
+                            <td class="cross">Paid</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Habitica</strong></td>
+                            <td class="cross">Generic</td>
+                            <td class="cross">Basic Stats</td>
+                            <td class="check">Rest Inn</td>
+                            <td class="check">Yes</td>
+                            <td class="check">Yes</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Loop</strong></td>
+                            <td class="cross">-</td>
+                            <td class="check">Good</td>
+                            <td class="check">Yes</td>
+                            <td class="cross">Android</td>
+                            <td class="check">Yes</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Habitify</strong></td>
+                            <td class="cross">-</td>
+                            <td class="cross">Mood Only</td>
+                            <td class="cross">-</td>
+                            <td class="check">Yes</td>
+                            <td class="check">Limited</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Fabulous</strong></td>
+                            <td class="check">Duke Research</td>
+                            <td class="cross">-</td>
+                            <td class="cross">-</td>
+                            <td class="check">Yes</td>
+                            <td class="cross">Premium</td>
+                        </tr>
+                        <tr class="highlight-row">
+                            <td><strong style="color: var(--accent-purple);">Habit Tracker</strong></td>
+                            <td class="check">CDC/WHO/NIH</td>
+                            <td class="check">Full Analysis</td>
+                            <td class="check">Skip + Strength</td>
+                            <td class="check">PWA</td>
+                            <td class="check">Yes</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div style="display: flex; gap: 40px; margin-top: 40px;">
+                <div class="card" style="flex: 1;">
+                    <p class="section-label">Our Unique Position</p>
+                    <p style="font-size: 1.2rem; font-weight: 700;">The only habit tracker with multi-source scientific citations (CDC, WHO, NIH, AASM) AND automatic behavioral pattern detection.</p>
+                </div>
+                <div class="card accent" style="flex: 1;">
+                    <p class="section-label">Target Segments</p>
+                    <p><strong>Primary:</strong> Results-oriented optimizers (willing to pay)</p>
+                    <p><strong>Secondary:</strong> Overwhelmed beginners (large volume)</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- ========================================
+             SLIDE 4: THE KILLER FEATURE
+             ======================================== -->
+        <section class="slide" data-slide="4">
+            <p class="section-label">Primary Killer Feature</p>
+            <h1>Smart Routines</h1>
+            <p class="tagline">Science-Backed Templates + Behavioral Insights</p>
+
+            <div class="content-grid two-col" style="margin-top: 30px;">
+                <!-- Left Column: Templates -->
+                <div class="card">
+                    <div class="card-header">
+                        <h3 style="margin: 0;">Science-Backed Templates</h3>
+                        <p style="color: var(--text-secondary); font-size: 1.05rem; margin-top: 8px;">Solves Day-1 abandonment</p>
+                    </div>
+
+                    <p style="margin-bottom: 16px;"><strong>4 Goal-Based Routines:</strong></p>
+
+                    <ul style="margin-bottom: 20px;">
+                        <li><strong>Get Fitter</strong> - CDC, WHO, ACSM backed</li>
+                        <li><strong>Sleep Better</strong> - AASM guidelines</li>
+                        <li><strong>Be Productive</strong> - APA research</li>
+                        <li><strong>Reduce Stress</strong> - NIH protocols</li>
+                    </ul>
+
+                    <div style="background: var(--bg-secondary); padding: 16px; border: 1px solid #333;">
+                        <p style="font-size: 1.05rem; color: var(--text-secondary);">Each routine: 10 evidence-based habits with timing, rationale, and source citations.</p>
+                    </div>
+
+                    <div class="stat-block" style="margin-top: 20px; border-color: var(--accent-green);">
+                        <div class="stat-value green">3-5</div>
+                        <div class="stat-label">Days to implement (content exists)</div>
+                    </div>
+                </div>
+
+                <!-- Right Column: Insights -->
+                <div class="card">
+                    <div class="card-header">
+                        <h3 style="margin: 0;">Behavioral Insights</h3>
+                        <p style="color: var(--text-secondary); font-size: 1.05rem; margin-top: 8px;">Tells users WHY they succeed/fail</p>
+                    </div>
+
+                    <p style="margin-bottom: 16px;"><strong>Automatic Pattern Detection:</strong></p>
+
+                    <ul style="margin-bottom: 20px;">
+                        <li><strong>Correlations</strong> - "Skip Meditation = 3x likely to skip Reading"</li>
+                        <li><strong>Day Patterns</strong> - "87% Mondays, 52% Fridays"</li>
+                        <li><strong>Trends</strong> - "Morning routine up 23% this month"</li>
+                        <li><strong>Sequencing</strong> - "Exercise 40% better after Wake Early"</li>
+                    </ul>
+
+                    <div style="background: var(--bg-secondary); padding: 16px; border: 1px solid #333;">
+                        <p style="font-size: 1.05rem; color: var(--text-secondary);">Client-side computation (no server cost). Requires 21+ days data for basic insights.</p>
+                    </div>
+
+                    <div class="stat-block" style="margin-top: 20px; border-color: var(--accent-purple);">
+                        <div class="stat-value purple">8-10</div>
+                        <div class="stat-label">Days to implement basic version</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ========================================
+             SLIDE 5: FLEXIBLE STREAKS
+             ======================================== -->
+        <section class="slide" data-slide="5">
+            <p class="section-label">Supporting Feature</p>
+            <h1>Flexible Streak System</h1>
+            <p class="tagline">"Streaks That Don't Punish Life"</p>
+
+            <div class="content-grid three-col" style="margin-top: 40px;">
+                <!-- Feature 1: Skip Days -->
+                <div class="card">
+                    <div style="width: 48px; height: 48px; border: 2px solid var(--accent-green); display: flex; align-items: center; justify-content: center; font-family: var(--font-mono); font-size: 1.5rem; font-weight: 900; margin-bottom: 16px;">||</div>
+                    <h3>Skip Day Button</h3>
+                    <p style="color: var(--text-secondary); margin-bottom: 16px;">Mark sick days, travel, or rest without breaking your streak.</p>
+
+                    <div style="border-top: 1px solid #333; padding-top: 16px; margin-top: auto;">
+                        <p style="font-size: 1rem;"><strong>Before:</strong> <span style="color: var(--accent-red);">120-day streak lost to flu</span></p>
+                        <p style="font-size: 1rem;"><strong>After:</strong> <span style="color: var(--accent-green);">Streak preserved, day marked "Skip"</span></p>
+                    </div>
+                </div>
+
+                <!-- Feature 2: Habit Strength -->
+                <div class="card">
+                    <div style="width: 48px; height: 48px; border: 2px solid var(--accent-purple); display: flex; align-items: center; justify-content: center; font-family: var(--font-sans); font-size: 1.8rem; font-weight: 900; color: var(--accent-purple); margin-bottom: 16px;">%</div>
+                    <h3>Habit Strength Score</h3>
+                    <p style="color: var(--text-secondary); margin-bottom: 16px;">Decay algorithm: lose 10% per miss instead of 100% reset.</p>
+
+                    <div style="border-top: 1px solid #333; padding-top: 16px; margin-top: auto;">
+                        <p style="font-size: 1rem;"><strong>0-20:</strong> Fragile</p>
+                        <p style="font-size: 1rem;"><strong>21-80:</strong> Building/Strong</p>
+                        <p style="font-size: 1rem;"><strong>81-100:</strong> <span style="color: var(--accent-green);">Mastered</span></p>
+                    </div>
+                </div>
+
+                <!-- Feature 3: Weekly Goals -->
+                <div class="card">
+                    <div style="width: 48px; height: 48px; border: 2px solid var(--border-color); display: flex; align-items: center; justify-content: center; font-family: var(--font-mono); font-size: 1.2rem; font-weight: 900; margin-bottom: 16px;">7D</div>
+                    <h3>Weekly Goals</h3>
+                    <p style="color: var(--text-secondary); margin-bottom: 16px;">"3x per week" instead of rigid daily requirements.</p>
+
+                    <div style="border-top: 1px solid #333; padding-top: 16px; margin-top: auto;">
+                        <p style="font-size: 1rem;"><strong>Benefit:</strong> <span style="color: var(--accent-green);">Flexibility for real life</span></p>
+                        <p style="font-size: 1rem;"><strong>Status:</strong> Already supported in code</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card highlight" style="margin-top: 40px;">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <div>
+                        <p class="section-label">Impact</p>
+                        <p style="font-size: 1.2rem;">Addresses <strong>#1 cause of app abandonment</strong> across all habit trackers</p>
+                    </div>
+                    <div class="stat-block" style="border: none; background: transparent;">
+                        <div class="stat-value green">4-6</div>
+                        <div class="stat-label">Days to implement</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ========================================
+             SLIDE 6: ROADMAP
+             ======================================== -->
+        <section class="slide" data-slide="6">
+            <p class="section-label">Implementation</p>
+            <h1>Development Roadmap</h1>
+
+            <div class="timeline">
+                <!-- Phase 1 -->
+                <div class="timeline-phase active">
+                    <div class="phase-number">01</div>
+                    <div class="phase-title">Foundation</div>
+                    <ul class="phase-items">
+                        <li>Science-backed templates</li>
+                        <li>Basic insights module</li>
+                        <li>Correlation matrix</li>
+                        <li>Day-of-week patterns</li>
+                        <li>Skip day feature</li>
+                    </ul>
+                    <div style="margin-top: 16px; padding-top: 16px; border-top: 1px solid #333;">
+                        <p style="font-size: 1rem; color: var(--accent-green);">Content already exists</p>
+                    </div>
+                </div>
+
+                <!-- Phase 2 -->
+                <div class="timeline-phase">
+                    <div class="phase-number">02</div>
+                    <div class="phase-title">Premium Layer</div>
+                    <ul class="phase-items">
+                        <li>Habit strength algorithm</li>
+                        <li>Advanced NLG insights</li>
+                        <li>LLM-powered coach</li>
+                        <li>Premium tier gates</li>
+                        <li>Payment integration</li>
+                    </ul>
+                    <div style="margin-top: 16px; padding-top: 16px; border-top: 1px solid #333;">
+                        <p style="font-size: 1rem; color: var(--text-muted);">Gemini API: &lt;$5/mo for 1000 users</p>
+                    </div>
+                </div>
+
+                <!-- Phase 3 -->
+                <div class="timeline-phase">
+                    <div class="phase-number">03</div>
+                    <div class="phase-title">Platform Expansion</div>
+                    <ul class="phase-items">
+                        <li>Capacitor setup</li>
+                        <li>Health API integration</li>
+                        <li>HealthKit (iOS)</li>
+                        <li>Health Connect (Android)</li>
+                        <li>App Store submissions</li>
+                    </ul>
+                    <div style="margin-top: 16px; padding-top: 16px; border-top: 1px solid #333;">
+                        <p style="font-size: 1rem; color: var(--text-muted);">Optional - high effort</p>
+                    </div>
+                </div>
+            </div>
+
+            <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 0; margin-top: 40px;">
+                <div class="stat-block" style="border-right: none;">
+                    <div class="stat-value">15-20</div>
+                    <div class="stat-label">Phase 1 Days</div>
+                </div>
+                <div class="stat-block" style="border-right: none;">
+                    <div class="stat-value">14-18</div>
+                    <div class="stat-label">Phase 2 Days</div>
+                </div>
+                <div class="stat-block" style="border-right: none;">
+                    <div class="stat-value">20-30</div>
+                    <div class="stat-label">Phase 3 Days</div>
+                </div>
+                <div class="stat-block" style="background: rgba(204, 255, 0, 0.1);">
+                    <div class="stat-value green">MVP</div>
+                    <div class="stat-label">Phase 1 = Differentiation</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ========================================
+             SLIDE 7: REVENUE & IMPACT
+             ======================================== -->
+        <section class="slide" data-slide="7">
+            <p class="section-label">Business Impact</p>
+            <h1>Revenue Projections</h1>
+
+            <div class="content-grid two-col" style="margin-top: 40px;">
+                <!-- Left: Pricing -->
+                <div>
+                    <h3 style="margin-bottom: 24px;">Pricing Tiers</h3>
+
+                    <div class="card" style="margin-bottom: 16px;">
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <div>
+                                <p style="font-weight: 900; font-size: 1.2rem;">FREE</p>
+                                <p style="color: var(--text-secondary); font-size: 1.05rem;">Basic tracking, templates, streaks, skip days</p>
+                            </div>
+                            <div style="font-family: var(--font-sans); font-size: 2rem; font-weight: 900;">$0</div>
+                        </div>
+                    </div>
+
+                    <div class="card accent" style="margin-bottom: 16px;">
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <div>
+                                <p style="font-weight: 900; font-size: 1.2rem;">INSIGHTS PRO</p>
+                                <p style="color: var(--text-secondary); font-size: 1.05rem;">Correlations, patterns, habit strength, trends</p>
+                            </div>
+                            <div style="text-align: right;">
+                                <div style="font-family: var(--font-sans); font-size: 1.5rem; font-weight: 900;">$3.99/mo</div>
+                                <div style="font-size: 1rem; color: var(--accent-purple);">or $29/yr</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card highlight">
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <div>
+                                <p style="font-weight: 900; font-size: 1.2rem;">AI COACH</p>
+                                <p style="color: var(--text-secondary); font-size: 1.05rem;">Everything + personalized AI recommendations</p>
+                            </div>
+                            <div style="text-align: right;">
+                                <div style="font-family: var(--font-sans); font-size: 1.5rem; font-weight: 900; color: var(--accent-green);">$7.99/mo</div>
+                                <div style="font-size: 1rem; color: var(--accent-green);">or $59/yr</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right: Projections -->
+                <div>
+                    <h3 style="margin-bottom: 24px;">Year 1 Projection (5,000 Users)</h3>
+
+                    <div class="revenue-funnel">
+                        <div class="funnel-tier">
+                            <span class="funnel-label">Free Users</span>
+                            <div class="funnel-bar">4,350</div>
+                            <span class="funnel-value">87%</span>
+                        </div>
+                        <div class="funnel-tier">
+                            <span class="funnel-label">Insights Pro (10%)</span>
+                            <div class="funnel-bar">500 x $29</div>
+                            <span class="funnel-value">$14,500</span>
+                        </div>
+                        <div class="funnel-tier">
+                            <span class="funnel-label">AI Coach (3%)</span>
+                            <div class="funnel-bar">150 x $59</div>
+                            <span class="funnel-value">$8,850</span>
+                        </div>
+                    </div>
+
+                    <div class="stat-block" style="margin-top: 30px; border-color: var(--accent-green); background: rgba(204, 255, 0, 0.1);">
+                        <div class="stat-value green">$23,350</div>
+                        <div class="stat-label">Year 1 ARR (5K users)</div>
+                    </div>
+
+                    <div style="margin-top: 20px; padding: 16px; border: 1px dashed #333;">
+                        <p style="font-size: 1.05rem; color: var(--text-secondary);">
+                            <strong>Infrastructure Cost:</strong> Near $0 (client-side compute)<br>
+                            <strong>API Cost:</strong> &lt;$60/yr (Gemini free tier)<br>
+                            <strong>Margin:</strong> ~99%
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ========================================
+             SLIDE 8: NEXT STEPS
+             ======================================== -->
+        <section class="slide" data-slide="8">
+            <p class="section-label">Recommended Actions</p>
+            <h1>Next Steps</h1>
+
+            <div class="content-grid two-col" style="margin-top: 40px;">
+                <div>
+                    <h3 style="margin-bottom: 24px;">Immediate Actions</h3>
+
+                    <ul>
+                        <li>
+                            <strong>Approve Phase 1 Development</strong><br>
+                            <span style="color: var(--text-secondary);">Templates + Basic Insights + Skip Days</span>
+                        </li>
+                        <li>
+                            <strong>Define Success Metrics</strong><br>
+                            <span style="color: var(--text-secondary);">Day-1 retention, 30-day retention, NPS</span>
+                        </li>
+                        <li>
+                            <strong>Plan Beta Launch</strong><br>
+                            <span style="color: var(--text-secondary);">Target: 500 users for validation</span>
+                        </li>
+                        <li>
+                            <strong>Brand Positioning Review</strong><br>
+                            <span style="color: var(--text-secondary);">"Evidence-based habits. No fluff."</span>
+                        </li>
+                    </ul>
+                </div>
+
+                <div>
+                    <h3 style="margin-bottom: 24px;">Key Risks & Mitigations</h3>
+
+                    <div class="card" style="margin-bottom: 16px;">
+                        <p style="font-weight: 700; color: var(--accent-yellow);">Risk: Insights need 30+ days data</p>
+                        <p style="color: var(--text-secondary); font-size: 1.05rem;">Mitigation: Progress bar "Collecting data (12/30 days)"</p>
+                    </div>
+
+                    <div class="card" style="margin-bottom: 16px;">
+                        <p style="font-weight: 700; color: var(--accent-yellow);">Risk: Swiss Brutalism may alienate some users</p>
+                        <p style="color: var(--text-secondary); font-size: 1.05rem;">Mitigation: A/B test softer variant for broader appeal</p>
+                    </div>
+
+                    <div class="card">
+                        <p style="font-weight: 700; color: var(--accent-yellow);">Risk: Competitor replication</p>
+                        <p style="color: var(--text-secondary); font-size: 1.05rem;">Mitigation: First-mover advantage + execution quality</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card highlight" style="margin-top: 40px;">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <div>
+                        <p class="section-label">Bottom Line</p>
+                        <p style="font-size: 1.3rem; font-weight: 700;">"Smart Routines" creates a defensible market position with minimal development investment.</p>
+                    </div>
+                    <div style="font-family: var(--font-sans); font-size: 4rem; font-weight: 900; color: var(--accent-green);">GO</div>
+                </div>
+            </div>
+        </section>
+
+    </div>
+
+    <!-- Navigation -->
+    <nav class="nav">
+        <div class="slide-counter">
+            <span class="current" id="current-slide">1</span> / <span id="total-slides">8</span>
+        </div>
+
+        <div class="nav-hint">
+            Arrow keys or click to navigate
+        </div>
+
+        <div class="nav-controls">
+            <button class="nav-btn" id="prev-btn" disabled>Prev</button>
+            <button class="nav-btn" id="next-btn">Next</button>
+        </div>
+    </nav>
+
+    <script>
+        // ========================================
+        // PRESENTATION CONTROLLER
+        // ========================================
+
+        const slides = document.querySelectorAll('.slide');
+        const totalSlides = slides.length;
+        let currentSlide = 1;
+
+        const currentSlideEl = document.getElementById('current-slide');
+        const totalSlidesEl = document.getElementById('total-slides');
+        const prevBtn = document.getElementById('prev-btn');
+        const nextBtn = document.getElementById('next-btn');
+
+        totalSlidesEl.textContent = totalSlides;
+
+        function goToSlide(n) {
+            if (n < 1 || n > totalSlides) return;
+
+            // Remove active class from all slides
+            slides.forEach(slide => slide.classList.remove('active'));
+
+            // Add active class to target slide
+            slides[n - 1].classList.add('active');
+
+            // Update state
+            currentSlide = n;
+            currentSlideEl.textContent = currentSlide;
+
+            // Update button states
+            prevBtn.disabled = currentSlide === 1;
+            nextBtn.disabled = currentSlide === totalSlides;
+        }
+
+        function nextSlide() {
+            goToSlide(currentSlide + 1);
+        }
+
+        function prevSlide() {
+            goToSlide(currentSlide - 1);
+        }
+
+        // Button listeners
+        prevBtn.addEventListener('click', prevSlide);
+        nextBtn.addEventListener('click', nextSlide);
+
+        // Keyboard navigation
+        document.addEventListener('keydown', (e) => {
+            switch(e.key) {
+                case 'ArrowRight':
+                case ' ':
+                case 'Enter':
+                    e.preventDefault();
+                    nextSlide();
+                    break;
+                case 'ArrowLeft':
+                case 'Backspace':
+                    e.preventDefault();
+                    prevSlide();
+                    break;
+                case 'Home':
+                    e.preventDefault();
+                    goToSlide(1);
+                    break;
+                case 'End':
+                    e.preventDefault();
+                    goToSlide(totalSlides);
+                    break;
+            }
+        });
+
+        // Click anywhere to advance (except on nav)
+        document.querySelector('.presentation').addEventListener('click', (e) => {
+            if (!e.target.closest('.nav')) {
+                nextSlide();
+            }
+        });
+
+        // Touch swipe support
+        let touchStartX = 0;
+        let touchEndX = 0;
+
+        document.addEventListener('touchstart', (e) => {
+            touchStartX = e.changedTouches[0].screenX;
+        });
+
+        document.addEventListener('touchend', (e) => {
+            touchEndX = e.changedTouches[0].screenX;
+            handleSwipe();
+        });
+
+        function handleSwipe() {
+            const diff = touchStartX - touchEndX;
+            if (Math.abs(diff) > 50) {
+                if (diff > 0) {
+                    nextSlide();
+                } else {
+                    prevSlide();
+                }
+            }
+        }
+    </script>
+</body>
+</html>
