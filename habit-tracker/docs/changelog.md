@@ -1,6 +1,59 @@
-# Summary of Improvements: v1.7.0 to v1.11.0
+# Habit Tracker Changelog
 
-This document summarizes the key improvements, features, and architectural decisions made between version 1.7.0 and version 1.11.0 of the Habit Tracker application.
+This document summarizes the key improvements, features, and architectural decisions made to the Habit Tracker application.
+
+---
+
+## v2.0.0 - Modular Architecture Refactor
+
+**Decision:** Complete refactoring from monolithic inline JavaScript to modular ES6 architecture.
+
+*   **Context:** The application had ~2,400 lines of inline JavaScript in `index.html`, making it difficult to maintain, debug, and scale. The `js/` directory contained unused module files from an incomplete previous refactor.
+*   **Outcome:** Clean, maintainable codebase with 18 ES6 modules organized by responsibility.
+
+### Key Changes
+
+**Code Organization:**
+| Before | After |
+|--------|-------|
+| `index.html`: 2,861 lines (87% JS) | `index.html`: 486 lines (pure HTML) |
+| Inline JS: 2,364 lines | Inline JS: 0 lines |
+| 1 module used | 18 modular files |
+
+**New Module Structure:**
+```
+js/
+├── main.js             # Entry point, event listeners
+├── firebase-init.js    # Firebase SDK initialization
+├── state.js            # Centralized state management
+├── constants.js        # Shared constants
+├── utils.js            # Helper functions (formatDate, escapeHtml)
+├── auth.js             # Authentication (magic link + password)
+├── profile.js          # User profile CRUD
+├── habits.js           # Habit CRUD operations
+├── entries.js          # Daily entry tracking
+├── schedule.js         # Schedule utilities
+├── modals.js           # Modal management
+├── onboarding.js       # Multi-step onboarding flow
+├── dashboard.js        # Analytics and charts
+├── calendar-picker.js  # Date picker component
+├── routines-config.js  # Predefined habit routines
+└── ui/
+    ├── screens.js      # Screen management
+    ├── progress.js     # Progress bar updates
+    ├── habits-ui.js    # Habit list rendering
+    └── settings-ui.js  # Settings page with drag-drop
+```
+
+**Benefits:**
+*   **Maintainability:** Each module has a single responsibility
+*   **Testability:** Modules can be tested in isolation
+*   **Scalability:** Easy to add new features without touching unrelated code
+*   **Developer Experience:** Clear file organization and import/export structure
+
+---
+
+## v1.7.0 to v1.11.0
 
 ## 1. Visual Identity Overhaul: Swiss Brutalism
 **Decision:** A major strategic shift was made to move away from standard modern UI conventions to a "Swiss Brutalism" design language.

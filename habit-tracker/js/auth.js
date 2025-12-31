@@ -1,193 +1,132 @@
-// Authentication Module
-import { getFirebaseAuth } from './firebase-config.js';
+// ========== AUTHENTICATION ==========
+// Functions for handling user authentication
 
-// Firebase Auth functions loaded dynamically
-let signInWithEmailAndPassword = null;
-let createUserWithEmailAndPassword = null;
-let signOut = null;
-let onAuthStateChanged = null;
-let sendSignInLinkToEmail = null;
-let isSignInWithEmailLink = null;
-let signInWithEmailLink = null;
+import {
+    getAuthInstance,
+    onAuthStateChanged,
+    signInWithEmailAndPassword,
+    createUserWithEmailAndPassword,
+    signOut,
+    sendSignInLinkToEmail,
+    isSignInWithEmailLink,
+    signInWithEmailLink
+} from './firebase-init.js';
+import { setCurrentUser, unsubscribeHabits, unsubscribeEntry } from './state.js';
 
-// Current user
-let currentUser = null;
+// Callback for auth state changes (set by main.js)
+let authStateCallback = null;
 
-// Auth state listeners
-const authListeners = [];
+/**
+ * Set the callback function to handle auth state changes
+ * @param {Function} callback - Function to call when auth state changes
+ */
+export function setAuthStateCallback(callback) {
+    authStateCallback = callback;
+}
 
-// Initialize auth module
-async function initAuth() {
-    // Import Firebase Auth functions
-    const authModule = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js');
-    signInWithEmailAndPassword = authModule.signInWithEmailAndPassword;
-    createUserWithEmailAndPassword = authModule.createUserWithEmailAndPassword;
-    signOut = authModule.signOut;
-    onAuthStateChanged = authModule.onAuthStateChanged;
-    sendSignInLinkToEmail = authModule.sendSignInLinkToEmail;
-    isSignInWithEmailLink = authModule.isSignInWithEmailLink;
-    signInWithEmailLink = authModule.signInWithEmailLink;
+/**
+ * Initialize authentication and set up auth state listener
+ */
+export function initAuth() {
+    const auth = getAuthInstance();
 
-    const auth = getFirebaseAuth();
+    // Listen for auth state changes
+    onAuthStateChanged(auth, async (user) => {
+        setCurrentUser(user);
 
-    // Check if this is a sign-in link
-    if (isSignInWithEmailLink(auth, window.location.href)) {
-        await handleEmailLinkSignIn();
-    }
-
-    // Set up auth state listener
-    return new Promise((resolve) => {
-        onAuthStateChanged(auth, (user) => {
-            currentUser = user;
-            notifyListeners(user);
-            resolve(user);
-        });
+        if (authStateCallback) {
+            await authStateCallback(user);
+        }
     });
 }
 
-// Handle email link sign-in
-async function handleEmailLinkSignIn() {
-    const auth = getFirebaseAuth();
-    let email = window.localStorage.getItem('emailForSignIn');
+/**
+ * Check if the current URL is an email sign-in link
+ * @returns {boolean} True if URL is an email sign-in link
+ */
+export function checkIsSignInWithEmailLink() {
+    const auth = getAuthInstance();
+    return isSignInWithEmailLink(auth, window.location.href);
+}
+
+/**
+ * Handle email link sign-in
+ */
+export async function handleEmailLinkSignIn() {
+    let email = localStorage.getItem('emailForSignIn');
 
     if (!email) {
-        // User opened the link on a different device
-        email = window.prompt('Please provide your email for confirmation');
+        email = prompt('Please enter your email to confirm sign-in:');
     }
 
     if (email) {
         try {
+            const auth = getAuthInstance();
             await signInWithEmailLink(auth, email, window.location.href);
-            window.localStorage.removeItem('emailForSignIn');
-            // Clean up URL
+            localStorage.removeItem('emailForSignIn');
             window.history.replaceState(null, '', window.location.pathname);
-            return true;
         } catch (error) {
             console.error('Email link sign-in error:', error);
             throw error;
         }
     }
-    return false;
 }
 
-// Send magic link to email
-async function sendMagicLink(email) {
-    const auth = getFirebaseAuth();
+/**
+ * Send a magic link to the user's email
+ * @param {string} email - User's email address
+ */
+export async function sendMagicLink(email) {
+    const continueUrl = window.location.origin + window.location.pathname;
+    console.log('Sending magic link to:', email);
+    console.log('Continue URL:', continueUrl);
 
     const actionCodeSettings = {
-        url: window.location.origin + window.location.pathname,
+        url: continueUrl,
         handleCodeInApp: true
     };
 
     try {
+        const auth = getAuthInstance();
         await sendSignInLinkToEmail(auth, email, actionCodeSettings);
-        // Save email for when user clicks the link
-        window.localStorage.setItem('emailForSignIn', email);
-        return true;
-    } catch (error) {
-        console.error('Send magic link error:', error);
-        throw error;
+        console.log('Magic link sent successfully!');
+        localStorage.setItem('emailForSignIn', email);
+    } catch (err) {
+        console.error('sendSignInLinkToEmail error:', err);
+        console.error('Error code:', err.code);
+        console.error('Error message:', err.message);
+        throw err;
     }
 }
 
-// Sign in with email and password (fallback)
-async function signInWithEmail(email, password) {
-    const auth = getFirebaseAuth();
-
-    try {
-        const userCredential = await signInWithEmailAndPassword(auth, email, password);
-        return userCredential.user;
-    } catch (error) {
-        // If user doesn't exist, create account
-        if (error.code === 'auth/user-not-found') {
-            try {
-                const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-                return userCredential.user;
-            } catch (createError) {
-                throw createError;
-            }
-        }
-        throw error;
-    }
+/**
+ * Sign in with email and password
+ * @param {string} email - User's email
+ * @param {string} password - User's password
+ */
+export async function signInWithPassword(email, password) {
+    const auth = getAuthInstance();
+    return signInWithEmailAndPassword(auth, email, password);
 }
 
-// Sign out
-async function logOut() {
-    const auth = getFirebaseAuth();
-    try {
-        await signOut(auth);
-        currentUser = null;
-        return true;
-    } catch (error) {
-        console.error('Sign out error:', error);
-        throw error;
-    }
+/**
+ * Create a new account with email and password
+ * @param {string} email - User's email
+ * @param {string} password - User's password
+ */
+export async function createAccount(email, password) {
+    const auth = getAuthInstance();
+    return createUserWithEmailAndPassword(auth, email, password);
 }
 
-// Get current user
-function getCurrentUser() {
-    return currentUser;
-}
+/**
+ * Sign out the current user
+ */
+export async function logout() {
+    // Cleanup subscriptions
+    if (unsubscribeHabits) unsubscribeHabits();
+    if (unsubscribeEntry) unsubscribeEntry();
 
-// Get user ID
-function getUserId() {
-    return currentUser?.uid || null;
+    const auth = getAuthInstance();
+    await signOut(auth);
 }
-
-// Check if user is authenticated
-function isAuthenticated() {
-    return currentUser !== null;
-}
-
-// Add auth state listener
-function addAuthListener(callback) {
-    authListeners.push(callback);
-    // Immediately call with current state
-    if (currentUser !== undefined) {
-        callback(currentUser);
-    }
-}
-
-// Remove auth state listener
-function removeAuthListener(callback) {
-    const index = authListeners.indexOf(callback);
-    if (index > -1) {
-        authListeners.splice(index, 1);
-    }
-}
-
-// Notify all listeners
-function notifyListeners(user) {
-    authListeners.forEach(callback => {
-        try {
-            callback(user);
-        } catch (error) {
-            console.error('Auth listener error:', error);
-        }
-    });
-}
-
-// Get user display info
-function getUserInfo() {
-    if (!currentUser) return null;
-    return {
-        uid: currentUser.uid,
-        email: currentUser.email,
-        displayName: currentUser.displayName,
-        photoURL: currentUser.photoURL
-    };
-}
-
-// Export functions
-export {
-    initAuth,
-    sendMagicLink,
-    signInWithEmail,
-    logOut,
-    getCurrentUser,
-    getUserId,
-    isAuthenticated,
-    addAuthListener,
-    removeAuthListener,
-    getUserInfo
-};

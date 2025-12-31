@@ -1,73 +1,47 @@
-// ========== ONBOARDING WORKFLOW ==========
-// 4-step onboarding process for new users
+// ========== ONBOARDING ==========
+// Functions for the multi-step onboarding flow
 
-import { PREDEFINED_ROUTINES } from './routines-config.js';
-import { openScheduleModal, getScheduleCallback } from './modals.js';
+import {
+    onboardingStep, onboardingHabits, onboardingSelectedGoal,
+    currentUser,
+    setOnboardingStep, setOnboardingHabits, setOnboardingSelectedGoal,
+    resetOnboardingState
+} from './state.js';
+import { getDb, collection, addDoc, serverTimestamp } from './firebase-init.js';
+import { escapeHtml } from './utils.js';
 import { getScheduleLabel } from './schedule.js';
 import { completeOnboarding } from './profile.js';
-import { getUserId } from './auth.js';
-import { getFirestoreDb } from './firebase-config.js';
+import { openScheduleModal } from './modals.js';
+import { PREDEFINED_ROUTINES } from './routines-config.js';
 
-// Firebase Firestore functions (loaded dynamically)
-let collection = null;
-let addDoc = null;
-let serverTimestamp = null;
-
-// Onboarding state
-const onboardingState = {
-    step: 1,
-    selectedGoal: null,
-    habits: {
-        morning: [],
-        evening: []
-    }
-};
-
-// Callbacks
-let onCompleteCallback = null;
+// Callbacks for after onboarding (set by main.js)
+let onboardingCompleteCallback = null;
 
 /**
- * Escape HTML to prevent XSS
+ * Set the callback for when onboarding is complete
+ * @param {Function} callback - Function to call after onboarding
  */
-function escapeHtml(text) {
-    const div = document.createElement('div');
-    div.textContent = text;
-    return div.innerHTML;
+export function setOnboardingCompleteCallback(callback) {
+    onboardingCompleteCallback = callback;
 }
 
 /**
- * Initialize onboarding module
+ * Initialize the onboarding flow
  */
-export async function initOnboarding() {
-    const firestoreModule = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js');
-    collection = firestoreModule.collection;
-    addDoc = firestoreModule.addDoc;
-    serverTimestamp = firestoreModule.serverTimestamp;
-}
-
-/**
- * Initialize onboarding workflow and reset state
- * @param {Function} onComplete - Callback to call when onboarding is finished
- */
-export function initializeOnboarding(onComplete) {
-    onboardingState.step = 1;
-    onboardingState.selectedGoal = null;
-    onboardingState.habits = {
-        morning: [],
-        evening: []
-    };
-    onCompleteCallback = onComplete;
+export function initializeOnboarding() {
+    resetOnboardingState();
+    setOnboardingStep(1);
     renderOnboardingStep();
 }
 
 /**
- * Render current onboarding step
+ * Render the current onboarding step
  */
 export function renderOnboardingStep() {
     updateOnboardingProgress();
     const content = document.getElementById('onboarding-content');
 
-    switch(onboardingState.step) {
+    switch(onboardingStep) {
         case 1:
             content.innerHTML = renderGoalSelectionStep();
             attachGoalSelectionListeners();
@@ -89,15 +63,38 @@ export function renderOnboardingStep() {
 }
 
 /**
- * Update progress indicators
+ * Go to the next onboarding step
  */
+export function nextOnboardingStep() {
+    if (onboardingStep === 1) {
+        if (!processGoalSelection()) return;
+    }
+
+    if (onboardingStep < 4) {
+        setOnboardingStep(onboardingStep + 1);
+        renderOnboardingStep();
+    } else {
+        finishOnboarding();
+    }
+}
+
+/**
+ * Go to the previous onboarding step
+ */
+export function previousOnboardingStep() {
+    if (onboardingStep > 1) {
+        setOnboardingStep(onboardingStep - 1);
+        renderOnboardingStep();
+    }
+}
+
 function updateOnboardingProgress() {
     // Update step indicators
     document.querySelectorAll('.progress-steps .step').forEach((step, index) => {
         step.classList.remove('active', 'completed');
-        if (index + 1 < onboardingState.step) {
+        if (index + 1 < onboardingStep) {
             step.classList.add('completed');
-        } else if (index + 1 === onboardingState.step) {
+        } else if (index + 1 === onboardingStep) {
             step.classList.add('active');
         }
     });
@@ -105,31 +102,26 @@ function updateOnboardingProgress() {
     // Update progress bar
     const progressFill = document.getElementById('onboarding-progress-fill');
     if (progressFill) {
-        progressFill.style.width = `${(onboardingState.step / 4) * 100}%`;
+        progressFill.style.width = `${(onboardingStep / 4) * 100}%`;
     }
 }
 
-/**
- * Update navigation button states and text
- */
 function updateOnboardingNavButtons() {
     const backBtn = document.getElementById('onboarding-back');
     const skipBtn = document.getElementById('onboarding-skip');
     const nextBtn = document.getElementById('onboarding-next');
 
-    // Back button - hide on first step? The user requested "In all the pages a Back bottom should be available"
-    // But going back from step 1 leads where? Maybe logout? For now, let's keep it hidden on step 1 as standard practice, or enable if it resets goal.
-    // Let's hide on step 1 to avoid confusion, or it could go back to "Auth" but that's handled by state in app.js.
-    if (backBtn) backBtn.style.display = onboardingState.step > 1 ? 'block' : 'none';
+    // Back button
+    if (backBtn) backBtn.style.display = onboardingStep > 1 ? 'block' : 'none';
 
-    // Skip button - We probably don't want to skip the goal selection if we want them to choose.
-    if (skipBtn) skipBtn.style.display = 'none'; // Hiding skip for this new flow to ensure goal selection
+    // Skip button - hide for new flow
+    if (skipBtn) skipBtn.style.display = 'none';
 
     // Next button text
     if (nextBtn) {
-        if (onboardingState.step === 1) {
+        if (onboardingStep === 1) {
             nextBtn.textContent = 'Continue';
-        } else if (onboardingState.step === 4) {
+        } else if (onboardingStep === 4) {
             nextBtn.textContent = 'Start your journey';
         } else {
             nextBtn.textContent = 'Next';
@@ -137,9 +129,6 @@ function updateOnboardingNavButtons() {
     }
 }
 
-/**
- * Render Step 1: Goal Selection
- */
 function renderGoalSelectionStep() {
     return `
         <div class="onboarding-welcome">
@@ -148,8 +137,8 @@ function renderGoalSelectionStep() {
             </div>
             <h1>Welcome to Habit Tracker</h1>
             <p class="onboarding-copy">
-                You’re here to feel better, and we’ll make it simple with science-backed routines. 
-                Choose one that’s ready to go or create your own in minutes.
+                You're here to feel better, and we'll make it simple with science-backed routines.
+                Choose one that's ready to go or create your own in minutes.
             </p>
 
             <div class="goal-selection-container">
@@ -160,7 +149,7 @@ function renderGoalSelectionStep() {
                         ${Object.entries(PREDEFINED_ROUTINES).map(([key, routine]) => `
                             <option value="${key}">${routine.label}</option>
                         `).join('')}
-                        <option value="custom">Not sure, I'll create my own routines</option>
+                        <option value="custom">Other, I'll create my own routines</option>
                     </select>
                 </div>
                 <p id="goal-description" class="goal-description"></p>
@@ -174,14 +163,13 @@ function attachGoalSelectionListeners() {
     const desc = document.getElementById('goal-description');
 
     if (select) {
-        // Pre-select if state exists
-        if (onboardingState.selectedGoal) {
-            select.value = onboardingState.selectedGoal;
-            updateDescription(onboardingState.selectedGoal);
+        if (onboardingSelectedGoal) {
+            select.value = onboardingSelectedGoal;
+            updateDescription(onboardingSelectedGoal);
         }
 
         select.addEventListener('change', (e) => {
-            onboardingState.selectedGoal = e.target.value;
+            setOnboardingSelectedGoal(e.target.value);
             updateDescription(e.target.value);
         });
     }
@@ -198,11 +186,8 @@ function attachGoalSelectionListeners() {
     }
 }
 
-/**
- * Process Step 1 Completion: Populate habits based on goal
- */
 function processGoalSelection() {
-    const goal = onboardingState.selectedGoal;
+    const goal = onboardingSelectedGoal;
     if (!goal) {
         alert('Please select a goal to continue.');
         return false;
@@ -210,42 +195,47 @@ function processGoalSelection() {
 
     // Populate habits
     if (goal === 'custom') {
-        onboardingState.habits.morning = [];
-        onboardingState.habits.evening = [];
+        setOnboardingHabits({ morning: [], evening: [] });
     } else {
         const routine = PREDEFINED_ROUTINES[goal];
         if (routine) {
-            onboardingState.habits.morning = routine.morning.map((name, i) => ({
-                name,
-                type: 'morning',
-                order: i + 1,
-                selected: true,
-                schedule: { type: 'daily' }
-            }));
-            onboardingState.habits.evening = routine.evening.map((name, i) => ({
-                name,
-                type: 'evening',
-                order: i + 1,
-                selected: true,
-                schedule: { type: 'daily' }
-            }));
+            setOnboardingHabits({
+                morning: routine.morning.map((name, i) => ({
+                    name,
+                    type: 'morning',
+                    order: i + 1,
+                    selected: true,
+                    schedule: { type: 'daily' }
+                })),
+                evening: routine.evening.map((name, i) => ({
+                    name,
+                    type: 'evening',
+                    order: i + 1,
+                    selected: true,
+                    schedule: { type: 'daily' }
+                }))
+            });
         }
     }
     return true;
 }
 
-/**
- * Render habit setup step (steps 2 & 3)
- */
 function renderHabitSetupStep(type) {
-    const habitsList = onboardingState.habits[type];
+    const habitsList = onboardingHabits[type];
     const icon = type === 'morning' ? '&#9788;' : '&#9790;';
     const title = type === 'morning' ? 'Morning Routine' : 'Evening Routine';
+    const goalName = onboardingSelectedGoal && PREDEFINED_ROUTINES[onboardingSelectedGoal]
+        ? PREDEFINED_ROUTINES[onboardingSelectedGoal].label
+        : 'Custom';
 
     return `
         <div class="habit-setup">
             <h2>${icon} ${title}</h2>
             <p class="setup-subtitle">Customize your routine. Drag to reorder.</p>
+            <p class="setup-explanation">
+                Based on your goal to <strong>${goalName}</strong>, we've selected these science-backed habits.
+                Feel free to adjust the frequency (Daily, Weekly, etc.) or add your own to make it work for you.
+            </p>
 
             <div class="onboarding-habit-list" id="onboarding-list-${type}">
                 ${habitsList.length > 0 ? habitsList.map((habit, index) => renderHabitItem(habit, index, type)).join('') : '<p class="empty-msg">No habits yet.</p>'}
@@ -261,31 +251,26 @@ function renderHabitSetupStep(type) {
 function renderHabitItem(habit, index, type) {
     return `
         <div class="onboarding-habit-item" draggable="true" data-index="${index}" data-type="${type}">
-            <span class="drag-handle-icon">☰</span>
+            <span class="drag-handle-icon">&#9776;</span>
             <input type="text" class="habit-name-input" value="${escapeHtml(habit.name)}"
                    data-index="${index}" placeholder="Habit name">
-            
+
             <div class="habit-actions">
                 <button type="button" class="schedule-btn" data-index="${index}" data-type="${type}" title="Schedule">
                     ${getScheduleLabel(habit.schedule)}
                 </button>
                 <button type="button" class="delete-btn" data-index="${index}" data-type="${type}" title="Remove">
-                    ×
+                    &times;
                 </button>
             </div>
         </div>
     `;
 }
 
-/**
- * Attach event listeners to habit setup UI (Drag & Drop included)
- */
 function attachHabitSetupListeners(type) {
     const listContainer = document.getElementById(`onboarding-list-${type}`);
-    const habitsList = onboardingState.habits[type];
+    const habitsList = onboardingHabits[type];
 
-    // --- Interaction Listeners ---
-    
     // Name Input
     listContainer.querySelectorAll('.habit-name-input').forEach(input => {
         input.addEventListener('input', (e) => {
@@ -298,9 +283,14 @@ function attachHabitSetupListeners(type) {
     listContainer.querySelectorAll('.schedule-btn').forEach(btn => {
         btn.addEventListener('click', (e) => {
             const idx = parseInt(e.target.dataset.index);
-            openScheduleModal(habitsList[idx], (newSchedule) => {
-                habitsList[idx].schedule = newSchedule;
-                e.target.textContent = getScheduleLabel(newSchedule);
+            const habit = habitsList[idx];
+
+            // Open the existing schedule modal
+            openScheduleModal(habit, (newSchedule) => {
+                // Update state
+                habit.schedule = newSchedule;
+                // Update UI immediately
+                renderOnboardingStep();
             });
         });
     });
@@ -310,7 +300,6 @@ function attachHabitSetupListeners(type) {
         btn.addEventListener('click', (e) => {
             const idx = parseInt(e.target.dataset.index);
             habitsList.splice(idx, 1);
-            // Re-render to update indices
             renderOnboardingStep();
         });
     });
@@ -327,7 +316,6 @@ function attachHabitSetupListeners(type) {
                 schedule: { type: 'daily' }
             });
             renderOnboardingStep();
-            // Focus new input
             setTimeout(() => {
                 const inputs = document.querySelectorAll('.habit-name-input');
                 if (inputs.length > 0) inputs[inputs.length - 1].focus();
@@ -335,10 +323,17 @@ function attachHabitSetupListeners(type) {
         });
     }
 
-    // --- Drag and Drop Logic ---
+    // Drag and Drop Logic
+    setupDragAndDrop(listContainer, habitsList, type);
+}
+
+function setupDragAndDrop(listContainer, habitsList, type) {
     let draggedItem = null;
-    
+
     listContainer.querySelectorAll('.onboarding-habit-item').forEach(item => {
+        const handle = item.querySelector('.drag-handle-icon');
+
+        // Mouse Events
         item.addEventListener('dragstart', function(e) {
             draggedItem = this;
             e.dataTransfer.effectAllowed = 'move';
@@ -348,44 +343,71 @@ function attachHabitSetupListeners(type) {
         item.addEventListener('dragover', function(e) {
             e.preventDefault();
             if (this === draggedItem) return;
-            
-            const container = this.parentNode;
-            const items = [...container.querySelectorAll('.onboarding-habit-item')];
-            const currentIdx = items.indexOf(this);
-            const draggedIdx = items.indexOf(draggedItem);
-
-            if (currentIdx > draggedIdx) {
-                container.insertBefore(draggedItem, this.nextSibling);
-            } else {
-                container.insertBefore(draggedItem, this);
-            }
+            handleDragOverLogic(this);
         });
 
         item.addEventListener('dragend', function() {
             this.classList.remove('dragging');
             draggedItem = null;
-            
-            // Update Array Order based on DOM
-            const newOrderIndices = [...listContainer.querySelectorAll('.onboarding-habit-item')]
-                .map(el => parseInt(el.querySelector('.habit-name-input').dataset.index));
-            
-            const reorderedList = newOrderIndices.map(oldIndex => habitsList[oldIndex]);
-            
-            // Update state
-            onboardingState.habits[type] = reorderedList;
-            
-            // Refresh view to fix data-indices
-            renderOnboardingStep();
+            updateOrder();
         });
+
+        // Touch Events (Mobile)
+        if (handle) {
+            handle.addEventListener('touchstart', function(e) {
+                if (e.cancelable) e.preventDefault();
+                draggedItem = item;
+                item.classList.add('dragging', 'touch-dragging');
+            }, { passive: false });
+
+            handle.addEventListener('touchmove', function(e) {
+                if (!draggedItem) return;
+                if (e.cancelable) e.preventDefault();
+
+                const touch = e.touches[0];
+                const target = document.elementFromPoint(touch.clientX, touch.clientY);
+                if (!target) return;
+
+                const closestItem = target.closest('.onboarding-habit-item');
+                if (closestItem && closestItem !== draggedItem && closestItem.parentNode === listContainer) {
+                    handleDragOverLogic(closestItem);
+                }
+            }, { passive: false });
+
+            handle.addEventListener('touchend', function(e) {
+                if (!draggedItem) return;
+                item.classList.remove('dragging', 'touch-dragging');
+                draggedItem = null;
+                updateOrder();
+            });
+        }
     });
+
+    function handleDragOverLogic(targetItem) {
+        const items = [...listContainer.querySelectorAll('.onboarding-habit-item')];
+        const currentIdx = items.indexOf(draggedItem);
+        const targetIdx = items.indexOf(targetItem);
+
+        if (currentIdx > targetIdx) {
+            listContainer.insertBefore(draggedItem, targetItem);
+        } else {
+            listContainer.insertBefore(draggedItem, targetItem.nextSibling);
+        }
+    }
+
+    function updateOrder() {
+        const newOrderIndices = [...listContainer.querySelectorAll('.onboarding-habit-item')]
+            .map(el => parseInt(el.querySelector('.habit-name-input').dataset.index));
+
+        const reorderedList = newOrderIndices.map(oldIndex => habitsList[oldIndex]);
+        onboardingHabits[type] = reorderedList;
+        renderOnboardingStep();
+    }
 }
 
-/**
- * Render review step (step 4)
- */
 function renderReviewStep() {
-    const morningSelected = onboardingState.habits.morning.filter(h => h.name.trim());
-    const eveningSelected = onboardingState.habits.evening.filter(h => h.name.trim());
+    const morningSelected = onboardingHabits.morning.filter(h => h.name.trim());
+    const eveningSelected = onboardingHabits.evening.filter(h => h.name.trim());
 
     return `
         <div class="onboarding-review">
@@ -394,89 +416,46 @@ function renderReviewStep() {
             <p class="review-subtitle">Here is your plan</p>
 
             <div class="review-details">
-                <div class="review-section">
+                <div class="review-section" style="margin-bottom: 24px;">
                     <h3>&#9788; Morning</h3>
-                    ${morningSelected.length > 0 ? morningSelected.map(h => `
-                        <div class="review-habit">
-                            <span>${escapeHtml(h.name)}</span>
-                            <span class="schedule-label">${getScheduleLabel(h.schedule)}</span>
-                        </div>
-                    `).join('') : '<p class="text-muted">No habits</p>'}
+                    <div class="review-grid">
+                        ${morningSelected.length > 0 ? morningSelected.map(h => `
+                            <div class="review-card">
+                                <span class="review-card-name">${escapeHtml(h.name)}</span>
+                                <span class="review-card-schedule">${getScheduleLabel(h.schedule)}</span>
+                            </div>
+                        `).join('') : '<p class="text-muted">No habits</p>'}
+                    </div>
                 </div>
-                
+
                 <div class="review-section">
                     <h3>&#9790; Evening</h3>
-                    ${eveningSelected.length > 0 ? eveningSelected.map(h => `
-                        <div class="review-habit">
-                            <span>${escapeHtml(h.name)}</span>
-                            <span class="schedule-label">${getScheduleLabel(h.schedule)}</span>
-                        </div>
-                    `).join('') : '<p class="text-muted">No habits</p>'}
+                    <div class="review-grid">
+                        ${eveningSelected.length > 0 ? eveningSelected.map(h => `
+                            <div class="review-card">
+                                <span class="review-card-name">${escapeHtml(h.name)}</span>
+                                <span class="review-card-schedule">${getScheduleLabel(h.schedule)}</span>
+                            </div>
+                        `).join('') : '<p class="text-muted">No habits</p>'}
+                    </div>
                 </div>
             </div>
         </div>
     `;
 }
 
-/**
- * Go to next onboarding step
- */
-export async function goToNextStep() {
-    if (onboardingState.step === 1) {
-        if (processGoalSelection()) {
-            onboardingState.step++;
-            renderOnboardingStep();
-        }
-    } else if (onboardingState.step === 4) {
-        // Finish onboarding
-        await finishOnboarding();
-    } else {
-        onboardingState.step++;
-        renderOnboardingStep();
-    }
-}
-
-/**
- * Go to previous onboarding step
- */
-export function goToPreviousStep() {
-    if (onboardingState.step > 1) {
-        onboardingState.step--;
-        renderOnboardingStep();
-    }
-}
-
-/**
- * Skip to review step - NOT USED in new flow, but kept for compatibility
- */
-export function skipToReview() {
-    onboardingState.step = 4;
-    renderOnboardingStep();
-}
-
-/**
- * Finish onboarding and save habits to Firestore
- */
-export async function finishOnboarding() {
+async function finishOnboarding() {
     const nextBtn = document.getElementById('onboarding-next');
-    if (nextBtn) {
-        nextBtn.disabled = true;
-        nextBtn.textContent = 'Saving...';
-    }
+    nextBtn.disabled = true;
+    nextBtn.textContent = 'Saving...';
 
     try {
-        const db = getFirestoreDb();
-        const userId = getUserId();
-
-        if (!userId) {
-            throw new Error('No user ID available');
-        }
-
+        const db = getDb();
         // Save habits to Firestore
-        const habitsRef = collection(db, `users/${userId}/habits`);
+        const habitsRef = collection(db, `users/${currentUser.uid}/habits`);
 
         // Save morning habits
-        const morningSelected = onboardingState.habits.morning.filter(h => h.name.trim());
+        const morningSelected = onboardingHabits.morning.filter(h => h.selected && h.name.trim());
         for (let i = 0; i < morningSelected.length; i++) {
             const habit = morningSelected[i];
             await addDoc(habitsRef, {
@@ -490,7 +469,7 @@ export async function finishOnboarding() {
         }
 
         // Save evening habits
-        const eveningSelected = onboardingState.habits.evening.filter(h => h.name.trim());
+        const eveningSelected = onboardingHabits.evening.filter(h => h.selected && h.name.trim());
         for (let i = 0; i < eveningSelected.length; i++) {
             const habit = eveningSelected[i];
             await addDoc(habitsRef, {
@@ -506,34 +485,15 @@ export async function finishOnboarding() {
         // Mark onboarding complete
         await completeOnboarding();
 
-        // Call completion callback
-        if (onCompleteCallback) {
-            onCompleteCallback();
+        // Call the completion callback
+        if (onboardingCompleteCallback) {
+            onboardingCompleteCallback();
         }
 
     } catch (error) {
         console.error('Error finishing onboarding:', error);
-        if (nextBtn) {
-            nextBtn.disabled = false;
-            nextBtn.textContent = 'Start Tracking';
-        }
+        nextBtn.disabled = false;
+        nextBtn.textContent = 'Start Tracking';
         alert('Failed to save habits. Please try again.');
     }
-}
-
-/**
- * Get current onboarding step
- */
-export function getCurrentStep() {
-    return onboardingState.step;
-}
-
-/**
- * Get selected habits for onboarding
- */
-export function getOnboardingHabits() {
-    return {
-        morning: onboardingState.habits.morning.filter(h => h.name.trim()),
-        evening: onboardingState.habits.evening.filter(h => h.name.trim())
-    };
 }

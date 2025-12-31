@@ -1,72 +1,17 @@
 // ========== CALENDAR PICKER ==========
-// Month/day picker with completion indicators
+// Functions for the date picker calendar
 
-import { getUserId } from './auth.js';
-import { getFirestoreDb } from './firebase-config.js';
-
-// Firebase Firestore functions (loaded dynamically)
-let collection = null;
-let getDocs = null;
-
-// Calendar state
-const calendarState = {
-    isOpen: false,
-    currentMonth: new Date().getMonth(),
-    currentYear: new Date().getFullYear(),
-    entriesData: {}
-};
-
-// Callbacks for date selection
-let dateSelectCallback = null;
+import { getDb, collection, getDocs } from './firebase-init.js';
+import { habits, currentUser, currentDate, calendarState, setCalendarState, setCurrentDate } from './state.js';
+import { formatDate } from './utils.js';
+import { subscribeToEntry } from './entries.js';
+import { updateDateDisplay } from './ui/progress.js';
 
 /**
- * Format date as YYYY-MM-DD
+ * Render the calendar picker for date selection
  */
-function formatDate(date) {
-    const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, '0');
-    const day = String(date.getDate()).padStart(2, '0');
-    return `${year}-${month}-${day}`;
-}
-
-/**
- * Initialize calendar picker module
- */
-export async function initCalendarPicker() {
-    const firestoreModule = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js');
-    collection = firestoreModule.collection;
-    getDocs = firestoreModule.getDocs;
-
-    // Make selectCalendarDate globally accessible for onclick handlers
-    window.selectCalendarDate = selectCalendarDate;
-}
-
-/**
- * Toggle calendar picker visibility
- * @param {Date} currentDate - Currently selected date
- * @param {Function} onDateSelect - Callback when date is selected
- */
-export function toggleCalendar(currentDate, onDateSelect) {
-    calendarState.isOpen = !calendarState.isOpen;
-    dateSelectCallback = onDateSelect;
-
-    const picker = document.getElementById('calendar-picker');
-    picker.classList.toggle('hidden', !calendarState.isOpen);
-    document.getElementById('toggle-calendar').classList.toggle('active', calendarState.isOpen);
-
-    if (calendarState.isOpen) {
-        calendarState.currentMonth = currentDate.getMonth();
-        calendarState.currentYear = currentDate.getFullYear();
-        renderCalendar(currentDate, {});
-    }
-}
-
-/**
- * Render calendar grid for the current month
- * @param {Date} currentDate - Currently selected date
- * @param {Object} habits - Habits object with morning and evening arrays
- */
-export async function renderCalendar(currentDate, habits) {
+export async function renderTodayCalendar() {
+    const db = getDb();
     const monthDate = new Date(calendarState.currentYear, calendarState.currentMonth, 1);
     const lastDay = new Date(calendarState.currentYear, calendarState.currentMonth + 1, 0);
     const startDayOfWeek = monthDate.getDay();
@@ -74,31 +19,25 @@ export async function renderCalendar(currentDate, habits) {
     const selectedString = formatDate(currentDate);
 
     // Update month label
-    document.getElementById('calendar-month-year').textContent = monthDate.toLocaleDateString('en-US', {
-        month: 'long',
-        year: 'numeric'
-    });
-
-    // Fetch entries for this month
-    const db = getFirestoreDb();
-    const userId = getUserId();
-
-    if (userId) {
-        try {
-            const entriesRef = collection(db, `users/${userId}/entries`);
-            const entriesSnapshot = await getDocs(entriesRef);
-            const entriesMap = {};
-            entriesSnapshot.forEach(doc => {
-                entriesMap[doc.id] = doc.data();
-            });
-            calendarState.entriesData = entriesMap;
-        } catch (error) {
-            console.error('Error fetching calendar entries:', error);
-        }
+    const monthYearEl = document.getElementById('calendar-month-year');
+    if (monthYearEl) {
+        monthYearEl.textContent = monthDate.toLocaleDateString('en-US', {
+            month: 'long',
+            year: 'numeric'
+        });
     }
 
+    // Fetch entries for this month
+    const entriesRef = collection(db, `users/${currentUser.uid}/entries`);
+    const entriesSnapshot = await getDocs(entriesRef);
+    const entriesMap = {};
+    entriesSnapshot.forEach(doc => {
+        entriesMap[doc.id] = doc.data();
+    });
+    setCalendarState({ entriesData: entriesMap });
+
     // Build calendar grid
-    const allHabits = [...(habits.morning || []), ...(habits.evening || [])];
+    const allHabits = [...habits.morning, ...habits.evening];
     const totalHabits = allHabits.length;
     const days = [];
 
@@ -110,7 +49,7 @@ export async function renderCalendar(currentDate, habits) {
     // Days of the month
     for (let day = 1; day <= lastDay.getDate(); day++) {
         const dateString = formatDate(new Date(calendarState.currentYear, calendarState.currentMonth, day));
-        const entry = calendarState.entriesData[dateString];
+        const entry = entriesMap[dateString];
         const isToday = dateString === today;
         const isSelected = dateString === selectedString;
         const isFuture = new Date(dateString) > new Date();
@@ -141,70 +80,109 @@ export async function renderCalendar(currentDate, habits) {
                 class="${classes}"
                 data-date="${dateString}"
                 ${isFuture ? 'disabled' : ''}
-                onclick="selectCalendarDate('${dateString}')"
+                onclick="window.selectCalendarDate('${dateString}')"
             >
                 ${day}
             </button>
         `);
     }
 
-    document.getElementById('calendar-days').innerHTML = days.join('');
+    const calendarDaysEl = document.getElementById('calendar-days');
+    if (calendarDaysEl) {
+        calendarDaysEl.innerHTML = days.join('');
+    }
 
     // Disable next month if it's in the future
     const nextMonth = new Date(calendarState.currentYear, calendarState.currentMonth + 1, 1);
-    const nowDate = new Date();
-    const thisMonth = new Date(nowDate.getFullYear(), nowDate.getMonth(), 1);
-    document.getElementById('next-month').disabled = nextMonth.getTime() > thisMonth.getTime();
+    const todayMonth = new Date();
+    const thisMonth = new Date(todayMonth.getFullYear(), todayMonth.getMonth(), 1);
+    const nextMonthBtn = document.getElementById('next-month');
+    if (nextMonthBtn) {
+        nextMonthBtn.disabled = nextMonth.getTime() > thisMonth.getTime();
+    }
 }
 
 /**
- * Select a specific date (called from onclick in calendar grid)
+ * Select a date from the calendar picker
  * @param {string} dateString - Date in YYYY-MM-DD format
  */
 export function selectCalendarDate(dateString) {
-    // Parse date string properly to avoid timezone issues
-    const [year, month, day] = dateString.split('-').map(Number);
-    const newDate = new Date(year, month - 1, day);
+    // Fix: Parse manually to avoid UTC timezone shift
+    const [y, m, d] = dateString.split('-').map(Number);
+    setCurrentDate(new Date(y, m - 1, d));
+
+    updateDateDisplay();
+    subscribeToEntry();
 
     // Close calendar
     if (calendarState.isOpen) {
-        calendarState.isOpen = false;
-        document.getElementById('calendar-picker').classList.add('hidden');
-        document.getElementById('toggle-calendar').classList.remove('active');
-    }
-
-    // Call callback with new date
-    if (dateSelectCallback) {
-        dateSelectCallback(newDate);
+        setCalendarState({ isOpen: false });
+        const calendarPicker = document.getElementById('calendar-picker');
+        const toggleBtn = document.getElementById('toggle-calendar');
+        if (calendarPicker) calendarPicker.classList.add('hidden');
+        if (toggleBtn) toggleBtn.classList.remove('active');
     }
 }
 
 /**
  * Navigate to previous month
  */
-export function navigateToPreviousMonth() {
-    calendarState.currentMonth--;
-    if (calendarState.currentMonth < 0) {
-        calendarState.currentMonth = 11;
-        calendarState.currentYear--;
+export function previousMonth() {
+    let newMonth = calendarState.currentMonth - 1;
+    let newYear = calendarState.currentYear;
+
+    if (newMonth < 0) {
+        newMonth = 11;
+        newYear--;
     }
+
+    setCalendarState({
+        currentMonth: newMonth,
+        currentYear: newYear
+    });
+
+    renderTodayCalendar();
 }
 
 /**
  * Navigate to next month
  */
-export function navigateToNextMonth() {
-    calendarState.currentMonth++;
-    if (calendarState.currentMonth > 11) {
-        calendarState.currentMonth = 0;
-        calendarState.currentYear++;
+export function nextMonth() {
+    let newMonth = calendarState.currentMonth + 1;
+    let newYear = calendarState.currentYear;
+
+    if (newMonth > 11) {
+        newMonth = 0;
+        newYear++;
     }
+
+    setCalendarState({
+        currentMonth: newMonth,
+        currentYear: newYear
+    });
+
+    renderTodayCalendar();
 }
 
 /**
- * Go to today's date
+ * Toggle the calendar picker visibility
  */
-export function goToToday() {
-    const today = new Date();
-    selectCalendarDate(formatDate(today));
+export function toggleCalendar() {
+    const isOpen = !calendarState.isOpen;
+    setCalendarState({ isOpen });
+
+    const calendarPicker = document.getElementById('calendar-picker');
+    const toggleBtn = document.getElementById('toggle-calendar');
+
+    if (isOpen) {
+        if (calendarPicker) calendarPicker.classList.remove('hidden');
+        if (toggleBtn) toggleBtn.classList.add('active');
+        renderTodayCalendar();
+    } else {
+        if (calendarPicker) calendarPicker.classList.add('hidden');
+        if (toggleBtn) toggleBtn.classList.remove('active');
+    }
 }
+
+// Make selectCalendarDate globally accessible for onclick handlers
+window.selectCalendarDate = selectCalendarDate;

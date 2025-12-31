@@ -1,13 +1,13 @@
 // ========== SCHEDULE UTILITIES ==========
-// Handles all schedule-related calculations for habits
+// Functions for handling habit scheduling logic
 
-import { DAY_ABBREV } from './constants.js';
+import { DAY_NAMES } from './constants.js';
 
 /**
  * Check if a habit is scheduled for a specific date
  * @param {Object} habit - The habit object with schedule property
  * @param {string} dateString - Date in YYYY-MM-DD format
- * @returns {boolean} True if habit is scheduled for this date
+ * @returns {boolean} True if habit is scheduled for the date
  */
 export function isHabitScheduledForDate(habit, dateString) {
     const schedule = habit.schedule || { type: 'daily' };
@@ -38,10 +38,10 @@ export function isHabitScheduledForDate(habit, dateString) {
 }
 
 /**
- * Filter habits to get only those scheduled for a specific date
+ * Get habits scheduled for a specific date
  * @param {Object} allHabits - Object with morning and evening habit arrays
  * @param {string} dateString - Date in YYYY-MM-DD format
- * @returns {Object} Object with morning and evening arrays of scheduled habits
+ * @returns {Object} Object with filtered morning and evening arrays
  */
 export function getScheduledHabitsForDate(allHabits, dateString) {
     return {
@@ -51,10 +51,10 @@ export function getScheduledHabitsForDate(allHabits, dateString) {
 }
 
 /**
- * Filter habits to get only those NOT scheduled for a specific date
+ * Get habits NOT scheduled for a specific date
  * @param {Object} allHabits - Object with morning and evening habit arrays
  * @param {string} dateString - Date in YYYY-MM-DD format
- * @returns {Object} Object with morning and evening arrays of unscheduled habits
+ * @returns {Object} Object with filtered morning and evening arrays
  */
 export function getUnscheduledHabitsForDate(allHabits, dateString) {
     return {
@@ -83,7 +83,7 @@ export function getScheduleLabel(schedule) {
             if (days.length === 2 && days.includes(0) && days.includes(6)) {
                 return 'Weekends';
             }
-            return days.map(d => DAY_ABBREV[d]).join(', ');
+            return days.map(d => DAY_NAMES[d].substring(0, 3)).join(', ');
         case 'weekly_goal':
             return `${schedule.timesPerWeek}x/week`;
         case 'interval':
@@ -94,11 +94,10 @@ export function getScheduleLabel(schedule) {
 }
 
 /**
- * Calculate expected number of completions for a habit in a given month
- * Accounts for schedule type and current date (doesn't count future days)
- * @param {Object} habit - The habit object with schedule property
- * @param {number} year - Year (e.g., 2025)
- * @param {number} month - Month (0-11, January=0)
+ * Calculate expected completions for a habit in a given month
+ * @param {Object} habit - The habit object
+ * @param {number} year - The year
+ * @param {number} month - The month (0-11)
  * @returns {number} Expected number of completions
  */
 export function getExpectedCompletionsForMonth(habit, year, month) {

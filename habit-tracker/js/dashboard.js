@@ -1,368 +1,349 @@
-// Dashboard Module
-import { getHabits, getHabitsByType } from './habits.js';
-import {
-    getEntriesForMonth,
-    calculateHabitRate,
-    calculateStreak,
-    calculateHabitStreak,
-    calculateHabitBestStreak,
-    formatDate,
-    getTodayString
-} from './entries.js';
+// ========== DASHBOARD ==========
+// Functions for rendering the analytics dashboard
 
-// Current dashboard state
-let currentMonth = new Date().getMonth();
-let currentYear = new Date().getFullYear();
-let currentType = 'morning';
-let dashboardData = null;
-let completionChart = null;
+import { getDb, collection, getDocs } from './firebase-init.js';
+import { habits, currentUser } from './state.js';
+import { formatDate, escapeHtml } from './utils.js';
 
-// Initialize dashboard
-async function initDashboard() {
-    await loadDashboardData();
-    return true;
-}
+// Global chart instance
+let completionChartInstance = null;
 
-// Load dashboard data for current month
-async function loadDashboardData() {
-    const entries = await getEntriesForMonth(currentYear, currentMonth);
-    const habits = getHabits();
-
-    // Calculate days in month up to today
-    const today = new Date();
-    const isCurrentMonth = currentYear === today.getFullYear() && currentMonth === today.getMonth();
-    const lastDay = isCurrentMonth ? today.getDate() : new Date(currentYear, currentMonth + 1, 0).getDate();
-
-    dashboardData = {
-        entries,
-        habits,
-        month: currentMonth,
-        year: currentYear,
-        daysInMonth: lastDay,
-        type: currentType
-    };
-
-    return dashboardData;
-}
-
-// Set current month/year
-async function setMonth(year, month) {
-    currentYear = year;
-    currentMonth = month;
-    return await loadDashboardData();
-}
-
-// Set current type (morning/evening)
-function setType(type) {
-    currentType = type;
-    if (dashboardData) {
-        dashboardData.type = type;
-    }
-    return dashboardData;
-}
-
-// Get available months (from first entry to now)
-function getAvailableMonths() {
-    const months = [];
+/**
+ * Render the dashboard with stats and charts
+ */
+export async function renderDashboard() {
     const now = new Date();
-    const currentMonthDate = new Date(now.getFullYear(), now.getMonth(), 1);
+    const year = now.getFullYear();
+    const month = now.getMonth();
 
-    // Go back 12 months
-    for (let i = 0; i < 12; i++) {
-        const date = new Date(currentMonthDate);
-        date.setMonth(date.getMonth() - i);
-        months.push({
-            year: date.getFullYear(),
-            month: date.getMonth(),
-            label: date.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })
+    // Populate month selector
+    const monthSelector = document.getElementById('month-selector');
+    if (monthSelector) {
+        monthSelector.innerHTML = '';
+        for (let i = 0; i < 12; i++) {
+            const d = new Date(year, month - i, 1);
+            const option = document.createElement('option');
+            option.value = `${d.getFullYear()}-${d.getMonth()}`;
+            option.textContent = d.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+            if (i === 0) option.selected = true;
+            monthSelector.appendChild(option);
+        }
+    }
+
+    await updateDashboardData(year, month);
+}
+
+/**
+ * Update dashboard data for a specific month
+ * @param {number} year - Year
+ * @param {number} month - Month (0-11)
+ */
+export async function updateDashboardData(year, month) {
+    const db = getDb();
+    const today = new Date();
+    const startDate = new Date(year, month, 1);
+    const endDate = new Date(year, month + 1, 0);
+    const lastDay = (year === today.getFullYear() && month === today.getMonth())
+        ? today.getDate()
+        : endDate.getDate();
+
+    // Fetch all entries for the month
+    const entriesRef = collection(db, `users/${currentUser.uid}/entries`);
+    const entriesSnapshot = await getDocs(entriesRef);
+
+    const entriesMap = {};
+    entriesSnapshot.forEach(doc => {
+        entriesMap[doc.id] = doc.data();
+    });
+
+    // Calculate habit completion rates for current type
+    const currentType = document.querySelector('.dash-tab.active')?.dataset.type || 'morning';
+    const typeHabits = habits[currentType];
+
+    const habitStats = typeHabits.map(habit => {
+        let completed = 0;
+        let possible = lastDay;
+
+        for (let day = 1; day <= lastDay; day++) {
+            const dateString = formatDate(new Date(year, month, day));
+            const entry = entriesMap[dateString];
+            if (entry && entry[currentType] && entry[currentType].includes(habit.id)) {
+                completed++;
+            }
+        }
+
+        // Calculate current streak for this habit
+        let currentHabitStreak = 0;
+        const todayDate = new Date();
+        for (let i = 0; i <= 365; i++) {
+            const checkDate = new Date(todayDate);
+            checkDate.setDate(checkDate.getDate() - i);
+            const dateString = formatDate(checkDate);
+            const entry = entriesMap[dateString];
+
+            if (entry && entry[currentType]?.includes(habit.id)) {
+                currentHabitStreak++;
+            } else {
+                if (i === 0) continue; // Today not logged yet
+                break;
+            }
+        }
+
+        // Calculate best streak for this habit
+        let bestHabitStreak = 0;
+        let tempHabitStreak = 0;
+        for (let i = 0; i < 365; i++) {
+            const checkDate = new Date(todayDate);
+            checkDate.setDate(checkDate.getDate() - i);
+            const dateString = formatDate(checkDate);
+            const entry = entriesMap[dateString];
+
+            if (entry && entry[currentType]?.includes(habit.id)) {
+                tempHabitStreak++;
+                bestHabitStreak = Math.max(bestHabitStreak, tempHabitStreak);
+            } else {
+                tempHabitStreak = 0;
+            }
+        }
+
+        return {
+            habit,
+            completed,
+            possible,
+            rate: possible > 0 ? Math.round((completed / possible) * 100) : 0,
+            currentStreak: currentHabitStreak,
+            bestStreak: bestHabitStreak
+        };
+    });
+
+    // Render habit rates
+    const ratesContainer = document.getElementById('habit-rates');
+    if (ratesContainer) {
+        if (typeHabits.length === 0) {
+            ratesContainer.innerHTML = '<p style="color: var(--text-muted);">No habits to display</p>';
+        } else {
+            ratesContainer.innerHTML = habitStats.map(stat => `
+                <div class="rate-item">
+                    <div class="rate-header">
+                        <span class="rate-label">${escapeHtml(stat.habit.name)}</span>
+                        <div class="rate-streaks">
+                            <span class="streak-badge" title="Current streak">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"></path>
+                                </svg>
+                                ${stat.currentStreak} days
+                            </span>
+                            <span class="streak-badge best" title="Best streak">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                    <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+                                </svg>
+                                ${stat.bestStreak} days
+                            </span>
+                        </div>
+                    </div>
+                    <div class="rate-bar-container">
+                        <div class="rate-bar">
+                            <div class="rate-fill" style="width: ${stat.rate}%"></div>
+                        </div>
+                        <span class="rate-value">${stat.rate}%</span>
+                    </div>
+                </div>
+            `).join('');
+        }
+    }
+
+    // Render completion chart
+    renderCompletionChart(year, month, lastDay, entriesMap);
+
+    // Calculate overall completion rate
+    let totalCompleted = 0;
+    let totalPossible = 0;
+    const allHabits = [...habits.morning, ...habits.evening];
+
+    for (let day = 1; day <= lastDay; day++) {
+        const dateString = formatDate(new Date(year, month, day));
+        const entry = entriesMap[dateString];
+
+        allHabits.forEach(habit => {
+            totalPossible++;
+            const type = habit.type;
+            if (entry && entry[type] && entry[type].includes(habit.id)) {
+                totalCompleted++;
+            }
         });
     }
 
-    return months;
-}
+    const overallRate = totalPossible > 0 ? Math.round((totalCompleted / totalPossible) * 100) : 0;
+    const overallRateEl = document.getElementById('overall-rate');
+    if (overallRateEl) overallRateEl.textContent = `${overallRate}%`;
 
-// Calculate overall completion rate for the month
-function getOverallRate() {
-    if (!dashboardData) return 0;
-
-    const { entries, habits, daysInMonth } = dashboardData;
-    const totalHabits = habits.morning.length + habits.evening.length;
-
-    if (totalHabits === 0 || daysInMonth === 0) return 0;
-
-    let totalCompleted = 0;
-    let totalPossible = totalHabits * daysInMonth;
-
-    Object.values(entries).forEach(entry => {
-        totalCompleted += (entry.morning?.length || 0) + (entry.evening?.length || 0);
-    });
-
-    return Math.round((totalCompleted / totalPossible) * 100);
-}
-
-// Calculate current streak
-function getCurrentStreak() {
-    if (!dashboardData) return 0;
-    const { entries, habits } = dashboardData;
-    return calculateStreak(entries, habits);
-}
-
-// Calculate best streak (simplified - checks current month only)
-function getBestStreak() {
-    if (!dashboardData) return 0;
-    const { entries, habits } = dashboardData;
-
-    const dates = Object.keys(entries).sort();
-    let bestStreak = 0;
+    // Calculate streaks
     let currentStreak = 0;
+    let bestStreak = 0;
+    let tempStreak = 0;
 
-    dates.forEach(dateString => {
-        const entry = entries[dateString];
-        const morningComplete = entry.morning?.length === habits.morning.length;
-        const eveningComplete = entry.evening?.length === habits.evening.length;
+    const todayDate = new Date();
+    for (let i = 0; i <= 365; i++) {
+        const checkDate = new Date(todayDate);
+        checkDate.setDate(checkDate.getDate() - i);
+        const dateString = formatDate(checkDate);
+        const entry = entriesMap[dateString];
+
+        if (!entry) {
+            if (i === 0) continue; // Today not logged yet
+            if (currentStreak === 0) currentStreak = tempStreak;
+            tempStreak = 0;
+            continue;
+        }
+
+        const morningComplete = habits.morning.length > 0
+            ? habits.morning.every(h => entry.morning?.includes(h.id))
+            : true;
+        const eveningComplete = habits.evening.length > 0
+            ? habits.evening.every(h => entry.evening?.includes(h.id))
+            : true;
 
         if (morningComplete && eveningComplete) {
-            currentStreak++;
-            if (currentStreak > bestStreak) {
-                bestStreak = currentStreak;
-            }
+            tempStreak++;
+            bestStreak = Math.max(bestStreak, tempStreak);
         } else {
-            currentStreak = 0;
+            if (currentStreak === 0) currentStreak = tempStreak;
+            tempStreak = 0;
         }
-    });
-
-    return bestStreak;
-}
-
-// Get habit completion rates for current type (with streaks)
-function getHabitRates() {
-    if (!dashboardData) return [];
-
-    const { entries, habits, daysInMonth, type } = dashboardData;
-    const typeHabits = habits[type] || [];
-
-    return typeHabits.map(habit => ({
-        id: habit.id,
-        name: habit.name,
-        rate: calculateHabitRate(entries, habit.id, type, daysInMonth),
-        currentStreak: calculateHabitStreak(entries, habit.id, type),
-        bestStreak: calculateHabitBestStreak(entries, habit.id, type)
-    }));
-}
-
-// Get daily completion percentages for chart
-function getDailyCompletionData() {
-    if (!dashboardData) return { labels: [], data: [] };
-
-    const { entries, habits, year, month, daysInMonth } = dashboardData;
-    const labels = [];
-    const data = [];
-    const totalHabits = habits.morning.length + habits.evening.length;
-
-    if (totalHabits === 0) return { labels: [], data: [] };
-
-    for (let day = 1; day <= daysInMonth; day++) {
-        const dateString = formatDate(new Date(year, month, day));
-        const entry = entries[dateString];
-
-        // Label with day number
-        labels.push(day);
-
-        // Calculate completion percentage
-        let completed = 0;
-        if (entry) {
-            completed = (entry.morning?.length || 0) + (entry.evening?.length || 0);
-        }
-
-        const percentage = Math.round((completed / totalHabits) * 100);
-        data.push(percentage);
     }
 
-    return { labels, data };
+    if (currentStreak === 0) currentStreak = tempStreak;
+
+    const currentStreakEl = document.getElementById('current-streak');
+    const bestStreakEl = document.getElementById('best-streak');
+    if (currentStreakEl) currentStreakEl.textContent = currentStreak;
+    if (bestStreakEl) bestStreakEl.textContent = bestStreak;
+
+    // Render calendar with real data
+    renderCalendar(year, month, entriesMap);
 }
 
-// Generate calendar data
-function getCalendarData() {
-    if (!dashboardData) return [];
+function renderCalendar(year, month, entriesMap) {
+    const container = document.getElementById('calendar-heatmap');
+    if (!container) return;
 
-    const { entries, habits, year, month } = dashboardData;
-    const today = getTodayString();
     const firstDay = new Date(year, month, 1);
     const lastDay = new Date(year, month + 1, 0);
-    const startDayOfWeek = firstDay.getDay(); // 0 = Sunday
+    const startDayOfWeek = firstDay.getDay();
+    const today = formatDate(new Date());
 
-    const calendarDays = [];
-    const totalHabits = habits.morning.length + habits.evening.length;
+    const weekdays = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+    let html = '<div class="calendar-weekdays">';
+    weekdays.forEach(day => {
+        html += `<span class="weekday-label">${day}</span>`;
+    });
+    html += '</div><div class="calendar-heatmap">';
 
-    // Add empty cells for days before the first of the month
+    // Empty cells before first day
     for (let i = 0; i < startDayOfWeek; i++) {
-        calendarDays.push({ empty: true });
+        html += '<div class="calendar-day empty"></div>';
     }
 
-    // Add days of the month
+    const allHabits = [...habits.morning, ...habits.evening];
+    const totalHabitsCount = allHabits.length;
+
+    // Days of month
     for (let day = 1; day <= lastDay.getDate(); day++) {
         const dateString = formatDate(new Date(year, month, day));
-        const entry = entries[dateString];
+        const isToday = dateString === today;
+        const entry = entriesMap[dateString];
 
-        let completed = 0;
+        let completedCount = 0;
         if (entry) {
-            completed = (entry.morning?.length || 0) + (entry.evening?.length || 0);
-        }
-
-        // Calculate level (0-5) based on completion percentage
-        let level = 0;
-        if (totalHabits > 0) {
-            const percentage = (completed / totalHabits) * 100;
-            if (percentage > 0) level = 1;
-            if (percentage >= 25) level = 2;
-            if (percentage >= 50) level = 3;
-            if (percentage >= 75) level = 4;
-            if (percentage === 100) level = 5;
-        }
-
-        calendarDays.push({
-            day,
-            date: dateString,
-            completed,
-            total: totalHabits,
-            level,
-            isToday: dateString === today
-        });
-    }
-
-    return calendarDays;
-}
-
-// Render habit rates bars
-function renderHabitRates(containerId) {
-    const container = document.getElementById(containerId);
-    if (!container) return;
-
-    const rates = getHabitRates();
-
-    if (rates.length === 0) {
-        container.innerHTML = '<div class="empty-state"><div class="empty-state-icon">📊</div><p>No habits to display</p></div>';
-        return;
-    }
-
-    container.innerHTML = rates.map(habit => `
-        <div class="rate-item">
-            <div class="rate-header">
-                <span class="rate-label">${escapeHtml(habit.name)}</span>
-                <div class="rate-streaks">
-                    <span class="streak-badge" title="Current streak">
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                            <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"></path>
-                        </svg>
-                        ${habit.currentStreak} days
-                    </span>
-                    <span class="streak-badge best" title="Best streak">
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                            <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
-                        </svg>
-                        ${habit.bestStreak} days
-                    </span>
-                </div>
-            </div>
-            <div class="rate-bar-container">
-                <div class="rate-bar">
-                    <div class="rate-fill" style="width: ${habit.rate}%"></div>
-                </div>
-                <span class="rate-value">${habit.rate}%</span>
-            </div>
-        </div>
-    `).join('');
-}
-
-// Render calendar heatmap
-function renderCalendar(containerId) {
-    const container = document.getElementById(containerId);
-    if (!container) return;
-
-    const calendarDays = getCalendarData();
-    const weekdays = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-
-    // Weekday headers
-    const weekdayHeaders = `
-        <div class="calendar-weekdays">
-            ${weekdays.map(day => `<span class="weekday-label">${day}</span>`).join('')}
-        </div>
-    `;
-
-    // Calendar grid
-    const calendarGrid = `
-        <div class="calendar-heatmap">
-            ${calendarDays.map(day => {
-                if (day.empty) {
-                    return '<div class="calendar-day empty"></div>';
+            allHabits.forEach(habit => {
+                const type = habit.type;
+                if (entry[type] && entry[type].includes(habit.id)) {
+                    completedCount++;
                 }
-                return `
-                    <div class="calendar-day level-${day.level} ${day.isToday ? 'today' : ''}"
-                         title="${day.date}: ${day.completed}/${day.total}">
-                        ${day.day}
-                    </div>
-                `;
-            }).join('')}
-        </div>
-    `;
+            });
+        }
 
-    container.innerHTML = weekdayHeaders + calendarGrid;
+        const completionRate = totalHabitsCount > 0 ? completedCount / totalHabitsCount : 0;
+        let level = 0;
+        if (completionRate >= 1) level = 5;
+        else if (completionRate >= 0.8) level = 4;
+        else if (completionRate >= 0.6) level = 3;
+        else if (completionRate >= 0.4) level = 2;
+        else if (completionRate > 0) level = 1;
+
+        html += `<div class="calendar-day level-${level} ${isToday ? 'today' : ''}">${day}</div>`;
+    }
+
+    html += '</div>';
+    container.innerHTML = html;
 }
 
-// Render month selector
-function renderMonthSelector(selectId) {
-    const select = document.getElementById(selectId);
-    if (!select) return;
-
-    const months = getAvailableMonths();
-
-    select.innerHTML = months.map((m, index) => `
-        <option value="${m.year}-${m.month}" ${index === 0 ? 'selected' : ''}>
-            ${m.label}
-        </option>
-    `).join('');
-}
-
-// Render completion chart
-async function renderCompletionChart() {
+function renderCompletionChart(year, month, lastDay, entriesMap) {
     const canvas = document.getElementById('completion-chart');
     if (!canvas) return;
 
-    const { labels, data } = getDailyCompletionData();
+    const labels = [];
+    const data = [];
+    const allHabits = [...habits.morning, ...habits.evening];
+    const totalHabitsCount = allHabits.length;
 
-    // Destroy existing chart if it exists
-    if (completionChart) {
-        completionChart.destroy();
-    }
-
-    // Get Chart.js
-    if (!window.Chart) {
-        console.error('Chart.js not loaded');
+    if (totalHabitsCount === 0) {
+        // No habits, hide chart
+        if (completionChartInstance) {
+            completionChartInstance.destroy();
+            completionChartInstance = null;
+        }
         return;
     }
 
-    const ctx = canvas.getContext('2d');
+    // Calculate completion percentage for each day
+    for (let day = 1; day <= lastDay; day++) {
+        const dateString = formatDate(new Date(year, month, day));
+        const entry = entriesMap[dateString];
 
-    completionChart = new window.Chart(ctx, {
+        labels.push(day);
+
+        let completedCount = 0;
+        if (entry) {
+            allHabits.forEach(habit => {
+                const type = habit.type;
+                if (entry[type] && entry[type].includes(habit.id)) {
+                    completedCount++;
+                }
+            });
+        }
+
+        const percentage = Math.round((completedCount / totalHabitsCount) * 100);
+        data.push(percentage);
+    }
+
+    // Destroy existing chart if it exists
+    if (completionChartInstance) {
+        completionChartInstance.destroy();
+    }
+
+    // Create new chart
+    const ctx = canvas.getContext('2d');
+    completionChartInstance = new Chart(ctx, {
         type: 'line',
         data: {
             labels,
             datasets: [{
                 label: 'Completion %',
                 data,
-                borderColor: 'rgb(255, 107, 157)',
-                backgroundColor: 'rgba(255, 107, 157, 0.1)',
-                borderWidth: 3,
-                fill: true,
-                tension: 0.4,
-                pointRadius: 4,
+                borderColor: '#ffffff',
+                backgroundColor: 'transparent',
+                borderWidth: 2,
+                fill: false,
+                tension: 0, // Brutalist: sharp lines
+                pointRadius: 0,
                 pointHoverRadius: 6,
-                pointBackgroundColor: 'rgb(255, 107, 157)',
-                pointBorderColor: '#0f0f14',
+                pointBackgroundColor: '#ffffff',
+                pointBorderColor: '#000000',
                 pointBorderWidth: 2,
-                pointHoverBackgroundColor: 'rgb(100, 255, 218)',
-                pointHoverBorderColor: 'rgb(255, 107, 157)',
-                pointHoverBorderWidth: 3
+                pointHoverBackgroundColor: '#6a00ff', // Electric Purple
+                pointHoverBorderColor: '#ffffff',
+                pointHoverBorderWidth: 2
             }]
         },
         options: {
@@ -373,21 +354,28 @@ async function renderCompletionChart() {
                     display: false
                 },
                 tooltip: {
-                    backgroundColor: 'rgba(15, 15, 20, 0.95)',
+                    backgroundColor: '#000000',
                     titleColor: '#ffffff',
-                    bodyColor: '#b4b4c0',
-                    borderColor: 'rgba(255, 107, 157, 0.3)',
-                    borderWidth: 1,
+                    bodyColor: '#ffffff',
+                    borderColor: '#ffffff',
+                    borderWidth: 2,
                     padding: 12,
+                    cornerRadius: 0, // Brutalist: no rounded corners
                     displayColors: false,
+                    titleFont: {
+                        family: 'Courier New'
+                    },
+                    bodyFont: {
+                        family: 'Courier New'
+                    },
                     callbacks: {
                         title: (context) => {
                             const day = context[0].label;
-                            const monthName = new Date(dashboardData.year, dashboardData.month, day).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-                            return monthName;
+                            const monthName = new Date(year, month, day).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+                            return monthName.toUpperCase();
                         },
                         label: (context) => {
-                            return `${context.parsed.y}% completed`;
+                            return `${context.parsed.y}% COMPLETED`;
                         }
                     }
                 }
@@ -395,14 +383,16 @@ async function renderCompletionChart() {
             scales: {
                 x: {
                     grid: {
-                        color: 'rgba(255, 255, 255, 0.03)',
-                        drawBorder: false
+                        color: '#333333',
+                        drawBorder: false,
+                        tickColor: '#ffffff'
                     },
                     ticks: {
-                        color: '#6c6c7a',
+                        color: '#ffffff',
                         font: {
-                            size: 11,
-                            weight: '500'
+                            family: 'Courier New',
+                            size: 10,
+                            weight: 'bold'
                         },
                         maxRotation: 0,
                         autoSkip: true,
@@ -413,14 +403,16 @@ async function renderCompletionChart() {
                     min: 0,
                     max: 100,
                     grid: {
-                        color: 'rgba(255, 255, 255, 0.03)',
-                        drawBorder: false
+                        color: '#333333',
+                        drawBorder: false,
+                        tickColor: '#ffffff'
                     },
                     ticks: {
-                        color: '#6c6c7a',
+                        color: '#ffffff',
                         font: {
-                            size: 11,
-                            weight: '500'
+                            family: 'Courier New',
+                            size: 10,
+                            weight: 'bold'
                         },
                         callback: (value) => value + '%'
                     }
@@ -433,53 +425,3 @@ async function renderCompletionChart() {
         }
     });
 }
-
-// Render summary cards
-function renderSummary() {
-    const overallEl = document.getElementById('overall-rate');
-    const streakEl = document.getElementById('current-streak');
-    const bestEl = document.getElementById('best-streak');
-
-    if (overallEl) overallEl.textContent = `${getOverallRate()}%`;
-    if (streakEl) streakEl.textContent = getCurrentStreak();
-    if (bestEl) bestEl.textContent = getBestStreak();
-}
-
-// Render full dashboard
-async function renderDashboard() {
-    await loadDashboardData();
-
-    renderSummary();
-    renderMonthSelector('month-selector');
-    await renderCompletionChart();
-    renderHabitRates('habit-rates');
-    renderCalendar('calendar-heatmap');
-}
-
-// Escape HTML to prevent XSS
-function escapeHtml(text) {
-    const div = document.createElement('div');
-    div.textContent = text;
-    return div.innerHTML;
-}
-
-// Export functions
-export {
-    initDashboard,
-    loadDashboardData,
-    setMonth,
-    setType,
-    getAvailableMonths,
-    getOverallRate,
-    getCurrentStreak,
-    getBestStreak,
-    getHabitRates,
-    getCalendarData,
-    getDailyCompletionData,
-    renderHabitRates,
-    renderCalendar,
-    renderMonthSelector,
-    renderSummary,
-    renderCompletionChart,
-    renderDashboard
-};

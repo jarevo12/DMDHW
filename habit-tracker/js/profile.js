@@ -1,41 +1,17 @@
-// ========== USER PROFILE MANAGEMENT ==========
-// Handles user profile data and onboarding state
+// ========== USER PROFILE ==========
+// Functions for managing user profile data
 
-import { getFirestoreDb } from './firebase-config.js';
-import { getUserId } from './auth.js';
-
-// Firebase Firestore functions (loaded dynamically)
-let doc = null;
-let getDoc = null;
-let setDoc = null;
-let serverTimestamp = null;
+import { getDb, doc, getDoc, setDoc, serverTimestamp } from './firebase-init.js';
+import { currentUser } from './state.js';
 
 /**
- * Initialize profile module by loading Firebase Firestore functions
- */
-export async function initProfile() {
-    const firestoreModule = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js');
-    doc = firestoreModule.doc;
-    getDoc = firestoreModule.getDoc;
-    setDoc = firestoreModule.setDoc;
-    serverTimestamp = firestoreModule.serverTimestamp;
-}
-
-/**
- * Get user profile from Firestore
+ * Get the current user's profile
  * @returns {Promise<Object|null>} User profile data or null if not found
  */
 export async function getUserProfile() {
     try {
-        const db = getFirestoreDb();
-        const userId = getUserId();
-
-        if (!userId) {
-            console.warn('No user ID available');
-            return null;
-        }
-
-        const profileRef = doc(db, `users/${userId}/profile`, 'main');
+        const db = getDb();
+        const profileRef = doc(db, `users/${currentUser.uid}/profile`, 'main');
         const snapshot = await getDoc(profileRef);
         return snapshot.exists() ? snapshot.data() : null;
     } catch (error) {
@@ -45,21 +21,13 @@ export async function getUserProfile() {
 }
 
 /**
- * Set user profile data in Firestore
- * @param {Object} data - Profile data to save
- * @returns {Promise<void>}
+ * Set/update the current user's profile
+ * @param {Object} data - Profile data to set
  */
 export async function setUserProfile(data) {
     try {
-        const db = getFirestoreDb();
-        const userId = getUserId();
-
-        if (!userId) {
-            console.warn('No user ID available');
-            return;
-        }
-
-        const profileRef = doc(db, `users/${userId}/profile`, 'main');
+        const db = getDb();
+        const profileRef = doc(db, `users/${currentUser.uid}/profile`, 'main');
         await setDoc(profileRef, {
             ...data,
             updatedAt: serverTimestamp()
@@ -71,7 +39,6 @@ export async function setUserProfile(data) {
 
 /**
  * Mark onboarding as completed for the current user
- * @returns {Promise<void>}
  */
 export async function completeOnboarding() {
     await setUserProfile({
@@ -79,13 +46,4 @@ export async function completeOnboarding() {
         onboardingCompletedAt: serverTimestamp(),
         createdAt: serverTimestamp()
     });
-}
-
-/**
- * Check if user has completed onboarding
- * @param {Object|null} profile - User profile object
- * @returns {boolean} True if onboarding is completed
- */
-export function hasCompletedOnboarding(profile) {
-    return profile && profile.onboardingCompleted === true;
 }

@@ -1,10 +1,10 @@
 // ========== CONSTANTS ==========
 // Shared constants used across multiple modules
 
-// Day name arrays
-export const DAY_NAMES = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+// Day name arrays (matching inline code format)
+export const DAY_NAMES = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 export const DAY_SHORTS = ['S', 'M', 'T', 'W', 'T', 'F', 'S'];
-export const DAY_ABBREV = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+export const DAY_NAMES_FULL = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
 
 // Schedule types
 export const SCHEDULE_TYPES = {

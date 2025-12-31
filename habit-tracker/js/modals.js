@@ -1,36 +1,51 @@
-// ========== MODAL MANAGEMENT ==========
-// Centralized modal management for habit editor, delete confirmation, and schedule picker
+// ========== MODALS ==========
+// Functions for managing modal dialogs
 
-import { DAY_ABBREV } from './constants.js';
+import { currentScheduleHabit, currentScheduleCallback, setCurrentScheduleHabit, setCurrentScheduleCallback } from './state.js';
 import { getScheduleLabel } from './schedule.js';
+import { formatDate } from './utils.js';
+import { DAY_NAMES } from './constants.js';
 
-// Modal state
+// Module-level state for modals
 let habitToEdit = null;
 let habitToDelete = null;
-let currentScheduleHabit = null;
-let currentScheduleCallback = null;
+
+// Callback for delete confirmation (set by main.js)
+let confirmDeleteCallback = null;
 
 /**
- * Format date as YYYY-MM-DD
+ * Set the callback for delete confirmation
+ * @param {Function} callback - Function to call when delete is confirmed
  */
-function formatDate(date) {
-    const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, '0');
-    const day = String(date.getDate()).padStart(2, '0');
-    return `${year}-${month}-${day}`;
+export function setConfirmDeleteCallback(callback) {
+    confirmDeleteCallback = callback;
 }
 
-// ========== HABIT MODAL ==========
+/**
+ * Get the habit being edited
+ * @returns {Object|null} Habit object or null
+ */
+export function getHabitToEdit() {
+    return habitToEdit;
+}
 
 /**
- * Open habit modal for creating or editing a habit
+ * Get the habit ID being deleted
+ * @returns {string|null} Habit ID or null
+ */
+export function getHabitToDelete() {
+    return habitToDelete;
+}
+
+/**
+ * Open the habit edit/add modal
  * @param {Object|null} habit - Habit to edit, or null for new habit
  * @param {string} type - 'morning' or 'evening'
  */
 export function openHabitModal(habit, type) {
     habitToEdit = habit;
     document.getElementById('habit-id').value = habit?.id || '';
-    document.getElementById('habit-type').value = type;
+    document.getElementById('habit-type').value = type || 'morning';
     document.getElementById('habit-name').value = habit?.name || '';
     document.getElementById('modal-title').textContent = habit ? 'Edit Habit' : 'Add Habit';
 
@@ -44,7 +59,7 @@ export function openHabitModal(habit, type) {
 }
 
 /**
- * Close habit modal and reset form
+ * Close the habit modal
  */
 export function closeHabitModal() {
     habitToEdit = null;
@@ -53,16 +68,7 @@ export function closeHabitModal() {
 }
 
 /**
- * Get current habit being edited
- */
-export function getHabitToEdit() {
-    return habitToEdit;
-}
-
-// ========== DELETE MODAL ==========
-
-/**
- * Open delete confirmation modal
+ * Open the delete confirmation modal
  * @param {string} habitId - ID of habit to delete
  */
 export function openDeleteModal(habitId) {
@@ -71,7 +77,7 @@ export function openDeleteModal(habitId) {
 }
 
 /**
- * Close delete confirmation modal
+ * Close the delete modal
  */
 export function closeDeleteModal() {
     habitToDelete = null;
@@ -79,22 +85,25 @@ export function closeDeleteModal() {
 }
 
 /**
- * Get current habit ID to delete
+ * Confirm and execute the delete
  */
-export function getHabitToDelete() {
-    return habitToDelete;
+export async function confirmDelete() {
+    if (habitToDelete && confirmDeleteCallback) {
+        await confirmDeleteCallback(habitToDelete);
+    }
+    closeDeleteModal();
 }
 
 // ========== SCHEDULE MODAL ==========
 
 /**
- * Open schedule picker modal
- * @param {Object} habit - Habit with schedule property
- * @param {Function} callback - Callback to call with new schedule
+ * Open the schedule selection modal
+ * @param {Object} habit - Habit with current schedule
+ * @param {Function} callback - Function to call with new schedule
  */
 export function openScheduleModal(habit, callback) {
-    currentScheduleHabit = habit;
-    currentScheduleCallback = callback;
+    setCurrentScheduleHabit(habit);
+    setCurrentScheduleCallback(callback);
 
     const modal = document.getElementById('schedule-modal');
     modal.classList.remove('hidden');
@@ -109,24 +118,17 @@ export function openScheduleModal(habit, callback) {
 }
 
 /**
- * Close schedule picker modal
+ * Close the schedule modal
  */
 export function closeScheduleModal() {
     document.getElementById('schedule-modal').classList.add('hidden');
-    currentScheduleHabit = null;
-    currentScheduleCallback = null;
-}
-
-/**
- * Get current schedule callback
- */
-export function getScheduleCallback() {
-    return currentScheduleCallback;
+    setCurrentScheduleHabit(null);
+    setCurrentScheduleCallback(null);
 }
 
 /**
  * Render schedule options based on selected type
- * @param {Object} schedule - Current schedule object
+ * @param {Object} schedule - Current schedule configuration
  */
 export function renderScheduleOptions(schedule) {
     const container = document.getElementById('schedule-options');
@@ -144,9 +146,9 @@ export function renderScheduleOptions(schedule) {
             container.innerHTML = `
                 <p>Select which days to track this habit</p>
                 <div class="day-selector">
-                    ${DAY_ABBREV.map((name, i) => `
-                        <button type="button" class="day-chip ${days.includes(i) ? 'selected' : ''}" data-day="${i}">
-                            ${name}
+                    ${DAY_NAMES.map((name, i) => `
+                        <button class="day-chip ${days.includes(i) ? 'selected' : ''}" data-day="${i}">
+                            ${name.substring(0, 3)}
                         </button>
                     `).join('')}
                 </div>
@@ -191,8 +193,8 @@ export function renderScheduleOptions(schedule) {
 }
 
 /**
- * Get schedule data from modal form
- * @returns {Object} Schedule object
+ * Get the schedule configuration from the modal
+ * @returns {Object} Schedule configuration
  */
 export function getScheduleFromModal() {
     const activeType = document.querySelector('.schedule-type-btn.active').dataset.type;
@@ -218,4 +220,18 @@ export function getScheduleFromModal() {
     }
 
     return schedule;
+}
+
+/**
+ * Save the schedule from modal and call the callback
+ */
+export function saveScheduleFromModal() {
+    const schedule = getScheduleFromModal();
+    const callback = currentScheduleCallback;
+
+    closeScheduleModal();
+
+    if (callback) {
+        callback(schedule);
+    }
 }

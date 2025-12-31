@@ -1,15 +1,33 @@
-const CACHE_NAME = 'habit-tracker-v1';
+const CACHE_NAME = 'habit-tracker-v2';
 const STATIC_ASSETS = [
     '/',
     '/index.html',
     '/manifest.json',
     '/css/styles.css',
-    '/js/firebase-config.js',
+    // Main entry point
+    '/js/main.js',
+    // Core modules
+    '/js/firebase-init.js',
+    '/js/state.js',
+    '/js/constants.js',
+    '/js/utils.js',
+    '/js/routines-config.js',
+    // Feature modules
     '/js/auth.js',
+    '/js/profile.js',
     '/js/habits.js',
     '/js/entries.js',
+    '/js/schedule.js',
+    '/js/modals.js',
+    '/js/onboarding.js',
     '/js/dashboard.js',
-    '/js/app.js',
+    '/js/calendar-picker.js',
+    // UI modules
+    '/js/ui/screens.js',
+    '/js/ui/progress.js',
+    '/js/ui/habits-ui.js',
+    '/js/ui/settings-ui.js',
+    // Assets
     '/assets/icons/icon-192.png',
     '/assets/icons/icon-512.png'
 ];
