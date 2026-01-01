@@ -15,15 +15,14 @@
 
         :root {
             --bg-primary: #000000;
-            --bg-secondary: #111111;
+            --bg-secondary: #0a0a0a;
             --text-primary: #ffffff;
-            --text-secondary: #aaaaaa;
+            --text-secondary: #c0c0c0;
             --text-muted: #666666;
             --border-color: #ffffff;
-            --accent-primary: #6a00ff;
-            --accent-success: #ccff00;
-            --accent-danger: #ff0000;
-            --accent-warning: #ffff00;
+            --accent-purple: #a78bfa;
+            --accent-green: #ccff00;
+            --accent-red: #ff0000;
             --border-width: 4px;
             --border-thin: 2px;
             --spacing-xs: 4px;
@@ -31,16 +30,21 @@
             --spacing-md: 16px;
             --spacing-lg: 24px;
             --spacing-xl: 32px;
+
+            /* Typography */
+            --font-mono: 'SF Mono', 'Consolas', 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+            --font-sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
         }
 
         body {
-            font-family: 'Courier New', Courier, monospace;
+            font-family: var(--font-mono);
             background-color: var(--bg-primary);
             color: var(--text-primary);
             min-height: 100vh;
             display: flex;
             justify-content: center;
             padding: var(--spacing-md);
+            line-height: 1.6;
         }
 
         /* App Container */
@@ -61,20 +65,12 @@
         }
 
         .header-title {
-            font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", sans-serif;
+            font-family: var(--font-sans);
             font-weight: 900;
             font-size: 1.2rem;
             text-transform: uppercase;
             letter-spacing: -1px;
             margin-bottom: var(--spacing-md);
-            display: flex;
-            align-items: center;
-            gap: var(--spacing-sm);
-        }
-
-        .header-title::before {
-            content: '//';
-            color: var(--accent-primary);
         }
 
         .controls-row {
@@ -93,7 +89,7 @@
             border: none;
             border-right: var(--border-thin) solid var(--border-color);
             color: var(--text-secondary);
-            font-family: 'Courier New', Courier, monospace;
+            font-family: var(--font-mono);
             font-weight: 900;
             font-size: 0.75rem;
             padding: var(--spacing-sm) var(--spacing-md);
@@ -130,9 +126,9 @@
         }
 
         .metric-card {
-            padding: var(--spacing-md);
-            border-right: var(--border-thin) solid var(--border-color);
-            border-bottom: var(--border-thin) solid var(--border-color);
+            padding: var(--spacing-lg);
+            border-right: 1px solid #333;
+            border-bottom: 1px solid #333;
         }
 
         .metric-card:nth-child(2n) {
@@ -145,15 +141,15 @@
         }
 
         .metric-label {
-            font-size: 0.65rem;
+            font-size: 0.7rem;
             color: var(--text-muted);
             text-transform: uppercase;
             letter-spacing: 1px;
-            margin-bottom: var(--spacing-xs);
+            margin-bottom: var(--spacing-sm);
         }
 
         .metric-value {
-            font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", sans-serif;
+            font-family: var(--font-sans);
             font-size: 1.8rem;
             font-weight: 900;
             line-height: 1;
@@ -161,15 +157,15 @@
         }
 
         .metric-value.positive {
-            color: var(--accent-success);
+            color: var(--accent-green);
         }
 
         .metric-value.negative {
-            color: var(--accent-danger);
+            color: var(--accent-red);
         }
 
         .metric-subtext {
-            font-size: 0.7rem;
+            font-size: 0.8rem;
             color: var(--text-secondary);
         }
 
@@ -186,24 +182,16 @@
         }
 
         .section-header {
-            font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", sans-serif;
+            font-family: var(--font-sans);
             font-weight: 900;
-            font-size: 0.9rem;
+            font-size: 1rem;
             text-transform: uppercase;
-            padding: var(--spacing-md);
-            display: flex;
-            align-items: center;
-            gap: var(--spacing-sm);
-            border-bottom: var(--border-thin) solid var(--text-muted);
-        }
-
-        .section-header::before {
-            content: '//';
-            color: var(--accent-primary);
+            padding: var(--spacing-lg) var(--spacing-md);
+            border-bottom: 1px solid #333;
         }
 
         .section-content {
-            padding: var(--spacing-md);
+            padding: var(--spacing-lg);
         }
 
         /* =========================================
@@ -228,9 +216,8 @@
             display: flex;
             align-items: center;
             gap: var(--spacing-sm);
-            padding: var(--spacing-sm) var(--spacing-md);
-            background: var(--bg-primary);
-            border-bottom: var(--border-thin) solid var(--text-muted);
+            padding: var(--spacing-md);
+            border-bottom: 1px solid #333;
         }
 
         .insight-icon {
@@ -238,51 +225,53 @@
         }
 
         .insight-type {
-            font-size: 0.7rem;
+            font-size: 0.75rem;
             font-weight: 900;
             text-transform: uppercase;
             letter-spacing: 0.5px;
         }
 
-        .insight-type.correlation { color: var(--accent-primary); }
-        .insight-type.pattern { color: var(--accent-warning); }
-        .insight-type.trend { color: var(--accent-success); }
-        .insight-type.anomaly { color: #ff6600; }
-        .insight-type.sequence { color: #00ffff; }
+        .insight-type.correlation { color: var(--accent-purple); }
+        .insight-type.pattern { color: var(--accent-purple); }
+        .insight-type.trend { color: var(--accent-green); }
+        .insight-type.anomaly { color: var(--accent-green); }
+        .insight-type.sequence { color: var(--accent-purple); }
 
         .insight-body {
             padding: var(--spacing-md);
         }
 
         .insight-text {
-            font-size: 0.9rem;
-            line-height: 1.4;
-            margin-bottom: var(--spacing-sm);
+            font-size: 0.95rem;
+            line-height: 1.6;
+            margin-bottom: var(--spacing-md);
         }
 
         .insight-text strong {
-            color: var(--accent-success);
+            color: var(--accent-green);
             text-transform: uppercase;
         }
 
         .insight-tip {
-            font-size: 0.75rem;
+            font-size: 0.85rem;
+            line-height: 1.5;
             color: var(--text-secondary);
             padding: var(--spacing-sm);
             background: var(--bg-primary);
-            border: 1px dashed var(--text-muted);
+            border-left: 2px solid var(--accent-purple);
+            padding-left: var(--spacing-md);
         }
 
         .insight-tip::before {
             content: 'TIP: ';
-            color: var(--accent-primary);
+            color: var(--accent-purple);
             font-weight: 900;
         }
 
         .insight-expand {
             display: none;
             padding: var(--spacing-md);
-            border-top: var(--border-thin) solid var(--text-muted);
+            border-top: 1px solid #333;
             font-size: 0.8rem;
             color: var(--text-secondary);
         }
@@ -297,9 +286,9 @@
             padding: var(--spacing-sm);
             background: transparent;
             border: none;
-            border-top: 1px dashed var(--text-muted);
+            border-top: 1px solid #333;
             color: var(--text-muted);
-            font-family: 'Courier New', Courier, monospace;
+            font-family: var(--font-mono);
             font-size: 0.7rem;
             cursor: pointer;
             text-transform: uppercase;
@@ -332,7 +321,7 @@
         }
 
         .weekday-label {
-            font-size: 0.65rem;
+            font-size: 0.7rem;
             color: var(--text-muted);
             text-transform: uppercase;
         }
@@ -353,46 +342,33 @@
         }
 
         .weekday-bar.best {
-            background: var(--accent-success);
-        }
-
-        .weekday-bar.worst {
-            background: var(--accent-danger);
+            background: var(--accent-green);
         }
 
         .weekday-bar.normal {
-            background: var(--text-primary);
+            background: var(--text-secondary);
         }
 
         .weekday-value {
-            font-size: 0.75rem;
+            font-size: 0.85rem;
             font-weight: 900;
             margin-top: var(--spacing-xs);
         }
 
         .weekday-value.best {
-            color: var(--accent-success);
-        }
-
-        .weekday-value.worst {
-            color: var(--accent-danger);
+            color: var(--accent-green);
         }
 
         .weekday-badge {
-            font-size: 0.6rem;
-            padding: 2px 4px;
+            font-size: 0.65rem;
+            padding: 3px 6px;
             text-transform: uppercase;
             font-weight: 900;
         }
 
         .weekday-badge.best {
-            background: var(--accent-success);
+            background: var(--accent-green);
             color: var(--bg-primary);
-        }
-
-        .weekday-badge.worst {
-            background: var(--accent-danger);
-            color: var(--text-primary);
         }
 
         /* =========================================
@@ -406,7 +382,7 @@
         .correlation-matrix {
             display: grid;
             gap: 2px;
-            font-size: 0.65rem;
+            font-size: 0.7rem;
         }
 
         .matrix-header {
@@ -429,7 +405,7 @@
         .matrix-cell.header {
             background: var(--bg-secondary);
             color: var(--text-secondary);
-            font-size: 0.55rem;
+            font-size: 0.6rem;
         }
 
         .matrix-cell.diagonal {
@@ -437,13 +413,8 @@
             color: var(--bg-primary);
         }
 
-        .matrix-cell.strong-positive {
-            background: var(--accent-success);
-            color: var(--bg-primary);
-        }
-
         .matrix-cell.positive {
-            background: rgba(204, 255, 0, 0.5);
+            background: var(--accent-green);
             color: var(--bg-primary);
         }
 
@@ -453,17 +424,12 @@
         }
 
         .matrix-cell.negative {
-            background: rgba(255, 0, 0, 0.3);
-            color: var(--text-primary);
-        }
-
-        .matrix-cell.strong-negative {
-            background: var(--accent-danger);
+            background: var(--accent-red);
             color: var(--text-primary);
         }
 
         .matrix-cell:hover:not(.header):not(.diagonal) {
-            border-color: var(--accent-primary);
+            border-color: var(--accent-purple);
             border-width: 2px;
         }
 
@@ -474,9 +440,9 @@
             left: 50%;
             transform: translateX(-50%);
             background: var(--bg-primary);
-            border: var(--border-thin) solid var(--accent-primary);
+            border: var(--border-thin) solid var(--accent-purple);
             padding: var(--spacing-sm);
-            font-size: 0.7rem;
+            font-size: 0.75rem;
             white-space: nowrap;
             z-index: 100;
         }
@@ -490,7 +456,7 @@
             gap: var(--spacing-md);
             justify-content: center;
             margin-top: var(--spacing-md);
-            font-size: 0.65rem;
+            font-size: 0.75rem;
             flex-wrap: wrap;
         }
 
@@ -522,7 +488,7 @@
             gap: var(--spacing-lg);
             justify-content: center;
             margin-top: var(--spacing-md);
-            font-size: 0.75rem;
+            font-size: 0.85rem;
         }
 
         .legend-line {
@@ -537,11 +503,11 @@
         }
 
         .legend-line-sample.morning {
-            background: var(--accent-success);
+            background: var(--accent-green);
         }
 
         .legend-line-sample.evening {
-            background: var(--accent-primary);
+            background: var(--accent-purple);
         }
 
         .legend-line-sample.goal {
@@ -560,8 +526,8 @@
         }
 
         .strength-item {
-            padding: var(--spacing-md);
-            border-bottom: var(--border-thin) solid var(--text-muted);
+            padding: var(--spacing-lg) var(--spacing-md);
+            border-bottom: 1px solid #333;
         }
 
         .strength-item:last-child {
@@ -578,33 +544,33 @@
         .strength-name {
             font-weight: 900;
             text-transform: uppercase;
-            font-size: 0.85rem;
+            font-size: 0.9rem;
         }
 
         .strength-status {
-            font-size: 0.65rem;
+            font-size: 0.7rem;
             font-weight: 900;
-            padding: 2px 6px;
+            padding: 3px 8px;
             text-transform: uppercase;
         }
 
         .strength-status.mastered {
-            background: var(--accent-success);
+            background: var(--accent-green);
             color: var(--bg-primary);
         }
 
         .strength-status.strong {
-            background: var(--accent-primary);
+            background: var(--accent-purple);
             color: var(--text-primary);
         }
 
         .strength-status.building {
-            background: var(--accent-warning);
+            background: var(--text-secondary);
             color: var(--bg-primary);
         }
 
         .strength-status.fragile {
-            background: var(--accent-danger);
+            background: var(--accent-red);
             color: var(--text-primary);
         }
 
@@ -628,19 +594,19 @@
         }
 
         .strength-fill.mastered {
-            background: var(--accent-success);
+            background: var(--accent-green);
         }
 
         .strength-fill.strong {
-            background: var(--accent-primary);
+            background: var(--accent-purple);
         }
 
         .strength-fill.building {
-            background: var(--accent-warning);
+            background: var(--text-secondary);
         }
 
         .strength-fill.fragile {
-            background: var(--accent-danger);
+            background: var(--accent-red);
         }
 
         .strength-value {
@@ -651,7 +617,8 @@
         }
 
         .strength-description {
-            font-size: 0.75rem;
+            font-size: 0.85rem;
+            line-height: 1.5;
             color: var(--text-secondary);
         }
 
@@ -678,7 +645,8 @@
         }
 
         .data-notice-text {
-            font-size: 0.8rem;
+            font-size: 0.9rem;
+            line-height: 1.5;
             color: var(--text-secondary);
             margin-bottom: var(--spacing-md);
         }
@@ -698,12 +666,12 @@
 
         .data-progress-fill {
             height: 100%;
-            background: var(--accent-primary);
+            background: var(--accent-purple);
             width: 40%;
         }
 
         .data-progress-text {
-            font-size: 0.75rem;
+            font-size: 0.8rem;
             font-weight: 900;
         }
 
@@ -725,10 +693,10 @@
             padding: var(--spacing-md);
             background: transparent;
             border: none;
-            border-right: var(--border-thin) solid var(--border-color);
+            border-right: 1px solid #333;
             color: var(--text-secondary);
-            font-family: 'Courier New', Courier, monospace;
-            font-size: 0.65rem;
+            font-family: var(--font-mono);
+            font-size: 0.7rem;
             text-transform: uppercase;
             cursor: pointer;
             text-decoration: none;
@@ -844,11 +812,7 @@
                 </div>
                 <div class="matrix-legend">
                     <div class="legend-item">
-                        <div class="legend-color" style="background: var(--accent-success);"></div>
-                        <span>STRONG +</span>
-                    </div>
-                    <div class="legend-item">
-                        <div class="legend-color" style="background: rgba(204, 255, 0, 0.5);"></div>
+                        <div class="legend-color" style="background: var(--accent-green);"></div>
                         <span>POSITIVE</span>
                     </div>
                     <div class="legend-item">
@@ -856,7 +820,7 @@
                         <span>NEUTRAL</span>
                     </div>
                     <div class="legend-item">
-                        <div class="legend-color" style="background: rgba(255, 0, 0, 0.3);"></div>
+                        <div class="legend-color" style="background: var(--accent-red);"></div>
                         <span>NEGATIVE</span>
                     </div>
                 </div>
@@ -1164,8 +1128,7 @@
 
             Object.entries(pattern).forEach(([day, value]) => {
                 const isBest = value === maxVal;
-                const isWorst = value === minVal;
-                const barClass = isBest ? 'best' : (isWorst ? 'worst' : 'normal');
+                const barClass = isBest ? 'best' : 'normal';
 
                 const item = document.createElement('div');
                 item.className = 'weekday-item';
@@ -1176,7 +1139,6 @@
                     </div>
                     <span class="weekday-value ${barClass}">${value}%</span>
                     ${isBest ? '<span class="weekday-badge best">BEST</span>' : ''}
-                    ${isWorst ? '<span class="weekday-badge worst">WORST</span>' : ''}
                 `;
                 container.appendChild(item);
             });
@@ -1238,10 +1200,8 @@
                         cell.textContent = '1.0';
                     } else {
                         let cellClass = 'weak';
-                        if (value >= 0.7) cellClass = 'strong-positive';
-                        else if (value >= 0.4) cellClass = 'positive';
+                        if (value >= 0.4) cellClass = 'positive';
                         else if (value <= -0.4) cellClass = 'negative';
-                        else if (value <= -0.7) cellClass = 'strong-negative';
 
                         cell.className = `matrix-cell ${cellClass}`;
                         cell.textContent = value.toFixed(2);

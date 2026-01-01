@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Insights Icons Preview - Swiss Brutalism</title>
+    <style>
+        /* =========================================
+           SWISS BRUTALISM DARK THEME
+           ========================================= */
+
+        :root {
+            --bg-primary: #000000;
+            --bg-secondary: #0a0a0a;
+            --text-primary: #ffffff;
+            --text-secondary: #c0c0c0;
+            --text-muted: #666666;
+            --border-color: #ffffff;
+            --accent-purple: #a78bfa;
+            --accent-green: #ccff00;
+            --accent-red: #ff0000;
+            --border-width: 2px;
+            --font-mono: 'SF Mono', 'Consolas', 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: var(--font-mono);
+            background-color: var(--bg-primary);
+            color: var(--text-primary);
+            padding: 32px;
+            line-height: 1.6;
+        }
+
+        h1 {
+            font-size: 1.5rem;
+            text-transform: uppercase;
+            margin-bottom: 32px;
+            border-bottom: 4px solid var(--text-primary);
+            padding-bottom: 16px;
+        }
+
+        .category-section {
+            margin-bottom: 48px;
+        }
+
+        .category-title {
+            font-size: 1rem;
+            color: var(--accent-green);
+            text-transform: uppercase;
+            margin-bottom: 16px;
+            border-bottom: 1px solid #333;
+            padding-bottom: 8px;
+        }
+
+        .icon-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+            gap: 16px;
+        }
+
+        .icon-card {
+            border: var(--border-width) solid #333;
+            background: var(--bg-secondary);
+            padding: 16px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .icon-card:hover {
+            border-color: var(--text-primary);
+            background: #111;
+        }
+
+        .icon-display {
+            width: 48px;
+            height: 48px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 12px;
+        }
+
+        .icon-label {
+            font-size: 0.7rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+        }
+
+        /* SVG Styles */
+        svg {
+            width: 32px;
+            height: 32px;
+            fill: none;
+            stroke: currentColor;
+            stroke-width: 2.5;
+            stroke-linecap: square;
+            stroke-linejoin: miter;
+        }
+
+        /* Context Preview */
+        .preview-card {
+            margin-top: 16px;
+            border: 2px solid var(--border-color);
+            background: var(--bg-secondary);
+            padding: 0;
+            max-width: 400px;
+        }
+
+        .preview-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 16px;
+            border-bottom: 1px solid #333;
+        }
+
+        .preview-body {
+            padding: 16px;
+            font-size: 0.9rem;
+        }
+        
+        .preview-icon-slot {
+            color: var(--accent-green);
+        }
+
+    </style>
+</head>
+<body>
+
+    <h1>Smart Insights Icon System</h1>
+
+    <!-- TREND / MOMENTUM -->
+    <div class="category-section">
+        <h2 class="category-title">Trend / Momentum</h2>
+        <div class="icon-grid">
+            <!-- Option 1: Jagged Rise -->
+            <div class="icon-card">
+                <div class="icon-display">
+                    <svg viewBox="0 0 24 24">
+                        <polyline points="22 7 13.5 15.5 8.5 10.5 2 17"></polyline>
+                        <polyline points="16 7 22 7 22 13"></polyline>
+                    </svg>
+                </div>
+                <span class="icon-label">Jagged Rise</span>
+            </div>
+
+            <!-- Option 2: Step Up -->
+            <div class="icon-card">
+                <div class="icon-display">
+                    <svg viewBox="0 0 24 24">
+                        <rect x="2" y="14" width="6" height="8"></rect>
+                        <rect x="9" y="8" width="6" height="14"></rect>
+                        <rect x="16" y="2" width="6" height="20"></rect>
+                    </svg>
+                </div>
+                <span class="icon-label">Bar Steps</span>
+            </div>
+
+            <!-- Option 3: Bold Arrow -->
+            <div class="icon-card">
+                <div class="icon-display">
+                    <svg viewBox="0 0 24 24">
+                        <path d="M12 19V5M5 12l7-7 7 7"/>
+                    </svg>
+                </div>
+                <span class="icon-label">Direct North</span>
+            </div>
+             <!-- Option 4: Rocket Minimal -->
+             <div class="icon-card">
+                <div class="icon-display">
+                    <svg viewBox="0 0 24 24">
+                        <path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.48-.56.93-1.23 1.35-2h-4.35z"/>
+                        <path d="M12 15l-3-3a9 9 0 0 1 12.7-12.7C20.3 3.5 12 15 12 15z"/>
+                    </svg>
+                </div>
+                <span class="icon-label">Rocket</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- CORRELATION / LINK -->
+    <div class="category-section">
+        <h2 class="category-title">Correlation / Link</h2>
+        <div class="icon-grid">
+            <!-- Option 1: Chain Link -->
+            <div class="icon-card">
+                <div class="icon-display">
+                    <svg viewBox="0 0 24 24">
+                        <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path>
+                        <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path>
+                    </svg>
+                </div>
+                <span class="icon-label">Chain</span>
+            </div>
+
+            <!-- Option 2: Node Connection -->
+            <div class="icon-card">
+                <div class="icon-display">
+                    <svg viewBox="0 0 24 24">
+                        <circle cx="6" cy="6" r="3"></circle>
+                        <circle cx="18" cy="18" r="3"></circle>
+                        <line x1="8.5" y1="8.5" x2="15.5" y2="15.5"></line>
+                        <line x1="6" y1="18" x2="18" y2="6" stroke-dasharray="4 4" opacity="0.5"></line>
+                    </svg>
+                </div>
+                <span class="icon-label">Nodes</span>
+            </div>
+
+            <!-- Option 3: Intersection -->
+            <div class="icon-card">
+                <div class="icon-display">
+                    <svg viewBox="0 0 24 24">
+                        <circle cx="9" cy="12" r="7"></circle>
+                        <circle cx="15" cy="12" r="7"></circle>
+                    </svg>
+                </div>
+                <span class="icon-label">Overlap</span>
+            </div>
+
+            <!-- Option 4: Magnet -->
+            <div class="icon-card">
+                <div class="icon-display">
+                    <svg viewBox="0 0 24 24">
+                         <path d="M6 8v4a6 6 0 0 0 12 0V8" />
+                         <rect x="4" y="4" width="4" height="4" />
+                         <rect x="16" y="4" width="4" height="4" />
+                    </svg>
+                </div>
+                <span class="icon-label">Magnet</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- PATTERN / CALENDAR -->
+    <div class="category-section">
+        <h2 class="category-title">Pattern / Cycle</h2>
+        <div class="icon-grid">
+            <!-- Option 1: Grid -->
+            <div class="icon-card">
+                <div class="icon-display">
+                    <svg viewBox="0 0 24 24">
+                        <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                        <line x1="3" y1="9" x2="21" y2="9"></line>
+                        <line x1="9" y1="21" x2="9" y2="9"></line>
+                    </svg>
+                </div>
+                <span class="icon-label">Calendar Grid</span>
+            </div>
+
+            <!-- Option 2: Wave -->
+            <div class="icon-card">
+                <div class="icon-display">
+                    <svg viewBox="0 0 24 24">
+                        <path d="M2 12s3-7 7-7 7 7 7 7 8-7 8-7" />
+                        <line x1="2" y1="12" x2="22" y2="12" stroke-width="1" stroke-dasharray="2 2" opacity="0.5"></line>
+                    </svg>
+                </div>
+                <span class="icon-label">Sine Wave</span>
+            </div>
+
+            <!-- Option 3: Loop -->
+            <div class="icon-card">
+                <div class="icon-display">
+                    <svg viewBox="0 0 24 24">
+                        <path d="M21 12a9 9 0 1 1-6.219-8.56" />
+                        <polyline points="21 3 14.8 3.5 21 8" transform="rotate(-10 21 3)"/>
+                    </svg>
+                </div>
+                <span class="icon-label">Cycle Loop</span>
+            </div>
+
+             <!-- Option 4: Radar/Target -->
+             <div class="icon-card">
+                <div class="icon-display">
+                    <svg viewBox="0 0 24 24">
+                        <circle cx="12" cy="12" r="3"></circle>
+                        <circle cx="12" cy="12" r="8"></circle>
+                        <line x1="12" y1="2" x2="12" y2="22" opacity="0.5"></line>
+                        <line x1="2" y1="12" x2="22" y2="12" opacity="0.5"></line>
+                    </svg>
+                </div>
+                <span class="icon-label">Radar</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- ANOMALY / STAR -->
+    <div class="category-section">
+        <h2 class="category-title">Anomaly / Win</h2>
+        <div class="icon-grid">
+            <!-- Option 1: Spark -->
+            <div class="icon-card">
+                <div class="icon-display">
+                    <svg viewBox="0 0 24 24">
+                        <path d="M12 2L14.5 9.5L22 12L14.5 14.5L12 22L9.5 14.5L2 12L9.5 9.5L12 2Z"></path>
+                    </svg>
+                </div>
+                <span class="icon-label">Spark</span>
+            </div>
+
+            <!-- Option 2: Lightning -->
+            <div class="icon-card">
+                <div class="icon-display">
+                    <svg viewBox="0 0 24 24">
+                        <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
+                    </svg>
+                </div>
+                <span class="icon-label">Bolt</span>
+            </div>
+
+            <!-- Option 3: Asterisk -->
+            <div class="icon-card">
+                <div class="icon-display">
+                    <svg viewBox="0 0 24 24">
+                        <line x1="12" y1="2" x2="12" y2="22"></line>
+                        <line x1="3.3" y1="7" x2="20.7" y2="17"></line>
+                        <line x1="20.7" y1="7" x2="3.3" y2="17"></line>
+                    </svg>
+                </div>
+                <span class="icon-label">Burst</span>
+            </div>
+
+            <!-- Option 4: Exclamation Diamond -->
+            <div class="icon-card">
+                <div class="icon-display">
+                    <svg viewBox="0 0 24 24">
+                        <path d="M12 2l10 10-10 10L2 12 12 2z"></path>
+                        <line x1="12" y1="8" x2="12" y2="12"></line>
+                        <line x1="12" y1="16" x2="12.01" y2="16"></line>
+                    </svg>
+                </div>
+                <span class="icon-label">Alert</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- SEQUENCE / ORDER -->
+    <div class="category-section">
+        <h2 class="category-title">Sequence / Order</h2>
+        <div class="icon-grid">
+            <!-- Option 1: Steps -->
+            <div class="icon-card">
+                <div class="icon-display">
+                    <svg viewBox="0 0 24 24">
+                        <circle cx="4" cy="12" r="2"></circle>
+                        <circle cx="12" cy="12" r="2"></circle>
+                        <circle cx="20" cy="12" r="2"></circle>
+                        <line x1="6" y1="12" x2="10" y2="12"></line>
+                        <line x1="14" y1="12" x2="18" y2="12"></line>
+                    </svg>
+                </div>
+                <span class="icon-label">Flow Dots</span>
+            </div>
+
+            <!-- Option 2: Play Square -->
+            <div class="icon-card">
+                <div class="icon-display">
+                    <svg viewBox="0 0 24 24">
+                        <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                        <polygon points="10 8 16 12 10 16 10 8" fill="currentColor"></polygon>
+                    </svg>
+                </div>
+                <span class="icon-label">Play Block</span>
+            </div>
+
+            <!-- Option 3: Arrow Flow -->
+            <div class="icon-card">
+                <div class="icon-display">
+                    <svg viewBox="0 0 24 24">
+                         <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" />
+                         <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" opacity="0.1"/>
+                         <path d="M13 6l6 6-6 6" />
+                    </svg>
+                </div>
+                <span class="icon-label">Next</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- PREVIEW CONTEXT -->
+    <div class="category-section">
+        <h2 class="category-title">Context Preview (Mockup)</h2>
+        <div class="preview-card">
+            <div class="preview-header">
+                <div class="preview-icon-slot">
+                     <svg viewBox="0 0 24 24">
+                        <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path>
+                        <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path>
+                    </svg>
+                </div>
+                <span style="font-weight: 900; font-size: 0.8rem; color: var(--accent-purple);">HABIT LINK DETECTED</span>
+            </div>
+            <div class="preview-body">
+                <p>When you skip <strong style="color: var(--accent-green)">MEDITATION</strong>, you're 3x more likely to skip <strong style="color: var(--accent-green)">READING</strong>.</p>
+            </div>
+        </div>
+
+        <div class="preview-card" style="margin-top: 16px;">
+             <div class="preview-header">
+                <div class="preview-icon-slot">
+                    <svg viewBox="0 0 24 24">
+                        <polyline points="22 7 13.5 15.5 8.5 10.5 2 17"></polyline>
+                        <polyline points="16 7 22 7 22 13"></polyline>
+                    </svg>
+                </div>
+                <span style="font-weight: 900; font-size: 0.8rem; color: var(--accent-green);">MOMENTUM BUILDING</span>
+            </div>
+            <div class="preview-body">
+                <p>Your completion rate has improved <strong style="color: var(--accent-green)">12%</strong> compared to last week.</p>
+            </div>
+        </div>
+    </div>
+
+</body>
+</html>
