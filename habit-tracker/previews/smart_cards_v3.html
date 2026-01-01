@@ -1,0 +1,788 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Smart Insights Cards V3 - Swiss Brutalism</title>
+  <style>
+    /* Reset */
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg-primary: #050505;
+      --bg-secondary: #0e0e0e;
+      --bg-contrast: #f7f7f7;
+      --text-primary: #ffffff;
+      --text-secondary: #a0a0a0;
+      --text-muted: #565656;
+      --accent: #ccff00;
+      --accent-warm: #ff3d3d;
+      --border: #2e2e2e;
+      --shadow: 10px 10px 0px #1b1b1b;
+      --font-sans: 'Space Grotesk', 'Helvetica Neue', Arial, sans-serif;
+      --font-mono: 'IBM Plex Mono', 'SFMono-Regular', Consolas, monospace;
+    }
+
+    body {
+      font-family: var(--font-sans);
+      background: radial-gradient(circle at 20% 20%, rgba(204, 255, 0, 0.04), transparent 25%),
+                  radial-gradient(circle at 80% 10%, rgba(255, 61, 61, 0.07), transparent 20%),
+                  var(--bg-primary);
+      color: var(--text-primary);
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 32px;
+      background-image:
+        linear-gradient(rgba(255, 255, 255, 0.05) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255, 255, 255, 0.05) 1px, transparent 1px);
+      background-size: 44px 44px;
+    }
+
+    .page {
+      width: min(1200px, 100%);
+      background: var(--bg-secondary);
+      border: 2px solid var(--text-primary);
+      box-shadow: var(--shadow);
+      display: grid;
+      grid-template-columns: 330px 1fr;
+      gap: 20px;
+      padding: 20px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .page::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: repeating-linear-gradient(
+        90deg,
+        transparent,
+        transparent 19px,
+        rgba(255, 255, 255, 0.05) 20px,
+        rgba(255, 255, 255, 0.05) 20px
+      );
+      pointer-events: none;
+      opacity: 0.4;
+    }
+
+    .rail {
+      background: var(--bg-primary);
+      border: 2px solid var(--text-primary);
+      padding: 18px;
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    .rail::before {
+      content: 'BRUTE GRID';
+      position: absolute;
+      top: 12px;
+      right: -54px;
+      font-family: var(--font-mono);
+      font-size: 0.75rem;
+      letter-spacing: 4px;
+      color: rgba(255, 255, 255, 0.08);
+      transform: rotate(90deg);
+    }
+
+    .title-stack h1 {
+      font-size: 2rem;
+      line-height: 1;
+      letter-spacing: -1px;
+      text-transform: uppercase;
+    }
+
+    .title-stack h1 span {
+      display: inline-block;
+      padding: 4px 6px;
+      background: var(--accent);
+      color: #0c0c0c;
+      margin-right: 6px;
+    }
+
+    .eyebrow {
+      font-family: var(--font-mono);
+      font-size: 0.75rem;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--text-secondary);
+    }
+
+    .lede {
+      margin-top: 8px;
+      color: var(--text-secondary);
+      font-size: 0.95rem;
+      max-width: 18ch;
+      line-height: 1.4;
+    }
+
+    .version-tag {
+      border: 2px solid var(--text-primary);
+      padding: 6px 10px;
+      font-family: var(--font-mono);
+      font-size: 0.75rem;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      text-transform: uppercase;
+      background: var(--bg-secondary);
+      box-shadow: 6px 6px 0px #151515;
+    }
+
+    .version-tag span {
+      background: var(--accent-warm);
+      color: #0b0b0b;
+      padding: 2px 6px;
+      font-weight: 700;
+    }
+
+    .control-group {
+      display: grid;
+      gap: 8px;
+    }
+
+    .group-label {
+      font-family: var(--font-mono);
+      font-size: 0.7rem;
+      letter-spacing: 1px;
+      color: var(--text-secondary);
+      text-transform: uppercase;
+    }
+
+    .toggle-row {
+      display: flex;
+      gap: 8px;
+      background: var(--bg-secondary);
+      border: 1px solid var(--border);
+    }
+
+    .toggle {
+      flex: 1;
+      padding: 10px 12px;
+      background: transparent;
+      border: none;
+      color: var(--text-secondary);
+      font-family: var(--font-mono);
+      font-size: 0.8rem;
+      text-transform: uppercase;
+      cursor: pointer;
+      transition: all 0.12s ease;
+      border-right: 1px solid var(--border);
+    }
+
+    .toggle:last-child { border-right: none; }
+
+    .toggle:hover { color: var(--text-primary); background: #161616; }
+
+    .toggle.active {
+      background: var(--accent);
+      color: #0b0b0b;
+      font-weight: 800;
+    }
+
+    .mini-stats {
+      display: grid;
+      gap: 8px;
+    }
+
+    .stat {
+      border: 1px solid var(--border);
+      padding: 10px 12px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-family: var(--font-mono);
+      font-size: 0.85rem;
+      background: #0d0d0d;
+    }
+
+    .meter {
+      height: 6px;
+      background: var(--bg-secondary);
+      border: 1px solid var(--border);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .meter span {
+      position: absolute;
+      inset: 0;
+      width: 68%;
+      background: linear-gradient(90deg, var(--accent), var(--accent-warm));
+      animation: pulse 2s ease-in-out infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 0.8; }
+      50% { opacity: 0.4; }
+    }
+
+    .main {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .ticker {
+      border: 2px solid var(--text-primary);
+      background: var(--bg-primary);
+      padding: 10px 12px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .ticker::before {
+      content: 'LIVE';
+      background: var(--accent-warm);
+      color: #0c0c0c;
+      font-family: var(--font-mono);
+      font-size: 0.75rem;
+      padding: 4px 8px;
+      letter-spacing: 1px;
+    }
+
+    .ticker-track {
+      display: flex;
+      gap: 30px;
+      animation: marquee 14s linear infinite;
+      white-space: nowrap;
+      font-family: var(--font-mono);
+      color: var(--text-secondary);
+      font-size: 0.85rem;
+    }
+
+    @keyframes marquee {
+      0% { transform: translateX(0); }
+      100% { transform: translateX(-50%); }
+    }
+
+    .board {
+      border: 2px solid var(--text-primary);
+      background: var(--bg-primary);
+      padding: 16px;
+      display: grid;
+      gap: 14px;
+      box-shadow: var(--shadow);
+    }
+
+    .board-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .board-title {
+      font-size: 1rem;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .board-title::before {
+      content: '';
+      width: 12px;
+      height: 12px;
+      background: var(--accent);
+      display: inline-block;
+      box-shadow: 4px 4px 0px #131313;
+    }
+
+    .chip-row {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .chip {
+      font-family: var(--font-mono);
+      font-size: 0.75rem;
+      border: 1px solid var(--border);
+      padding: 6px 10px;
+      background: #0f0f0f;
+      color: var(--text-secondary);
+      letter-spacing: 1px;
+    }
+
+    .cards {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      gap: 14px;
+    }
+
+    .card {
+      border: 2px solid var(--border);
+      background: linear-gradient(180deg, rgba(255, 255, 255, 0.02), transparent 60%),
+                  #0f0f0f;
+      padding: 16px;
+      display: grid;
+      gap: 10px;
+      position: relative;
+      overflow: hidden;
+      cursor: pointer;
+      transition: transform 0.1s ease, box-shadow 0.1s ease, border-color 0.1s ease;
+      box-shadow: 8px 8px 0px #181818;
+    }
+
+    .card:hover {
+      transform: translate(-3px, -3px);
+      border-color: var(--text-primary);
+      box-shadow: 12px 12px 0px var(--accent);
+    }
+
+    .card::after {
+      content: attr(data-index);
+      position: absolute;
+      top: -18px;
+      right: -12px;
+      font-size: 4.5rem;
+      font-weight: 900;
+      color: rgba(255, 255, 255, 0.04);
+      pointer-events: none;
+      font-family: var(--font-sans);
+    }
+
+    .card-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .icon {
+      width: 42px;
+      height: 42px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border: 2px solid var(--text-primary);
+      padding: 6px;
+      background: var(--accent);
+      color: #0c0c0c;
+      box-shadow: 6px 6px 0px #151515;
+    }
+
+    .badge {
+      font-family: var(--font-mono);
+      font-size: 0.75rem;
+      letter-spacing: 1px;
+      padding: 6px 8px;
+      background: var(--bg-secondary);
+      border: 1px solid var(--border);
+      color: var(--text-secondary);
+      text-transform: uppercase;
+    }
+
+    .title {
+      font-size: 1.05rem;
+      font-weight: 800;
+      letter-spacing: -0.3px;
+      text-transform: uppercase;
+    }
+
+    .meta {
+      display: flex;
+      gap: 10px;
+      font-family: var(--font-mono);
+      font-size: 0.75rem;
+      color: var(--text-secondary);
+      letter-spacing: 0.5px;
+    }
+
+    .body {
+      font-size: 0.98rem;
+      line-height: 1.5;
+      color: var(--text-primary);
+    }
+
+    .body strong {
+      background: var(--accent);
+      color: #0c0c0c;
+      padding: 2px 4px;
+      font-weight: 800;
+    }
+
+    .callout {
+      display: grid;
+      gap: 6px;
+      background: #131313;
+      border: 1px solid var(--border);
+      padding: 10px;
+    }
+
+    .callout-label {
+      font-family: var(--font-mono);
+      font-size: 0.75rem;
+      letter-spacing: 1px;
+      color: var(--accent);
+      text-transform: uppercase;
+    }
+
+    .footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+      border-top: 1px solid var(--border);
+      padding-top: 10px;
+    }
+
+    .detail-btn {
+      background: transparent;
+      border: none;
+      color: var(--text-secondary);
+      font-family: var(--font-mono);
+      font-size: 0.8rem;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      cursor: pointer;
+      padding: 6px 0;
+      transition: color 0.12s ease;
+    }
+
+    .detail-btn:hover { color: var(--accent); }
+
+    .details {
+      max-height: 0;
+      overflow: hidden;
+      background: var(--bg-contrast);
+      color: #0b0b0b;
+      transition: max-height 0.25s ease;
+      border: 1px solid var(--accent);
+      padding: 0 12px;
+    }
+
+    .card.expanded .details { max-height: 220px; padding: 12px; }
+
+    .details p {
+      font-family: var(--font-mono);
+      font-size: 0.85rem;
+      line-height: 1.5;
+    }
+
+    .stamp {
+      font-family: var(--font-mono);
+      font-size: 0.7rem;
+      padding: 4px 6px;
+      background: var(--bg-contrast);
+      color: #0c0c0c;
+      border: 1px solid #0c0c0c;
+      letter-spacing: 1px;
+    }
+
+    .signal-line {
+      width: 100%;
+      height: 2px;
+      background: repeating-linear-gradient(90deg, var(--accent), var(--accent) 6px, transparent 6px, transparent 12px);
+    }
+
+    @media (max-width: 960px) {
+      .page { grid-template-columns: 1fr; }
+      .rail { min-height: 0; }
+      .ticker-track { animation-duration: 10s; }
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <aside class="rail">
+      <div class="title-stack">
+        <div class="eyebrow">Signal Console</div>
+        <h1><span>Smart</span>Insights</h1>
+        <p class="lede">Sharper hierarchy, tighter rhythm, still unapologetically Swiss-brutalist.</p>
+      </div>
+      <div class="version-tag">Version <span>V3</span> Refine Mode</div>
+
+      <div class="control-group">
+        <div class="group-label">Period</div>
+        <div class="toggle-row" id="period-toggle">
+          <button class="toggle" data-period="7">7D</button>
+          <button class="toggle active" data-period="30">30D</button>
+          <button class="toggle" data-period="90">90D</button>
+        </div>
+      </div>
+
+      <div class="control-group">
+        <div class="group-label">Channel</div>
+        <div class="toggle-row" id="type-toggle">
+          <button class="toggle active" data-type="all">All</button>
+          <button class="toggle" data-type="am">AM</button>
+          <button class="toggle" data-type="pm">PM</button>
+        </div>
+      </div>
+
+      <div class="mini-stats">
+        <div class="stat"><span>Confidence Window</span><span class="stamp">72%</span></div>
+        <div class="stat"><span>Active Insights</span><span class="stamp" id="insight-count">0</span></div>
+        <div class="meter"><span></span></div>
+      </div>
+    </aside>
+
+    <section class="main">
+      <div class="ticker">
+        <div class="ticker-track" id="ticker-track">
+          <span>Lock Wednesday slump with lighter reps.</span>
+          <span>Stack Meditation + Reading → success +3x.</span>
+          <span>Protect AM window; surge improving.</span>
+          <span>Sequence: Wake Early → Exercise (85%).</span>
+        </div>
+      </div>
+
+      <div class="board">
+        <div class="board-head">
+          <div class="board-title">Insight Stack</div>
+          <div class="chip-row">
+            <div class="chip">Hard shadow + loud grids</div>
+            <div class="chip">Readable monospace meta</div>
+            <div class="chip">Details on-demand</div>
+          </div>
+        </div>
+        <div class="signal-line"></div>
+        <div class="cards" id="insights-container"></div>
+      </div>
+    </section>
+  </div>
+
+  <script>
+    const ICONS = {
+      trend: `<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.6"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"></polyline><polyline points="16 7 22 7 22 13"></polyline></svg>`,
+      correlation: `<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg>`,
+      pattern: `<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="3"></circle><circle cx="12" cy="12" r="8"></circle><line x1="12" y1="2" x2="12" y2="22" opacity="0.5"></line><line x1="2" y1="12" x2="22" y2="12" opacity="0.5"></line></svg>`,
+      anomaly: `<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M12 2L14.5 9.5L22 12L14.5 14.5L12 22L9.5 14.5L2 12L9.5 9.5L12 2Z"></path></svg>`,
+      sequence: `<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.4"><circle cx="4" cy="12" r="2"></circle><circle cx="12" cy="12" r="2"></circle><circle cx="20" cy="12" r="2"></circle><line x1="6" y1="12" x2="10" y2="12"></line><line x1="14" y1="12" x2="18" y2="12"></line></svg>`
+    };
+
+    const mockData = {
+      '7': {
+        insights: [
+          {
+            type: 'trend',
+            timeOfDay: 'am',
+            icon: ICONS.trend,
+            title: 'Momentum building',
+            text: 'Completion rate improved <strong>12%</strong> compared to last week.',
+            tip: 'Keep the same warmup routine; no tweaks required this cycle.',
+            details: 'Week-over-week momentum predicts an 80% completion rate within two weeks. Preserve your current cadence and avoid adding new habits until stability holds.',
+            confidence: '0.72',
+            window: '7 days'
+          },
+          {
+            type: 'pattern',
+            timeOfDay: 'pm',
+            icon: ICONS.pattern,
+            title: 'Midweek slump',
+            text: '<strong>Wednesday</strong> is dragging at 58% completion.',
+            tip: 'Run shorter sessions or pre-schedule recovery tasks midweek.',
+            details: 'Midweek fatigue is a recurring breakpoint. Lighten tasks on Wednesdays or move stretch goals to Tuesdays/Thursdays to keep the curve clean.',
+            confidence: '0.64',
+            window: '7 days'
+          }
+        ]
+      },
+      '30': {
+        insights: [
+          {
+            type: 'correlation',
+            timeOfDay: 'pm',
+            icon: ICONS.correlation,
+            title: 'Habit link detected',
+            text: 'Skipping <strong>MEDT</strong> triples the chance of skipping <strong>READ</strong>.',
+            tip: 'Stack these two; start reading immediately after meditation ends.',
+            details: 'Phi coefficient 0.72: these habits fire together. Bookend them to reduce context switching and capture the coupling effect.',
+            confidence: '0.82',
+            window: '30 days'
+          },
+          {
+            type: 'pattern',
+            timeOfDay: 'pm',
+            icon: ICONS.pattern,
+            title: 'Friday challenge',
+            text: '<strong>Fridays</strong> sit at 52% completion—lowest of the week.',
+            tip: 'Designate Fridays as maintenance: half-sets and no new habits.',
+            details: 'Energy drop late-week is expected. Treat Fridays as maintenance mode to avoid morale damage and to keep streak lines unbroken.',
+            confidence: '0.58',
+            window: '30 days'
+          },
+          {
+            type: 'trend',
+            timeOfDay: 'am',
+            icon: ICONS.trend,
+            title: 'Morning surge',
+            text: 'Morning routine is up <strong>23%</strong> month-over-month.',
+            tip: 'Guard the first 90 minutes; no meetings and no notifications.',
+            details: 'Morning tasks show the cleanest slope and lowest variance. Preserve the protected block; it is your keystone time segment.',
+            confidence: '0.80',
+            window: '30 days'
+          },
+          {
+            type: 'anomaly',
+            timeOfDay: 'pm',
+            icon: ICONS.anomaly,
+            title: 'Super day alert',
+            text: 'A perfect <strong>100% completion</strong> landed this Saturday.',
+            tip: 'Capture what made it work; repeat the same prep next weekend.',
+            details: 'Perfect days are rare. This spike aligns with reduced habit volume. Clone the preconditions (prep Friday night + low meetings).',
+            confidence: '0.68',
+            window: '30 days'
+          },
+          {
+            type: 'sequence',
+            timeOfDay: 'am',
+            icon: ICONS.sequence,
+            title: 'Optimal sequence',
+            text: '<strong>EXERCISE</strong> succeeds 40% more when after <strong>WAKE EARLY</strong>.',
+            tip: 'Lock the chain: Wake Early → Exercise → light carbs.',
+            details: 'When Wake Early fires, Exercise hits 85%. Without it, Exercise drops to 45%. Keep the chain intact to hold the win-rate.',
+            confidence: '0.86',
+            window: '30 days'
+          }
+        ]
+      },
+      '90': {
+        insights: [
+          {
+            type: 'trend',
+            timeOfDay: 'am',
+            icon: ICONS.trend,
+            title: 'Transformation',
+            text: 'Overall completion improved <strong>45%</strong> over 90 days.',
+            tip: 'Do not add habits; focus on perfecting consistency.',
+            details: 'Top decile performance. Stabilize the pattern before expanding the stack to avoid regression to the mean.',
+            confidence: '0.90',
+            window: '90 days'
+          },
+          {
+            type: 'correlation',
+            timeOfDay: 'am',
+            icon: ICONS.correlation,
+            title: 'Keystone habit',
+            text: '<strong>WAKE EARLY</strong> lifts four downstream habits by +78%.',
+            tip: 'Protect bedtime; the morning is your multiplier.',
+            details: 'Keystone habits create systemic effects. Guard wake-up consistency; it is the anchor for the rest of the system.',
+            confidence: '0.88',
+            window: '90 days'
+          },
+          {
+            type: 'pattern',
+            timeOfDay: 'pm',
+            icon: ICONS.pattern,
+            title: 'Seasonal pattern',
+            text: 'Performance peaked mid-quarter; edges of months dipped.',
+            tip: 'Use lighter presets at each month transition.',
+            details: 'Transitions disrupt cadence. Establish \"minimum viable\" targets for the first week of each month to smooth the slope.',
+            confidence: '0.62',
+            window: '90 days'
+          }
+        ]
+      }
+    };
+
+    let currentPeriod = '30';
+    let currentType = 'all';
+
+    function renderInsights() {
+      const container = document.getElementById('insights-container');
+      container.innerHTML = '';
+      const dataset = mockData[currentPeriod];
+      if (!dataset) return;
+
+      const filtered = dataset.insights.filter(item => currentType === 'all' || item.timeOfDay === currentType);
+      document.getElementById('insight-count').textContent = filtered.length.toString().padStart(2, '0');
+
+      filtered.forEach((insight, idx) => {
+        const card = document.createElement('article');
+        card.className = 'card';
+        card.dataset.index = `0${idx + 1}`;
+
+        card.innerHTML = `
+          <div class="card-header">
+            <div class="icon">${insight.icon}</div>
+            <div>
+              <div class="title">${insight.title}</div>
+              <div class="meta">
+                <span>${insight.type}</span>
+                <span>${insight.window}</span>
+                <span>${insight.timeOfDay.toUpperCase()}</span>
+              </div>
+            </div>
+            <div class="badge">Confidence ${insight.confidence}</div>
+          </div>
+          <p class="body">${insight.text}</p>
+          <div class="callout">
+            <div class="callout-label">Directive</div>
+            <div>${insight.tip}</div>
+          </div>
+          <div class="footer">
+            <div class="meta">
+              <span>${currentPeriod}D Window</span>
+              <span>Brutalist Stack</span>
+            </div>
+            <button class="detail-btn" aria-expanded="false">
+              Details
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="6 9 12 15 18 9"></polyline>
+              </svg>
+            </button>
+          </div>
+          <div class="details">
+            <p>${insight.details}</p>
+          </div>
+        `;
+
+        const detailBtn = card.querySelector('.detail-btn');
+        detailBtn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          card.classList.toggle('expanded');
+          const expanded = card.classList.contains('expanded');
+          detailBtn.setAttribute('aria-expanded', expanded);
+          detailBtn.firstChild.textContent = expanded ? 'Close' : 'Details';
+        });
+
+        card.addEventListener('click', () => detailBtn.click());
+        container.appendChild(card);
+      });
+    }
+
+    function updateToggle(groupId, target) {
+      document.querySelectorAll(`#${groupId} .toggle`).forEach(btn => btn.classList.remove('active'));
+      target.classList.add('active');
+    }
+
+    document.getElementById('period-toggle').addEventListener('click', (e) => {
+      if (e.target.classList.contains('toggle')) {
+        currentPeriod = e.target.dataset.period;
+        updateToggle('period-toggle', e.target);
+        renderInsights();
+      }
+    });
+
+    document.getElementById('type-toggle').addEventListener('click', (e) => {
+      if (e.target.classList.contains('toggle')) {
+        currentType = e.target.dataset.type;
+        updateToggle('type-toggle', e.target);
+        renderInsights();
+      }
+    });
+
+    document.addEventListener('DOMContentLoaded', () => {
+      renderInsights();
+    });
+  </script>
+</body>
+</html>

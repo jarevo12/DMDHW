@@ -222,6 +222,19 @@
 
         .insight-icon {
             font-size: 1rem;
+            display: flex; /* Align SVG */
+            align-items: center;
+        }
+
+        .insight-icon svg {
+            width: 24px;
+            height: 24px;
+            fill: none;
+            stroke: currentColor;
+            stroke-width: 2;
+            stroke-linecap: square;
+            stroke-linejoin: miter;
+            display: block;
         }
 
         .insight-type {
@@ -231,11 +244,11 @@
             letter-spacing: 0.5px;
         }
 
-        .insight-type.correlation { color: var(--accent-purple); }
-        .insight-type.pattern { color: var(--accent-purple); }
-        .insight-type.trend { color: var(--accent-green); }
-        .insight-type.anomaly { color: var(--accent-green); }
-        .insight-type.sequence { color: var(--accent-purple); }
+        .insight-type.correlation, .insight-icon.correlation { color: var(--accent-green); }
+        .insight-type.pattern, .insight-icon.pattern { color: var(--accent-green); }
+        .insight-type.trend, .insight-icon.trend { color: var(--accent-green); }
+        .insight-type.anomaly, .insight-icon.anomaly { color: var(--accent-green); }
+        .insight-type.sequence, .insight-icon.sequence { color: var(--accent-green); }
 
         .insight-body {
             padding: var(--spacing-md);
@@ -878,6 +891,17 @@
 
     <script>
         // =========================================
+        // ICONS
+        // =========================================
+        const ICONS = {
+            trend: `<svg viewBox="0 0 24 24"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"></polyline><polyline points="16 7 22 7 22 13"></polyline></svg>`,
+            correlation: `<svg viewBox="0 0 24 24"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg>`,
+            pattern: `<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"></circle><circle cx="12" cy="12" r="8"></circle><line x1="12" y1="2" x2="12" y2="22" opacity="0.5"></line><line x1="2" y1="12" x2="22" y2="12" opacity="0.5"></line></svg>`,
+            anomaly: `<svg viewBox="0 0 24 24"><path d="M12 2L14.5 9.5L22 12L14.5 14.5L12 22L9.5 14.5L2 12L9.5 9.5L12 2Z"></path></svg>`,
+            sequence: `<svg viewBox="0 0 24 24"><circle cx="4" cy="12" r="2"></circle><circle cx="12" cy="12" r="2"></circle><circle cx="20" cy="12" r="2"></circle><line x1="6" y1="12" x2="10" y2="12"></line><line x1="14" y1="12" x2="18" y2="12"></line></svg>`
+        };
+
+        // =========================================
         // MOCK DATA
         // =========================================
 
@@ -897,7 +921,7 @@
                 insights: [
                     {
                         type: 'trend',
-                        icon: '&#9650;',
+                        icon: ICONS.trend,
                         title: 'MOMENTUM BUILDING',
                         text: 'Your completion rate has improved <strong>12%</strong> compared to last week. Keep pushing!',
                         tip: 'Maintain your current routine to lock in these gains',
@@ -905,7 +929,7 @@
                     },
                     {
                         type: 'pattern',
-                        icon: '&#9888;',
+                        icon: ICONS.pattern,
                         title: 'MIDWEEK SLUMP',
                         text: '<strong>Wednesday</strong> is your weakest day with only 58% completion rate.',
                         tip: 'Schedule easier habits or shorter sessions on Wednesdays',
@@ -939,7 +963,7 @@
                 insights: [
                     {
                         type: 'correlation',
-                        icon: '&#128279;',
+                        icon: ICONS.correlation,
                         title: 'HABIT LINK DETECTED',
                         text: 'When you skip <strong>MEDITATION</strong>, you\'re 3x more likely to skip <strong>READING</strong>.',
                         tip: 'Stack these habits together to create a stronger chain',
@@ -947,7 +971,7 @@
                     },
                     {
                         type: 'pattern',
-                        icon: '&#128197;',
+                        icon: ICONS.pattern,
                         title: 'FRIDAY CHALLENGE',
                         text: '<strong>Fridays</strong> are your hardest day with only 52% completion rate.',
                         tip: 'Plan lighter habits for Fridays or prep the night before',
@@ -955,7 +979,7 @@
                     },
                     {
                         type: 'trend',
-                        icon: '&#9650;',
+                        icon: ICONS.trend,
                         title: 'MORNING ROUTINE SURGE',
                         text: 'Your morning routine has improved <strong>23%</strong> this month!',
                         tip: 'Your morning momentum is strong - protect this time',
@@ -963,7 +987,7 @@
                     },
                     {
                         type: 'anomaly',
-                        icon: '&#11088;',
+                        icon: ICONS.anomaly,
                         title: 'SUPER DAY ALERT!',
                         text: 'You hit <strong>100% completion</strong> for the first time in 14 days!',
                         tip: 'Celebrate this win and note what made this day different',
@@ -971,7 +995,7 @@
                     },
                     {
                         type: 'sequence',
-                        icon: '&#9654;',
+                        icon: ICONS.sequence,
                         title: 'OPTIMAL SEQUENCE FOUND',
                         text: '<strong>EXERCISE</strong> works 40% better when it follows <strong>WAKE EARLY</strong>.',
                         tip: 'Lock in this sequence: Wake Early → Exercise',
@@ -1016,7 +1040,7 @@
                 insights: [
                     {
                         type: 'trend',
-                        icon: '&#128640;',
+                        icon: ICONS.trend,
                         title: 'MAJOR TRANSFORMATION',
                         text: 'Your overall completion rate improved <strong>45%</strong> over 90 days!',
                         tip: 'You\'ve built real momentum. Now focus on consistency.',
@@ -1024,7 +1048,7 @@
                     },
                     {
                         type: 'correlation',
-                        icon: '&#128279;',
+                        icon: ICONS.correlation,
                         title: 'KEYSTONE HABIT IDENTIFIED',
                         text: '<strong>WAKE EARLY</strong> is your keystone habit. When completed, other habits succeed 78% more often.',
                         tip: 'Protect your morning routine at all costs',
@@ -1032,7 +1056,7 @@
                     },
                     {
                         type: 'pattern',
-                        icon: '&#128200;',
+                        icon: ICONS.pattern,
                         title: 'SEASONAL PATTERN',
                         text: 'Your performance peaked in the middle of the quarter and dipped at month boundaries.',
                         tip: 'Plan lighter habits during transition periods',
@@ -1091,7 +1115,7 @@
                 card.className = 'insight-card';
                 card.innerHTML = `
                     <div class="insight-header">
-                        <span class="insight-icon">${insight.icon}</span>
+                        <span class="insight-icon ${insight.type}">${insight.icon}</span>
                         <span class="insight-type ${insight.type}">${insight.title}</span>
                     </div>
                     <div class="insight-body">
