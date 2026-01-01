@@ -4,6 +4,75 @@ This document summarizes the key improvements, features, and architectural decis
 
 ---
 
+## January 1, 2025 - Smart Insights Feature Design
+
+**Session Focus:** Design and specification of the "Personalized Insights" killer feature - the primary differentiator for the Habit Tracker app.
+
+### What Was Created
+
+#### 1. Interactive Insights Preview (`previews/insights_preview.html`)
+A fully interactive HTML/CSS/JS mockup showcasing the complete Insights page design:
+
+| Section | Description |
+|---------|-------------|
+| **Header** | Time period toggle (7D/30D/90D) + habit type filter (ALL/AM/PM) |
+| **Key Metrics Grid** | 4 summary cards: Trend %, Best Day, Most Consistent Habit, Days Analyzed |
+| **Smart Insight Cards** | 5 AI-style insight types with expand/collapse functionality |
+| **Weekly Pattern Heatmap** | 7-column bar chart showing completion by day of week |
+| **Correlation Matrix** | Interactive grid showing habit relationships (phi coefficients) |
+| **Trend Chart** | Chart.js line graph comparing morning vs evening routines |
+| **Habit Strength Meters** | Progress bars with status labels (FRAGILE → MASTERED) |
+
+**Design:** Swiss Brutalism dark theme (black bg, white 4px borders, electric purple/acid green accents)
+
+#### 2. Technical Specification (`docs/research/smart-insights-technical-spec.md`)
+Comprehensive 500+ line specification covering scalable implementation:
+
+**Key Architecture Decision: Client-Side First**
+- All statistical computation runs in browser via Web Workers
+- Zero server costs for computation
+- Instant insights (<100ms latency)
+- Privacy-preserving (data never leaves device)
+- Scales infinitely (each user's device is the "server")
+
+**Algorithms Documented:**
+- **Phi Coefficient** - Habit correlation measurement
+- **Correlation Matrix** - Full n×n habit relationships
+- **Day-of-Week Analysis** - Best/worst day detection
+- **Trend Analysis** - Linear regression for improvement tracking
+- **Anomaly Detection** - Z-score for "Super Days"
+- **Habit Strength** - Decay algorithm (FRAGILE → MASTERED)
+- **Sequence Analysis** - Optimal habit ordering
+
+**Natural Language Generation:**
+- Template-based NLG (25+ templates, zero API cost)
+- Optional AI Coach via Gemini API (~$2/month per 1000 users)
+
+**Implementation Timeline:** 8-12 days total
+
+#### 3. Word Document Version (`docs/research/smart-insights-technical-spec.docx`)
+Converted specification for stakeholder review.
+
+### Key Learnings
+
+1. **Client-side computation works everywhere** - Whether PWA, browser, or native app (via Capacitor), Web Workers and IndexedDB function identically in WebView environments.
+
+2. **Cost efficiency** - Client-side approach costs ~$0.01/month vs $50-100/month for server-side computation.
+
+3. **Statistical foundations** - Phi coefficient is ideal for binary habit data; minimum 21-45 days needed for reliable correlations.
+
+### Files Added
+```
+habit-tracker/
+├── previews/
+│   └── insights_preview.html     # Interactive mockup
+└── docs/research/
+    ├── smart-insights-technical-spec.md    # Full specification
+    └── smart-insights-technical-spec.docx  # Word version
+```
+
+---
+
 ## v2.0.0 - Modular Architecture Refactor
 
 **Decision:** Complete refactoring from monolithic inline JavaScript to modular ES6 architecture.

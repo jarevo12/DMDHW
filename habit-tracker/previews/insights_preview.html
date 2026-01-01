@@ -1,0 +1,1467 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Personalized Insights - Killer Feature Preview</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+    <style>
+        /* =========================================
+           SWISS BRUTALISM DARK THEME
+           ========================================= */
+
+        /* Reset */
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        :root {
+            --bg-primary: #000000;
+            --bg-secondary: #111111;
+            --text-primary: #ffffff;
+            --text-secondary: #aaaaaa;
+            --text-muted: #666666;
+            --border-color: #ffffff;
+            --accent-primary: #6a00ff;
+            --accent-success: #ccff00;
+            --accent-danger: #ff0000;
+            --accent-warning: #ffff00;
+            --border-width: 4px;
+            --border-thin: 2px;
+            --spacing-xs: 4px;
+            --spacing-sm: 8px;
+            --spacing-md: 16px;
+            --spacing-lg: 24px;
+            --spacing-xl: 32px;
+        }
+
+        body {
+            font-family: 'Courier New', Courier, monospace;
+            background-color: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            padding: var(--spacing-md);
+        }
+
+        /* App Container */
+        .app-container {
+            width: 100%;
+            max-width: 600px;
+            border: var(--border-width) solid var(--border-color);
+            background: var(--bg-primary);
+        }
+
+        /* =========================================
+           HEADER SECTION
+           ========================================= */
+
+        .header {
+            border-bottom: var(--border-width) solid var(--border-color);
+            padding: var(--spacing-md);
+        }
+
+        .header-title {
+            font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", sans-serif;
+            font-weight: 900;
+            font-size: 1.2rem;
+            text-transform: uppercase;
+            letter-spacing: -1px;
+            margin-bottom: var(--spacing-md);
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-sm);
+        }
+
+        .header-title::before {
+            content: '//';
+            color: var(--accent-primary);
+        }
+
+        .controls-row {
+            display: flex;
+            justify-content: space-between;
+            gap: var(--spacing-md);
+        }
+
+        .toggle-group {
+            display: flex;
+            border: var(--border-thin) solid var(--border-color);
+        }
+
+        .toggle-btn {
+            background: transparent;
+            border: none;
+            border-right: var(--border-thin) solid var(--border-color);
+            color: var(--text-secondary);
+            font-family: 'Courier New', Courier, monospace;
+            font-weight: 900;
+            font-size: 0.75rem;
+            padding: var(--spacing-sm) var(--spacing-md);
+            cursor: pointer;
+            text-transform: uppercase;
+            transition: none;
+        }
+
+        .toggle-btn:last-child {
+            border-right: none;
+        }
+
+        .toggle-btn.active {
+            background: var(--text-primary);
+            color: var(--bg-primary);
+        }
+
+        .toggle-btn:hover:not(.active) {
+            background: var(--bg-secondary);
+        }
+
+        .toggle-btn:active {
+            transform: translate(1px, 1px);
+        }
+
+        /* =========================================
+           KEY METRICS SUMMARY
+           ========================================= */
+
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            border-bottom: var(--border-width) solid var(--border-color);
+        }
+
+        .metric-card {
+            padding: var(--spacing-md);
+            border-right: var(--border-thin) solid var(--border-color);
+            border-bottom: var(--border-thin) solid var(--border-color);
+        }
+
+        .metric-card:nth-child(2n) {
+            border-right: none;
+        }
+
+        .metric-card:nth-child(3),
+        .metric-card:nth-child(4) {
+            border-bottom: none;
+        }
+
+        .metric-label {
+            font-size: 0.65rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: var(--spacing-xs);
+        }
+
+        .metric-value {
+            font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", sans-serif;
+            font-size: 1.8rem;
+            font-weight: 900;
+            line-height: 1;
+            margin-bottom: var(--spacing-xs);
+        }
+
+        .metric-value.positive {
+            color: var(--accent-success);
+        }
+
+        .metric-value.negative {
+            color: var(--accent-danger);
+        }
+
+        .metric-subtext {
+            font-size: 0.7rem;
+            color: var(--text-secondary);
+        }
+
+        /* =========================================
+           SECTION HEADERS
+           ========================================= */
+
+        .section {
+            border-bottom: var(--border-width) solid var(--border-color);
+        }
+
+        .section:last-child {
+            border-bottom: none;
+        }
+
+        .section-header {
+            font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", sans-serif;
+            font-weight: 900;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            padding: var(--spacing-md);
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-sm);
+            border-bottom: var(--border-thin) solid var(--text-muted);
+        }
+
+        .section-header::before {
+            content: '//';
+            color: var(--accent-primary);
+        }
+
+        .section-content {
+            padding: var(--spacing-md);
+        }
+
+        /* =========================================
+           SMART INSIGHTS CARDS
+           ========================================= */
+
+        .insights-scroll {
+            display: flex;
+            flex-direction: column;
+            gap: var(--spacing-md);
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .insight-card {
+            border: var(--border-thin) solid var(--border-color);
+            background: var(--bg-secondary);
+            cursor: pointer;
+        }
+
+        .insight-header {
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-sm);
+            padding: var(--spacing-sm) var(--spacing-md);
+            background: var(--bg-primary);
+            border-bottom: var(--border-thin) solid var(--text-muted);
+        }
+
+        .insight-icon {
+            font-size: 1rem;
+        }
+
+        .insight-type {
+            font-size: 0.7rem;
+            font-weight: 900;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .insight-type.correlation { color: var(--accent-primary); }
+        .insight-type.pattern { color: var(--accent-warning); }
+        .insight-type.trend { color: var(--accent-success); }
+        .insight-type.anomaly { color: #ff6600; }
+        .insight-type.sequence { color: #00ffff; }
+
+        .insight-body {
+            padding: var(--spacing-md);
+        }
+
+        .insight-text {
+            font-size: 0.9rem;
+            line-height: 1.4;
+            margin-bottom: var(--spacing-sm);
+        }
+
+        .insight-text strong {
+            color: var(--accent-success);
+            text-transform: uppercase;
+        }
+
+        .insight-tip {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            padding: var(--spacing-sm);
+            background: var(--bg-primary);
+            border: 1px dashed var(--text-muted);
+        }
+
+        .insight-tip::before {
+            content: 'TIP: ';
+            color: var(--accent-primary);
+            font-weight: 900;
+        }
+
+        .insight-expand {
+            display: none;
+            padding: var(--spacing-md);
+            border-top: var(--border-thin) solid var(--text-muted);
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+        }
+
+        .insight-card.expanded .insight-expand {
+            display: block;
+        }
+
+        .expand-btn {
+            display: block;
+            width: 100%;
+            padding: var(--spacing-sm);
+            background: transparent;
+            border: none;
+            border-top: 1px dashed var(--text-muted);
+            color: var(--text-muted);
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 0.7rem;
+            cursor: pointer;
+            text-transform: uppercase;
+        }
+
+        .expand-btn:hover {
+            color: var(--text-primary);
+            background: var(--bg-primary);
+        }
+
+        .insight-card.expanded .expand-btn {
+            display: none;
+        }
+
+        /* =========================================
+           DAY OF WEEK HEATMAP
+           ========================================= */
+
+        .weekday-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: var(--spacing-xs);
+        }
+
+        .weekday-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: var(--spacing-xs);
+        }
+
+        .weekday-label {
+            font-size: 0.65rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+        }
+
+        .weekday-bar-container {
+            width: 100%;
+            height: 100px;
+            border: var(--border-thin) solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
+            position: relative;
+        }
+
+        .weekday-bar {
+            width: 100%;
+            transition: height 0.3s steps(10);
+        }
+
+        .weekday-bar.best {
+            background: var(--accent-success);
+        }
+
+        .weekday-bar.worst {
+            background: var(--accent-danger);
+        }
+
+        .weekday-bar.normal {
+            background: var(--text-primary);
+        }
+
+        .weekday-value {
+            font-size: 0.75rem;
+            font-weight: 900;
+            margin-top: var(--spacing-xs);
+        }
+
+        .weekday-value.best {
+            color: var(--accent-success);
+        }
+
+        .weekday-value.worst {
+            color: var(--accent-danger);
+        }
+
+        .weekday-badge {
+            font-size: 0.6rem;
+            padding: 2px 4px;
+            text-transform: uppercase;
+            font-weight: 900;
+        }
+
+        .weekday-badge.best {
+            background: var(--accent-success);
+            color: var(--bg-primary);
+        }
+
+        .weekday-badge.worst {
+            background: var(--accent-danger);
+            color: var(--text-primary);
+        }
+
+        /* =========================================
+           CORRELATION MATRIX
+           ========================================= */
+
+        .matrix-container {
+            overflow-x: auto;
+        }
+
+        .correlation-matrix {
+            display: grid;
+            gap: 2px;
+            font-size: 0.65rem;
+        }
+
+        .matrix-header {
+            display: contents;
+        }
+
+        .matrix-cell {
+            width: 50px;
+            height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 1px solid var(--text-muted);
+            font-weight: 900;
+            text-transform: uppercase;
+            position: relative;
+            cursor: pointer;
+        }
+
+        .matrix-cell.header {
+            background: var(--bg-secondary);
+            color: var(--text-secondary);
+            font-size: 0.55rem;
+        }
+
+        .matrix-cell.diagonal {
+            background: var(--text-primary);
+            color: var(--bg-primary);
+        }
+
+        .matrix-cell.strong-positive {
+            background: var(--accent-success);
+            color: var(--bg-primary);
+        }
+
+        .matrix-cell.positive {
+            background: rgba(204, 255, 0, 0.5);
+            color: var(--bg-primary);
+        }
+
+        .matrix-cell.weak {
+            background: var(--bg-secondary);
+            color: var(--text-muted);
+        }
+
+        .matrix-cell.negative {
+            background: rgba(255, 0, 0, 0.3);
+            color: var(--text-primary);
+        }
+
+        .matrix-cell.strong-negative {
+            background: var(--accent-danger);
+            color: var(--text-primary);
+        }
+
+        .matrix-cell:hover:not(.header):not(.diagonal) {
+            border-color: var(--accent-primary);
+            border-width: 2px;
+        }
+
+        .matrix-tooltip {
+            display: none;
+            position: absolute;
+            bottom: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--bg-primary);
+            border: var(--border-thin) solid var(--accent-primary);
+            padding: var(--spacing-sm);
+            font-size: 0.7rem;
+            white-space: nowrap;
+            z-index: 100;
+        }
+
+        .matrix-cell:hover .matrix-tooltip {
+            display: block;
+        }
+
+        .matrix-legend {
+            display: flex;
+            gap: var(--spacing-md);
+            justify-content: center;
+            margin-top: var(--spacing-md);
+            font-size: 0.65rem;
+            flex-wrap: wrap;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-xs);
+        }
+
+        .legend-color {
+            width: 16px;
+            height: 16px;
+            border: 1px solid var(--border-color);
+        }
+
+        /* =========================================
+           TREND CHART
+           ========================================= */
+
+        .chart-container {
+            height: 200px;
+            border: 1px dashed var(--text-muted);
+            padding: var(--spacing-sm);
+            position: relative;
+        }
+
+        .chart-legend {
+            display: flex;
+            gap: var(--spacing-lg);
+            justify-content: center;
+            margin-top: var(--spacing-md);
+            font-size: 0.75rem;
+        }
+
+        .legend-line {
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-sm);
+        }
+
+        .legend-line-sample {
+            width: 24px;
+            height: 3px;
+        }
+
+        .legend-line-sample.morning {
+            background: var(--accent-success);
+        }
+
+        .legend-line-sample.evening {
+            background: var(--accent-primary);
+        }
+
+        .legend-line-sample.goal {
+            background: var(--text-muted);
+            border-top: 2px dashed var(--text-muted);
+            height: 0;
+        }
+
+        /* =========================================
+           HABIT STRENGTH METERS
+           ========================================= */
+
+        .strength-list {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .strength-item {
+            padding: var(--spacing-md);
+            border-bottom: var(--border-thin) solid var(--text-muted);
+        }
+
+        .strength-item:last-child {
+            border-bottom: none;
+        }
+
+        .strength-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: var(--spacing-sm);
+        }
+
+        .strength-name {
+            font-weight: 900;
+            text-transform: uppercase;
+            font-size: 0.85rem;
+        }
+
+        .strength-status {
+            font-size: 0.65rem;
+            font-weight: 900;
+            padding: 2px 6px;
+            text-transform: uppercase;
+        }
+
+        .strength-status.mastered {
+            background: var(--accent-success);
+            color: var(--bg-primary);
+        }
+
+        .strength-status.strong {
+            background: var(--accent-primary);
+            color: var(--text-primary);
+        }
+
+        .strength-status.building {
+            background: var(--accent-warning);
+            color: var(--bg-primary);
+        }
+
+        .strength-status.fragile {
+            background: var(--accent-danger);
+            color: var(--text-primary);
+        }
+
+        .strength-bar-container {
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-sm);
+            margin-bottom: var(--spacing-sm);
+        }
+
+        .strength-bar {
+            flex: 1;
+            height: 20px;
+            border: var(--border-thin) solid var(--border-color);
+            position: relative;
+        }
+
+        .strength-fill {
+            height: 100%;
+            transition: width 0.5s steps(20);
+        }
+
+        .strength-fill.mastered {
+            background: var(--accent-success);
+        }
+
+        .strength-fill.strong {
+            background: var(--accent-primary);
+        }
+
+        .strength-fill.building {
+            background: var(--accent-warning);
+        }
+
+        .strength-fill.fragile {
+            background: var(--accent-danger);
+        }
+
+        .strength-value {
+            font-size: 0.9rem;
+            font-weight: 900;
+            width: 40px;
+            text-align: right;
+        }
+
+        .strength-description {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+        }
+
+        /* =========================================
+           DATA COLLECTION NOTICE
+           ========================================= */
+
+        .data-notice {
+            padding: var(--spacing-lg);
+            text-align: center;
+            border: 2px dashed var(--text-muted);
+            margin: var(--spacing-md);
+        }
+
+        .data-notice-icon {
+            font-size: 2rem;
+            margin-bottom: var(--spacing-sm);
+        }
+
+        .data-notice-title {
+            font-weight: 900;
+            text-transform: uppercase;
+            margin-bottom: var(--spacing-sm);
+        }
+
+        .data-notice-text {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            margin-bottom: var(--spacing-md);
+        }
+
+        .data-progress {
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-sm);
+            justify-content: center;
+        }
+
+        .data-progress-bar {
+            width: 150px;
+            height: 12px;
+            border: var(--border-thin) solid var(--border-color);
+        }
+
+        .data-progress-fill {
+            height: 100%;
+            background: var(--accent-primary);
+            width: 40%;
+        }
+
+        .data-progress-text {
+            font-size: 0.75rem;
+            font-weight: 900;
+        }
+
+        /* =========================================
+           BOTTOM NAVIGATION
+           ========================================= */
+
+        .bottom-nav {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            border-top: var(--border-width) solid var(--border-color);
+        }
+
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: var(--spacing-md);
+            background: transparent;
+            border: none;
+            border-right: var(--border-thin) solid var(--border-color);
+            color: var(--text-secondary);
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 0.65rem;
+            text-transform: uppercase;
+            cursor: pointer;
+            text-decoration: none;
+        }
+
+        .nav-item:last-child {
+            border-right: none;
+        }
+
+        .nav-item.active {
+            background: var(--text-primary);
+            color: var(--bg-primary);
+        }
+
+        .nav-icon {
+            font-size: 1.2rem;
+            margin-bottom: var(--spacing-xs);
+        }
+
+        /* =========================================
+           SCROLLBAR STYLING
+           ========================================= */
+
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--bg-primary);
+            border: 1px solid var(--text-muted);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--text-muted);
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--text-secondary);
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <!-- Header -->
+        <header class="header">
+            <h1 class="header-title">Personalized Insights</h1>
+            <div class="controls-row">
+                <div class="toggle-group" id="period-toggle">
+                    <button class="toggle-btn" data-period="7">7D</button>
+                    <button class="toggle-btn active" data-period="30">30D</button>
+                    <button class="toggle-btn" data-period="90">90D</button>
+                </div>
+                <div class="toggle-group" id="type-toggle">
+                    <button class="toggle-btn active" data-type="all">ALL</button>
+                    <button class="toggle-btn" data-type="morning">AM</button>
+                    <button class="toggle-btn" data-type="evening">PM</button>
+                </div>
+            </div>
+        </header>
+
+        <!-- Key Metrics -->
+        <div class="metrics-grid" id="metrics-grid">
+            <div class="metric-card">
+                <div class="metric-label">TREND</div>
+                <div class="metric-value positive" id="metric-trend">+23%</div>
+                <div class="metric-subtext">vs last period</div>
+            </div>
+            <div class="metric-card">
+                <div class="metric-label">BEST DAY</div>
+                <div class="metric-value" id="metric-best-day">MON</div>
+                <div class="metric-subtext" id="metric-best-rate">87% completion</div>
+            </div>
+            <div class="metric-card">
+                <div class="metric-label">MOST CONSISTENT</div>
+                <div class="metric-value" id="metric-consistent" style="font-size: 1.2rem;">MEDITATION</div>
+                <div class="metric-subtext" id="metric-consistent-rate">92% completion</div>
+            </div>
+            <div class="metric-card">
+                <div class="metric-label">DAYS ANALYZED</div>
+                <div class="metric-value" id="metric-days">30</div>
+                <div class="metric-subtext">insights ready</div>
+            </div>
+        </div>
+
+        <!-- Smart Insights -->
+        <section class="section">
+            <h2 class="section-header">Smart Insights</h2>
+            <div class="section-content">
+                <div class="insights-scroll" id="insights-container">
+                    <!-- Insights will be populated by JavaScript -->
+                </div>
+            </div>
+        </section>
+
+        <!-- Day of Week Patterns -->
+        <section class="section">
+            <h2 class="section-header">Weekly Patterns</h2>
+            <div class="section-content">
+                <div class="weekday-grid" id="weekday-grid">
+                    <!-- Will be populated by JavaScript -->
+                </div>
+            </div>
+        </section>
+
+        <!-- Correlation Matrix -->
+        <section class="section">
+            <h2 class="section-header">Habit Correlations</h2>
+            <div class="section-content">
+                <div class="matrix-container">
+                    <div class="correlation-matrix" id="correlation-matrix">
+                        <!-- Will be populated by JavaScript -->
+                    </div>
+                </div>
+                <div class="matrix-legend">
+                    <div class="legend-item">
+                        <div class="legend-color" style="background: var(--accent-success);"></div>
+                        <span>STRONG +</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color" style="background: rgba(204, 255, 0, 0.5);"></div>
+                        <span>POSITIVE</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color" style="background: var(--bg-secondary);"></div>
+                        <span>NEUTRAL</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color" style="background: rgba(255, 0, 0, 0.3);"></div>
+                        <span>NEGATIVE</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Trend Chart -->
+        <section class="section">
+            <h2 class="section-header">Completion Trend</h2>
+            <div class="section-content">
+                <div class="chart-container">
+                    <canvas id="trend-chart"></canvas>
+                </div>
+                <div class="chart-legend">
+                    <div class="legend-line">
+                        <div class="legend-line-sample morning"></div>
+                        <span>MORNING</span>
+                    </div>
+                    <div class="legend-line">
+                        <div class="legend-line-sample evening"></div>
+                        <span>EVENING</span>
+                    </div>
+                    <div class="legend-line">
+                        <div class="legend-line-sample goal"></div>
+                        <span>80% GOAL</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Habit Strength -->
+        <section class="section">
+            <h2 class="section-header">Habit Strength</h2>
+            <div class="strength-list" id="strength-list">
+                <!-- Will be populated by JavaScript -->
+            </div>
+        </section>
+
+        <!-- Bottom Navigation -->
+        <nav class="bottom-nav">
+            <a href="#" class="nav-item">
+                <span class="nav-icon">&#9632;</span>
+                <span>Dashboard</span>
+            </a>
+            <a href="#" class="nav-item">
+                <span class="nav-icon">&#10003;</span>
+                <span>Today</span>
+            </a>
+            <a href="#" class="nav-item active">
+                <span class="nav-icon">&#9733;</span>
+                <span>Insights</span>
+            </a>
+        </nav>
+    </div>
+
+    <script>
+        // =========================================
+        // MOCK DATA
+        // =========================================
+
+        const mockData = {
+            '7': {
+                metrics: {
+                    trend: '+12%',
+                    trendPositive: true,
+                    bestDay: { day: 'SAT', rate: 91 },
+                    worstDay: { day: 'WED', rate: 58 },
+                    mostConsistent: { name: 'READING', rate: 88 },
+                    daysAnalyzed: 7
+                },
+                weeklyPattern: {
+                    MON: 72, TUE: 68, WED: 58, THU: 75, FRI: 65, SAT: 91, SUN: 78
+                },
+                insights: [
+                    {
+                        type: 'trend',
+                        icon: '&#9650;',
+                        title: 'MOMENTUM BUILDING',
+                        text: 'Your completion rate has improved <strong>12%</strong> compared to last week. Keep pushing!',
+                        tip: 'Maintain your current routine to lock in these gains',
+                        details: 'Week-over-week improvement is one of the best predictors of long-term habit success. Your current trajectory suggests you\'ll hit 80% completion within 2 weeks.'
+                    },
+                    {
+                        type: 'pattern',
+                        icon: '&#9888;',
+                        title: 'MIDWEEK SLUMP',
+                        text: '<strong>Wednesday</strong> is your weakest day with only 58% completion rate.',
+                        tip: 'Schedule easier habits or shorter sessions on Wednesdays',
+                        details: 'Midweek fatigue is common. Consider front-loading important habits earlier in the week or reducing expectations on challenging days.'
+                    }
+                ],
+                trendData: {
+                    labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+                    morning: [75, 70, 60, 78, 68, 92, 80],
+                    evening: [68, 65, 55, 72, 62, 90, 75]
+                },
+                habitStrength: [
+                    { name: 'READING', strength: 88, status: 'mastered', desc: 'Rock solid. This habit is automatic!' },
+                    { name: 'EXERCISE', strength: 65, status: 'strong', desc: 'Good momentum. Keep showing up.' },
+                    { name: 'MEDITATION', strength: 45, status: 'building', desc: 'Gaining strength. Stay consistent.' },
+                    { name: 'WAKE EARLY', strength: 28, status: 'building', desc: 'Making progress. Don\'t give up!' }
+                ]
+            },
+            '30': {
+                metrics: {
+                    trend: '+23%',
+                    trendPositive: true,
+                    bestDay: { day: 'MON', rate: 87 },
+                    worstDay: { day: 'FRI', rate: 52 },
+                    mostConsistent: { name: 'MEDITATION', rate: 92 },
+                    daysAnalyzed: 30
+                },
+                weeklyPattern: {
+                    MON: 87, TUE: 76, WED: 68, THU: 75, FRI: 52, SAT: 84, SUN: 71
+                },
+                insights: [
+                    {
+                        type: 'correlation',
+                        icon: '&#128279;',
+                        title: 'HABIT LINK DETECTED',
+                        text: 'When you skip <strong>MEDITATION</strong>, you\'re 3x more likely to skip <strong>READING</strong>.',
+                        tip: 'Stack these habits together to create a stronger chain',
+                        details: 'Phi coefficient: 0.72 (strong positive correlation). These habits reinforce each other. Consider doing them back-to-back to leverage this connection.'
+                    },
+                    {
+                        type: 'pattern',
+                        icon: '&#128197;',
+                        title: 'FRIDAY CHALLENGE',
+                        text: '<strong>Fridays</strong> are your hardest day with only 52% completion rate.',
+                        tip: 'Plan lighter habits for Fridays or prep the night before',
+                        details: 'End-of-week fatigue is real. Your Friday completion is 35 percentage points lower than Monday. Consider blocking Friday as a "maintenance day" with reduced expectations.'
+                    },
+                    {
+                        type: 'trend',
+                        icon: '&#9650;',
+                        title: 'MORNING ROUTINE SURGE',
+                        text: 'Your morning routine has improved <strong>23%</strong> this month!',
+                        tip: 'Your morning momentum is strong - protect this time',
+                        details: 'Morning habits show the most consistent improvement. This is likely due to the keystone effect - completing morning habits sets a positive tone for the day.'
+                    },
+                    {
+                        type: 'anomaly',
+                        icon: '&#11088;',
+                        title: 'SUPER DAY ALERT!',
+                        text: 'You hit <strong>100% completion</strong> for the first time in 14 days!',
+                        tip: 'Celebrate this win and note what made this day different',
+                        details: 'Perfect days are rare and worth celebrating. Looking at your data, this happened on a Saturday when you had fewer scheduled habits.'
+                    },
+                    {
+                        type: 'sequence',
+                        icon: '&#9654;',
+                        title: 'OPTIMAL SEQUENCE FOUND',
+                        text: '<strong>EXERCISE</strong> works 40% better when it follows <strong>WAKE EARLY</strong>.',
+                        tip: 'Lock in this sequence: Wake Early → Exercise',
+                        details: 'When you complete "Wake Early", you complete "Exercise" 85% of the time. When you skip "Wake Early", Exercise drops to 45%. The early morning is your exercise sweet spot.'
+                    }
+                ],
+                correlations: {
+                    habits: ['MED', 'READ', 'WAKE', 'EXER', 'SLEEP'],
+                    matrix: [
+                        [1.0, 0.72, 0.35, 0.15, 0.55],
+                        [0.72, 1.0, 0.20, 0.10, 0.45],
+                        [0.35, 0.20, 1.0, 0.85, 0.60],
+                        [0.15, 0.10, 0.85, 1.0, 0.40],
+                        [0.55, 0.45, 0.60, 0.40, 1.0]
+                    ]
+                },
+                trendData: {
+                    labels: ['Week 1', 'Week 2', 'Week 3', 'Week 4'],
+                    morning: [65, 72, 78, 85],
+                    evening: [55, 58, 62, 70]
+                },
+                habitStrength: [
+                    { name: 'MEDITATION', strength: 92, status: 'mastered', desc: 'Rock solid. Keep it up!' },
+                    { name: 'READING', strength: 78, status: 'strong', desc: 'Well established. Almost mastered!' },
+                    { name: 'EXERCISE', strength: 52, status: 'strong', desc: 'Good momentum building' },
+                    { name: 'WAKE EARLY', strength: 35, status: 'building', desc: 'Gaining strength. Stay consistent.' },
+                    { name: 'JOURNAL', strength: 18, status: 'fragile', desc: 'Needs attention. Try smaller wins.' }
+                ]
+            },
+            '90': {
+                metrics: {
+                    trend: '+45%',
+                    trendPositive: true,
+                    bestDay: { day: 'MON', rate: 82 },
+                    worstDay: { day: 'FRI', rate: 58 },
+                    mostConsistent: { name: 'MEDITATION', rate: 89 },
+                    daysAnalyzed: 90
+                },
+                weeklyPattern: {
+                    MON: 82, TUE: 75, WED: 70, THU: 72, FRI: 58, SAT: 78, SUN: 68
+                },
+                insights: [
+                    {
+                        type: 'trend',
+                        icon: '&#128640;',
+                        title: 'MAJOR TRANSFORMATION',
+                        text: 'Your overall completion rate improved <strong>45%</strong> over 90 days!',
+                        tip: 'You\'ve built real momentum. Now focus on consistency.',
+                        details: 'This level of improvement over 90 days puts you in the top 10% of habit trackers. The first 90 days are the hardest - you\'ve proven you can do this.'
+                    },
+                    {
+                        type: 'correlation',
+                        icon: '&#128279;',
+                        title: 'KEYSTONE HABIT IDENTIFIED',
+                        text: '<strong>WAKE EARLY</strong> is your keystone habit. When completed, other habits succeed 78% more often.',
+                        tip: 'Protect your morning routine at all costs',
+                        details: 'Keystone habits have outsized impact on other behaviors. Your data shows Wake Early affects 4 other habits significantly.'
+                    },
+                    {
+                        type: 'pattern',
+                        icon: '&#128200;',
+                        title: 'SEASONAL PATTERN',
+                        text: 'Your performance peaked in the middle of the quarter and dipped at month boundaries.',
+                        tip: 'Plan lighter habits during transition periods',
+                        details: 'Month transitions often disrupt routines. Consider setting "minimum viable habits" for the first week of each month.'
+                    }
+                ],
+                trendData: {
+                    labels: ['Month 1', 'Month 2', 'Month 3'],
+                    morning: [55, 72, 85],
+                    evening: [48, 62, 75]
+                },
+                habitStrength: [
+                    { name: 'MEDITATION', strength: 95, status: 'mastered', desc: 'Automatic. You\'ve mastered this!' },
+                    { name: 'READING', strength: 85, status: 'mastered', desc: 'Nearly automatic. Excellent work!' },
+                    { name: 'EXERCISE', strength: 68, status: 'strong', desc: 'Strong foundation built.' },
+                    { name: 'WAKE EARLY', strength: 55, status: 'strong', desc: 'Solid progress. Keep pushing!' },
+                    { name: 'JOURNAL', strength: 38, status: 'building', desc: 'Growing steadily. Don\'t stop now.' }
+                ]
+            }
+        };
+
+        // =========================================
+        // STATE
+        // =========================================
+
+        let currentPeriod = '30';
+        let currentType = 'all';
+        let chartInstance = null;
+
+        // =========================================
+        // RENDER FUNCTIONS
+        // =========================================
+
+        function renderMetrics(data) {
+            const metrics = data.metrics;
+
+            document.getElementById('metric-trend').textContent = metrics.trend;
+            document.getElementById('metric-trend').className =
+                'metric-value ' + (metrics.trendPositive ? 'positive' : 'negative');
+
+            document.getElementById('metric-best-day').textContent = metrics.bestDay.day;
+            document.getElementById('metric-best-rate').textContent = metrics.bestDay.rate + '% completion';
+
+            document.getElementById('metric-consistent').textContent = metrics.mostConsistent.name;
+            document.getElementById('metric-consistent-rate').textContent = metrics.mostConsistent.rate + '% completion';
+
+            document.getElementById('metric-days').textContent = metrics.daysAnalyzed;
+        }
+
+        function renderInsights(data) {
+            const container = document.getElementById('insights-container');
+            container.innerHTML = '';
+
+            data.insights.forEach((insight, index) => {
+                const card = document.createElement('div');
+                card.className = 'insight-card';
+                card.innerHTML = `
+                    <div class="insight-header">
+                        <span class="insight-icon">${insight.icon}</span>
+                        <span class="insight-type ${insight.type}">${insight.title}</span>
+                    </div>
+                    <div class="insight-body">
+                        <p class="insight-text">${insight.text}</p>
+                        <p class="insight-tip">${insight.tip}</p>
+                    </div>
+                    <div class="insight-expand">
+                        <p>${insight.details}</p>
+                    </div>
+                    <button class="expand-btn">+ EXPAND FOR DETAILS</button>
+                `;
+
+                card.querySelector('.expand-btn').addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    card.classList.toggle('expanded');
+                });
+
+                card.addEventListener('click', () => {
+                    card.classList.toggle('expanded');
+                });
+
+                container.appendChild(card);
+            });
+        }
+
+        function renderWeekdayPattern(data) {
+            const container = document.getElementById('weekday-grid');
+            container.innerHTML = '';
+
+            const pattern = data.weeklyPattern;
+            const values = Object.values(pattern);
+            const maxVal = Math.max(...values);
+            const minVal = Math.min(...values);
+
+            Object.entries(pattern).forEach(([day, value]) => {
+                const isBest = value === maxVal;
+                const isWorst = value === minVal;
+                const barClass = isBest ? 'best' : (isWorst ? 'worst' : 'normal');
+
+                const item = document.createElement('div');
+                item.className = 'weekday-item';
+                item.innerHTML = `
+                    <span class="weekday-label">${day}</span>
+                    <div class="weekday-bar-container">
+                        <div class="weekday-bar ${barClass}" style="height: ${value}%"></div>
+                    </div>
+                    <span class="weekday-value ${barClass}">${value}%</span>
+                    ${isBest ? '<span class="weekday-badge best">BEST</span>' : ''}
+                    ${isWorst ? '<span class="weekday-badge worst">WORST</span>' : ''}
+                `;
+                container.appendChild(item);
+            });
+        }
+
+        function renderCorrelationMatrix(data) {
+            const container = document.getElementById('correlation-matrix');
+
+            if (!data.correlations) {
+                container.innerHTML = `
+                    <div class="data-notice">
+                        <div class="data-notice-icon">&#128202;</div>
+                        <div class="data-notice-title">Collecting Data</div>
+                        <div class="data-notice-text">Need more data to calculate correlations. Keep tracking!</div>
+                        <div class="data-progress">
+                            <div class="data-progress-bar">
+                                <div class="data-progress-fill"></div>
+                            </div>
+                            <span class="data-progress-text">12/30 days</span>
+                        </div>
+                    </div>
+                `;
+                return;
+            }
+
+            const { habits, matrix } = data.correlations;
+            const size = habits.length + 1;
+
+            container.style.gridTemplateColumns = `repeat(${size}, 50px)`;
+            container.innerHTML = '';
+
+            // Header row
+            const emptyCell = document.createElement('div');
+            emptyCell.className = 'matrix-cell header';
+            container.appendChild(emptyCell);
+
+            habits.forEach(habit => {
+                const cell = document.createElement('div');
+                cell.className = 'matrix-cell header';
+                cell.textContent = habit;
+                container.appendChild(cell);
+            });
+
+            // Data rows
+            habits.forEach((habit, i) => {
+                // Row header
+                const rowHeader = document.createElement('div');
+                rowHeader.className = 'matrix-cell header';
+                rowHeader.textContent = habit;
+                container.appendChild(rowHeader);
+
+                // Data cells
+                habits.forEach((_, j) => {
+                    const value = matrix[i][j];
+                    const cell = document.createElement('div');
+
+                    if (i === j) {
+                        cell.className = 'matrix-cell diagonal';
+                        cell.textContent = '1.0';
+                    } else {
+                        let cellClass = 'weak';
+                        if (value >= 0.7) cellClass = 'strong-positive';
+                        else if (value >= 0.4) cellClass = 'positive';
+                        else if (value <= -0.4) cellClass = 'negative';
+                        else if (value <= -0.7) cellClass = 'strong-negative';
+
+                        cell.className = `matrix-cell ${cellClass}`;
+                        cell.textContent = value.toFixed(2);
+
+                        const tooltip = document.createElement('div');
+                        tooltip.className = 'matrix-tooltip';
+                        tooltip.innerHTML = `${habits[i]} ↔ ${habits[j]}<br>Phi: ${value.toFixed(2)}`;
+                        cell.appendChild(tooltip);
+                    }
+
+                    container.appendChild(cell);
+                });
+            });
+        }
+
+        function renderTrendChart(data) {
+            const ctx = document.getElementById('trend-chart').getContext('2d');
+
+            if (chartInstance) {
+                chartInstance.destroy();
+            }
+
+            const { labels, morning, evening } = data.trendData;
+
+            chartInstance = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [
+                        {
+                            label: 'Morning',
+                            data: morning,
+                            borderColor: '#ccff00',
+                            backgroundColor: 'rgba(204, 255, 0, 0.1)',
+                            borderWidth: 3,
+                            fill: true,
+                            tension: 0,
+                            pointRadius: 4,
+                            pointBackgroundColor: '#ccff00',
+                            pointBorderColor: '#000',
+                            pointBorderWidth: 2
+                        },
+                        {
+                            label: 'Evening',
+                            data: evening,
+                            borderColor: '#6a00ff',
+                            backgroundColor: 'rgba(106, 0, 255, 0.1)',
+                            borderWidth: 3,
+                            fill: true,
+                            tension: 0,
+                            pointRadius: 4,
+                            pointBackgroundColor: '#6a00ff',
+                            pointBorderColor: '#000',
+                            pointBorderWidth: 2
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        tooltip: {
+                            backgroundColor: '#000',
+                            titleColor: '#fff',
+                            bodyColor: '#fff',
+                            borderColor: '#fff',
+                            borderWidth: 2,
+                            padding: 12,
+                            titleFont: {
+                                family: 'Courier New',
+                                weight: 'bold'
+                            },
+                            bodyFont: {
+                                family: 'Courier New'
+                            },
+                            callbacks: {
+                                label: function(context) {
+                                    return context.dataset.label + ': ' + context.raw + '%';
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            grid: {
+                                color: 'rgba(255, 255, 255, 0.1)',
+                                drawBorder: true,
+                                borderColor: '#666'
+                            },
+                            ticks: {
+                                color: '#666',
+                                font: {
+                                    family: 'Courier New',
+                                    size: 10
+                                }
+                            }
+                        },
+                        y: {
+                            min: 0,
+                            max: 100,
+                            grid: {
+                                color: 'rgba(255, 255, 255, 0.1)',
+                                drawBorder: true,
+                                borderColor: '#666'
+                            },
+                            ticks: {
+                                color: '#666',
+                                font: {
+                                    family: 'Courier New',
+                                    size: 10
+                                },
+                                callback: function(value) {
+                                    return value + '%';
+                                },
+                                stepSize: 20
+                            }
+                        }
+                    },
+                    animation: {
+                        duration: 500,
+                        easing: 'steps(10)'
+                    }
+                }
+            });
+
+            // Draw 80% goal line
+            const goalPlugin = {
+                id: 'goalLine',
+                afterDraw: (chart) => {
+                    const ctx = chart.ctx;
+                    const yAxis = chart.scales.y;
+                    const y = yAxis.getPixelForValue(80);
+
+                    ctx.save();
+                    ctx.beginPath();
+                    ctx.setLineDash([5, 5]);
+                    ctx.strokeStyle = '#666';
+                    ctx.lineWidth = 2;
+                    ctx.moveTo(chart.chartArea.left, y);
+                    ctx.lineTo(chart.chartArea.right, y);
+                    ctx.stroke();
+                    ctx.restore();
+                }
+            };
+
+            chartInstance.options.plugins.goalLine = goalPlugin;
+            chartInstance.update();
+        }
+
+        function renderHabitStrength(data) {
+            const container = document.getElementById('strength-list');
+            container.innerHTML = '';
+
+            data.habitStrength.forEach(habit => {
+                const item = document.createElement('div');
+                item.className = 'strength-item';
+                item.innerHTML = `
+                    <div class="strength-header">
+                        <span class="strength-name">${habit.name}</span>
+                        <span class="strength-status ${habit.status}">${habit.status.toUpperCase()}</span>
+                    </div>
+                    <div class="strength-bar-container">
+                        <div class="strength-bar">
+                            <div class="strength-fill ${habit.status}" style="width: ${habit.strength}%"></div>
+                        </div>
+                        <span class="strength-value">${habit.strength}%</span>
+                    </div>
+                    <p class="strength-description">${habit.desc}</p>
+                `;
+                container.appendChild(item);
+            });
+        }
+
+        function renderAll() {
+            const data = mockData[currentPeriod];
+            renderMetrics(data);
+            renderInsights(data);
+            renderWeekdayPattern(data);
+            renderCorrelationMatrix(data);
+            renderTrendChart(data);
+            renderHabitStrength(data);
+        }
+
+        // =========================================
+        // EVENT HANDLERS
+        // =========================================
+
+        document.getElementById('period-toggle').addEventListener('click', (e) => {
+            if (e.target.classList.contains('toggle-btn')) {
+                document.querySelectorAll('#period-toggle .toggle-btn').forEach(btn => {
+                    btn.classList.remove('active');
+                });
+                e.target.classList.add('active');
+                currentPeriod = e.target.dataset.period;
+                renderAll();
+            }
+        });
+
+        document.getElementById('type-toggle').addEventListener('click', (e) => {
+            if (e.target.classList.contains('toggle-btn')) {
+                document.querySelectorAll('#type-toggle .toggle-btn').forEach(btn => {
+                    btn.classList.remove('active');
+                });
+                e.target.classList.add('active');
+                currentType = e.target.dataset.type;
+                // In a real app, this would filter the data
+                // For this preview, we just update the UI state
+            }
+        });
+
+        // =========================================
+        // INITIALIZE
+        // =========================================
+
+        document.addEventListener('DOMContentLoaded', () => {
+            renderAll();
+        });
+    </script>
+</body>
+</html>
