@@ -1924,6 +1924,19 @@ button, input, select {
     margin-bottom: var(--spacing-sm);
 }
 
+.strength-streaks {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-bottom: var(--spacing-sm);
+}
+
+.strength-streaks .streak-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+}
+
 .strength-name {
     font-weight: 900;
     text-transform: uppercase;

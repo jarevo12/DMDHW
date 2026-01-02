@@ -10,7 +10,7 @@ import { insightsCache, CACHE_TTL } from './insights-cache.js';
 // ========== STATE ==========
 
 let insightsWorker = null;
-let insightsUpdateCallback = null;
+let insightsUpdateCallbacks = new Set();
 
 // Current insights state
 export let insightsState = {
@@ -27,7 +27,19 @@ export let insightsState = {
  * @param {function} callback - Callback function
  */
 export function setInsightsUpdateCallback(callback) {
-    insightsUpdateCallback = callback;
+    if (typeof callback === 'function') {
+        insightsUpdateCallbacks.add(callback);
+    }
+}
+
+function notifyInsightsUpdate(payload) {
+    insightsUpdateCallbacks.forEach(callback => {
+        try {
+            callback(payload);
+        } catch (error) {
+            console.error('Insights update callback error:', error);
+        }
+    });
 }
 
 // ========== WORKER MANAGEMENT ==========
@@ -47,12 +59,10 @@ export function initInsightsWorker() {
     insightsWorker.onerror = (error) => {
         console.error('Analytics Worker error:', error);
         insightsState.isLoading = false;
-        if (insightsUpdateCallback) {
-            insightsUpdateCallback({
-                error: true,
-                message: 'Failed to analyze data'
-            });
-        }
+        notifyInsightsUpdate({
+            error: true,
+            message: 'Failed to analyze data'
+        });
     };
 
     console.log('Insights Worker initialized');
@@ -81,9 +91,7 @@ function handleWorkerMessage(e) {
             }
 
             // Notify UI
-            if (insightsUpdateCallback) {
-                insightsUpdateCallback(payload);
-            }
+            notifyInsightsUpdate(payload);
             break;
 
         default:
@@ -185,7 +193,7 @@ function prepareDataForWorker(habitsData, entries) {
 export async function runInsightsAnalysis(period = 30, type = 'all') {
     if (!currentUser?.uid) {
         console.warn('No user logged in');
-        return;
+        return null;
     }
 
     // Update state
@@ -198,16 +206,22 @@ export async function runInsightsAnalysis(period = 30, type = 'all') {
     if (cached) {
         insightsState.isLoading = false;
         insightsState.lastResults = cached;
-        if (insightsUpdateCallback) {
-            insightsUpdateCallback(cached);
-        }
-        return;
+        notifyInsightsUpdate(cached);
+        return cached;
     }
 
     // Ensure worker is initialized
     if (!insightsWorker) {
         initInsightsWorker();
     }
+
+    const resultsPromise = new Promise((resolve) => {
+        const resolveOnce = (payload) => {
+            resolve(payload);
+            insightsUpdateCallbacks.delete(resolveOnce);
+        };
+        insightsUpdateCallbacks.add(resolveOnce);
+    });
 
     try {
         // Fetch entries
@@ -222,18 +236,18 @@ export async function runInsightsAnalysis(period = 30, type = 'all') {
             type: 'ANALYZE',
             payload: workerData
         });
-
     } catch (error) {
         console.error('Error running insights analysis:', error);
         insightsState.isLoading = false;
-
-        if (insightsUpdateCallback) {
-            insightsUpdateCallback({
-                error: true,
-                message: 'Failed to load data'
-            });
-        }
+        const errorPayload = {
+            error: true,
+            message: 'Failed to load data'
+        };
+        notifyInsightsUpdate(errorPayload);
+        return errorPayload;
     }
+
+    return resultsPromise;
 }
 
 /**

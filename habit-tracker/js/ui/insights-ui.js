@@ -377,8 +377,9 @@ export function renderTrendChart(trendData) {
 /**
  * Render the habit strength progress bars
  */
-export function renderHabitStrength(strengthData, habitMap) {
-    const container = document.getElementById('strength-list');
+export function renderHabitStrength(strengthData, habitMap, options = {}) {
+    const { containerId = 'strength-list', filterType = null, streaksById = {} } = options;
+    const container = document.getElementById(containerId);
     if (!container) return;
 
     if (!strengthData || strengthData.length === 0) {
@@ -388,8 +389,21 @@ export function renderHabitStrength(strengthData, habitMap) {
 
     container.innerHTML = '';
 
+    let filtered = [...strengthData];
+    if (filterType && filterType !== 'all' && habitMap) {
+        filtered = filtered.filter(habit => {
+            const habitId = habit.habitId || habit.id;
+            return habitMap[habitId]?.type === filterType;
+        });
+    }
+
+    if (filtered.length === 0) {
+        container.innerHTML = '<div class="no-insights">No habits to display.</div>';
+        return;
+    }
+
     // Sort by strength descending
-    const sorted = [...strengthData].sort((a, b) => b.strength - a.strength);
+    const sorted = filtered.sort((a, b) => b.strength - a.strength);
 
     sorted.forEach(habit => {
         const item = document.createElement('div');
@@ -402,10 +416,29 @@ export function renderHabitStrength(strengthData, habitMap) {
             fragile: 'Needs attention. Try smaller wins.'
         };
 
+        const habitId = habit.habitId || habit.id;
+        const habitStreaks = streaksById[habitId] || {};
+        const currentStreak = Number.isFinite(habitStreaks.currentStreak) ? habitStreaks.currentStreak : 0;
+        const bestStreak = Number.isFinite(habitStreaks.bestStreak) ? habitStreaks.bestStreak : 0;
+
         item.innerHTML = `
             <div class="strength-header">
                 <span class="strength-name">${escapeHtml(habit.name)}</span>
                 <span class="strength-status ${habit.status}">${habit.status.toUpperCase()}</span>
+            </div>
+            <div class="strength-streaks">
+                <span class="streak-badge" title="Current streak">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"></path>
+                    </svg>
+                    ${currentStreak} days
+                </span>
+                <span class="streak-badge best" title="Best streak">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+                    </svg>
+                    ${bestStreak} days
+                </span>
             </div>
             <div class="strength-bar-container">
                 <div class="strength-bar">
@@ -528,7 +561,6 @@ export function renderAllInsights(results) {
 
     renderMetrics(results);
     renderInsightCards(results.insights, results.habitMap);
-    renderHabitStrength(results.habitStrength, results.habitMap);
 }
 
 /**

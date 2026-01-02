@@ -4,6 +4,16 @@ This document summarizes the key improvements, features, and architectural decis
 
 ---
 
+## January 2, 2026 - Dashboard Habit Strength Update
+
+**Session Focus:** Move Habit Strength to the Dashboard and scope scores to the selected month.
+
+### Updates
+*   **Dashboard Habit Strength:** Replaced the Completion Rates block with Habit Strength Score and removed the Habit Strength section from Insights.
+*   **Per-Habit Streaks:** Added current and best streak badges for each habit in the strength list.
+*   **Month-Scoped Scoring:** Strength scores now use only the selected month’s logged entries, matching insights-style calculations and avoiding empty-day penalties.
+*   **Insights Callbacks:** Insights update callbacks now support multiple listeners without clobbering existing handlers.
+
 ## January 1, 2025 - Smart Insights Feature Design
 
 **Session Focus:** Design and specification of the "Personalized Insights" killer feature - the primary differentiator for the Habit Tracker app.

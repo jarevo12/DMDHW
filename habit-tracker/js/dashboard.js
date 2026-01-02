@@ -3,8 +3,8 @@
 
 import { getDb, collection, getDocs } from './firebase-init.js';
 import { habits, currentUser } from './state.js';
-import { formatDate, escapeHtml } from './utils.js';
-import { renderWeekdayPattern } from './ui/insights-ui.js';
+import { formatDate } from './utils.js';
+import { renderHabitStrength, renderWeekdayPattern } from './ui/insights-ui.js';
 
 // Global chart instance
 let completionChartInstance = null;
@@ -57,25 +57,16 @@ export async function updateDashboardData(year, month) {
         entriesMap[doc.id] = doc.data();
     });
 
-    // Calculate habit completion rates for current type
+    const todayDate = new Date();
+
+    // Calculate habit streaks for current type
     const currentType = document.querySelector('.dash-tab.active')?.dataset.type || 'morning';
     const typeHabits = habits[currentType];
 
-    const habitStats = typeHabits.map(habit => {
-        let completed = 0;
-        let possible = lastDay;
-
-        for (let day = 1; day <= lastDay; day++) {
-            const dateString = formatDate(new Date(year, month, day));
-            const entry = entriesMap[dateString];
-            if (entry && entry[currentType] && entry[currentType].includes(habit.id)) {
-                completed++;
-            }
-        }
-
+    const habitStreaks = {};
+    typeHabits.forEach(habit => {
         // Calculate current streak for this habit
         let currentHabitStreak = 0;
-        const todayDate = new Date();
         for (let i = 0; i <= 365; i++) {
             const checkDate = new Date(todayDate);
             checkDate.setDate(checkDate.getDate() - i);
@@ -107,51 +98,13 @@ export async function updateDashboardData(year, month) {
             }
         }
 
-        return {
-            habit,
-            completed,
-            possible,
-            rate: possible > 0 ? Math.round((completed / possible) * 100) : 0,
+        habitStreaks[habit.id] = {
             currentStreak: currentHabitStreak,
             bestStreak: bestHabitStreak
         };
     });
 
-    // Render habit rates
-    const ratesContainer = document.getElementById('habit-rates');
-    if (ratesContainer) {
-        if (typeHabits.length === 0) {
-            ratesContainer.innerHTML = '<p style="color: var(--text-muted);">No habits to display</p>';
-        } else {
-            ratesContainer.innerHTML = habitStats.map(stat => `
-                <div class="rate-item">
-                    <div class="rate-header">
-                        <span class="rate-label">${escapeHtml(stat.habit.name)}</span>
-                        <div class="rate-streaks">
-                            <span class="streak-badge" title="Current streak">
-                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                                    <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"></path>
-                                </svg>
-                                ${stat.currentStreak} days
-                            </span>
-                            <span class="streak-badge best" title="Best streak">
-                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                                    <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
-                                </svg>
-                                ${stat.bestStreak} days
-                            </span>
-                        </div>
-                    </div>
-                    <div class="rate-bar-container">
-                        <div class="rate-bar">
-                            <div class="rate-fill" style="width: ${stat.rate}%"></div>
-                        </div>
-                        <span class="rate-value">${stat.rate}%</span>
-                    </div>
-                </div>
-            `).join('');
-        }
-    }
+    renderDashboardHabitStrength(currentType, habitStreaks, entriesMap, year, month, lastDay);
 
     // Render completion chart
     renderCompletionChart(year, month, lastDay, entriesMap);
@@ -183,7 +136,6 @@ export async function updateDashboardData(year, month) {
     let bestStreak = 0;
     let tempStreak = 0;
 
-    const todayDate = new Date();
     for (let i = 0; i <= 365; i++) {
         const checkDate = new Date(todayDate);
         checkDate.setDate(checkDate.getDate() - i);
@@ -225,6 +177,89 @@ export async function updateDashboardData(year, month) {
 
     // Render weekday patterns
     renderWeekdayPatterns(entriesMap);
+}
+
+function renderDashboardHabitStrength(currentType, habitStreaks, entriesMap, year, month, lastDay) {
+    const container = document.getElementById('strength-list');
+    if (!container) return;
+
+    const allHabits = [...habits.morning, ...habits.evening];
+    if (allHabits.length === 0) {
+        container.innerHTML = '<div class="no-insights">No habits to display.</div>';
+        return;
+    }
+
+    const habitMap = allHabits.reduce((map, habit) => {
+        map[habit.id] = {
+            id: habit.id,
+            name: habit.name,
+            type: habit.type
+        };
+        return map;
+    }, {});
+
+    const { strengthData, entryCount } = buildMonthlyHabitStrength(entriesMap, allHabits, year, month, lastDay);
+    if (entryCount === 0) {
+        container.innerHTML = '<div class="no-insights">No habit data logged for this month yet.</div>';
+        return;
+    }
+    renderHabitStrength(strengthData, habitMap, {
+        containerId: 'strength-list',
+        filterType: currentType,
+        streaksById: habitStreaks
+    });
+}
+
+function buildMonthlyHabitStrength(entriesMap, allHabits, year, month, lastDay) {
+    const monthEntries = [];
+
+    for (let day = 1; day <= lastDay; day++) {
+        const dateString = formatDate(new Date(year, month, day));
+        const entry = entriesMap[dateString];
+        if (entry) {
+            monthEntries.push(entry);
+        }
+    }
+
+    const strengthData = allHabits.map(habit => {
+        const completions = monthEntries.map(entry => (
+            entry[habit.type]?.includes(habit.id) ? 1 : 0
+        ));
+
+        const { strength, status } = calculateHabitStrength(completions);
+
+        return {
+            habitId: habit.id,
+            name: habit.name,
+            strength,
+            status
+        };
+    });
+
+    return { strengthData, entryCount: monthEntries.length };
+}
+
+function calculateHabitStrength(completions) {
+    const decayRate = 0.1;
+    const growthRate = 0.05;
+    const maxStrength = 100;
+
+    let strength = 0;
+
+    completions.forEach(completed => {
+        if (completed === 1) {
+            strength = Math.min(maxStrength, strength + (maxStrength - strength) * growthRate);
+        } else {
+            strength = Math.max(0, strength - strength * decayRate);
+        }
+    });
+
+    strength = Math.round(strength);
+
+    if (strength >= 81) return { strength, status: 'mastered' };
+    if (strength >= 51) return { strength, status: 'strong' };
+    if (strength >= 21) return { strength, status: 'building' };
+    return { strength, status: 'fragile' };
 }
 
 function renderCalendar(year, month, entriesMap) {
