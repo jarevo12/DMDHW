@@ -2,7 +2,7 @@
 // Functions for showing/hiding screens
 
 // List of all screen names
-const SCREENS = ['loading', 'auth', 'signup', 'main', 'dashboard', 'settings', 'onboarding'];
+const SCREENS = ['loading', 'auth', 'signup', 'main', 'dashboard', 'insights', 'settings', 'onboarding'];
 
 /**
  * Show a specific screen and hide all others

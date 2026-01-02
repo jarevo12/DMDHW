@@ -231,13 +231,17 @@
 
             <!-- Bottom Navigation -->
             <nav class="bottom-nav" role="navigation" aria-label="Main navigation">
-                <button class="nav-btn active" data-view="dashboard" aria-label="Dashboard">
+                <button class="nav-btn" data-view="dashboard" aria-label="Dashboard">
                     <span class="nav-icon" aria-hidden="true">&#9632;</span>
                     <span>Dashboard</span>
                 </button>
-                <button class="nav-btn" data-view="today" aria-label="Today's habits">
+                <button class="nav-btn active" data-view="today" aria-label="Today's habits">
                     <span class="nav-icon" aria-hidden="true">&#10003;</span>
                     <span>Today</span>
+                </button>
+                <button class="nav-btn" data-view="insights" aria-label="Insights">
+                    <span class="nav-icon" aria-hidden="true">&#9733;</span>
+                    <span>Insights</span>
                 </button>
                 <button class="nav-btn" data-view="settings" aria-label="Settings">
                     <span class="nav-icon" aria-hidden="true">&#9881;</span>
@@ -301,6 +305,14 @@
                         <!-- Calendar will be rendered here -->
                     </div>
                 </section>
+
+                <!-- Weekly Patterns -->
+                <section class="chart-section">
+                    <h2>Weekly Patterns</h2>
+                    <div class="weekday-grid" id="weekday-grid">
+                        <!-- Will be populated by JavaScript -->
+                    </div>
+                </section>
             </main>
 
             <!-- Bottom Navigation -->
@@ -312,6 +324,119 @@
                 <button class="nav-btn" data-view="today" aria-label="Today's habits">
                     <span class="nav-icon" aria-hidden="true">&#10003;</span>
                     <span>Today</span>
+                </button>
+                <button class="nav-btn" data-view="insights" aria-label="Insights">
+                    <span class="nav-icon" aria-hidden="true">&#9733;</span>
+                    <span>Insights</span>
+                </button>
+                <button class="nav-btn" data-view="settings" aria-label="Settings">
+                    <span class="nav-icon" aria-hidden="true">&#9881;</span>
+                    <span>Settings</span>
+                </button>
+            </nav>
+        </div>
+
+        <!-- Insights Screen -->
+        <div id="insights-screen" class="screen">
+            <header class="insights-header">
+                <h1 class="insights-title">Smart Insights</h1>
+                <div class="insights-controls">
+                    <div class="toggle-group" id="period-toggle">
+                        <button class="toggle-btn" data-period="7">7D</button>
+                        <button class="toggle-btn active" data-period="30">30D</button>
+                        <button class="toggle-btn" data-period="90">90D</button>
+                    </div>
+                    <div class="toggle-group" id="type-toggle">
+                        <button class="toggle-btn active" data-type="all">ALL</button>
+                        <button class="toggle-btn" data-type="morning">AM</button>
+                        <button class="toggle-btn" data-type="evening">PM</button>
+                    </div>
+                </div>
+            </header>
+
+            <main class="insights-content">
+                <!-- Loading State -->
+                <div id="insights-loading" class="insights-loading hidden">
+                    <div class="loading-spinner"></div>
+                    <p>Analyzing your habits...</p>
+                </div>
+
+                <!-- Data Notice (shown when insufficient data) -->
+                <div id="insights-data-notice" class="data-notice hidden">
+                    <div class="data-notice-icon">&#128202;</div>
+                    <div class="data-notice-title">Collecting Data</div>
+                    <div class="data-notice-text">Keep tracking your habits to unlock insights!</div>
+                    <div class="data-progress">
+                        <div class="data-progress-bar">
+                            <div class="data-progress-fill" id="data-progress-fill"></div>
+                        </div>
+                        <span class="data-progress-text" id="data-progress-text">0/7 days</span>
+                    </div>
+                </div>
+
+                <!-- Main Insights Content -->
+                <div id="insights-main" class="insights-main">
+                    <!-- Key Metrics -->
+                    <div class="metrics-grid" id="metrics-grid">
+                        <div class="metric-card">
+                            <div class="metric-label">TREND</div>
+                            <div class="metric-value" id="metric-trend">--</div>
+                            <div class="metric-subtext">vs last period</div>
+                        </div>
+                        <div class="metric-card">
+                            <div class="metric-label">BEST DAY</div>
+                            <div class="metric-value" id="metric-best-day">--</div>
+                            <div class="metric-subtext" id="metric-best-rate">-- completion</div>
+                        </div>
+                        <div class="metric-card">
+                            <div class="metric-label">AVG RATE</div>
+                            <div class="metric-value" id="metric-avg-rate">--</div>
+                            <div class="metric-subtext">completion rate</div>
+                        </div>
+                        <div class="metric-card">
+                            <div class="metric-label">DAYS ANALYZED</div>
+                            <div class="metric-value" id="metric-days">--</div>
+                            <div class="metric-subtext">insights ready</div>
+                        </div>
+                    </div>
+
+                    <!-- Smart Insights -->
+                    <section class="insights-section">
+                        <h2 class="section-header">Smart Insights</h2>
+                        <div class="section-content">
+                            <div class="insights-scroll" id="insights-container">
+                                <!-- Insights will be populated by JavaScript -->
+                            </div>
+                        </div>
+                    </section>
+
+
+
+                    <!-- Habit Strength -->
+                    <section class="insights-section">
+                        <h2 class="section-header">Habit Strength</h2>
+                        <div class="strength-list" id="strength-list">
+                            <!-- Will be populated by JavaScript -->
+                        </div>
+                    </section>
+                </div>
+
+                <div style="height: 80px;"></div> <!-- Spacer for nav -->
+            </main>
+
+            <!-- Bottom Navigation -->
+            <nav class="bottom-nav" role="navigation" aria-label="Main navigation">
+                <button class="nav-btn" data-view="dashboard" aria-label="Dashboard">
+                    <span class="nav-icon" aria-hidden="true">&#9632;</span>
+                    <span>Dashboard</span>
+                </button>
+                <button class="nav-btn" data-view="today" aria-label="Today's habits">
+                    <span class="nav-icon" aria-hidden="true">&#10003;</span>
+                    <span>Today</span>
+                </button>
+                <button class="nav-btn active" data-view="insights" aria-label="Insights">
+                    <span class="nav-icon" aria-hidden="true">&#9733;</span>
+                    <span>Insights</span>
                 </button>
                 <button class="nav-btn" data-view="settings" aria-label="Settings">
                     <span class="nav-icon" aria-hidden="true">&#9881;</span>
@@ -372,6 +497,10 @@
                 <button class="nav-btn" data-view="today" aria-label="Today's habits">
                     <span class="nav-icon" aria-hidden="true">&#10003;</span>
                     <span>Today</span>
+                </button>
+                <button class="nav-btn" data-view="insights" aria-label="Insights">
+                    <span class="nav-icon" aria-hidden="true">&#9733;</span>
+                    <span>Insights</span>
                 </button>
                 <button class="nav-btn active" data-view="settings" aria-label="Settings">
                     <span class="nav-icon" aria-hidden="true">&#9881;</span>

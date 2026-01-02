@@ -46,6 +46,11 @@ import {
 import { renderDashboard, updateDashboardData } from './dashboard.js';
 import { renderTodayCalendar, selectCalendarDate, previousMonth, nextMonth, toggleCalendar } from './calendar-picker.js';
 
+// Insights
+import { initInsightsWorker, runInsightsAnalysis, setInsightsUpdateCallback, setInsightsPeriod, setInsightsType, invalidateInsightsCache } from './insights.js';
+import { insightsCache } from './insights-cache.js';
+import { renderAllInsights, showLoading, setupInsightsUIHandlers } from './ui/insights-ui.js';
+
 // Utils
 import { formatDate } from './utils.js';
 
@@ -99,6 +104,11 @@ async function handleAuthStateChange(user) {
             subscribeToHabits();
             subscribeToEntry();
 
+            // Initialize insights
+            initInsightsWorker();
+            await insightsCache.init();
+            setupInsightsUIHandlers(setInsightsPeriod, setInsightsType);
+
             // Update UI
             document.getElementById('user-email').textContent = user.email;
             showScreen('dashboard');
@@ -125,12 +135,29 @@ setHabitsChangeCallback((newHabits) => {
 setEntryChangeCallback((entry) => {
     updateHabitCheckmarks();
     updateProgress();
+    // Invalidate insights cache when entries change
+    invalidateInsightsCache();
+});
+
+// Set up insights update callback
+setInsightsUpdateCallback((results) => {
+    if (results.error) {
+        console.error('Insights error:', results.message);
+        return;
+    }
+    renderAllInsights(results);
 });
 
 // Set up onboarding complete callback
-setOnboardingCompleteCallback(() => {
+setOnboardingCompleteCallback(async () => {
     subscribeToHabits();
     subscribeToEntry();
+
+    // Initialize insights
+    initInsightsWorker();
+    await insightsCache.init();
+    setupInsightsUIHandlers(setInsightsPeriod, setInsightsType);
+
     const user = getAuthInstance().currentUser;
     if (user) {
         document.getElementById('user-email').textContent = user.email;
@@ -429,6 +456,11 @@ document.addEventListener('DOMContentLoaded', () => {
             else if (view === 'dashboard') {
                 showScreen('dashboard');
                 renderDashboard();
+            }
+            else if (view === 'insights') {
+                showScreen('insights');
+                showLoading();
+                runInsightsAnalysis(30, 'all'); // Default: 30 days, all types
             }
             else if (view === 'settings') showScreen('settings');
         });

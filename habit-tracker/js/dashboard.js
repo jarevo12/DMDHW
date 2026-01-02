@@ -4,6 +4,7 @@
 import { getDb, collection, getDocs } from './firebase-init.js';
 import { habits, currentUser } from './state.js';
 import { formatDate, escapeHtml } from './utils.js';
+import { renderWeekdayPattern } from './ui/insights-ui.js';
 
 // Global chart instance
 let completionChartInstance = null;
@@ -221,6 +222,9 @@ export async function updateDashboardData(year, month) {
 
     // Render calendar with real data
     renderCalendar(year, month, entriesMap);
+
+    // Render weekday patterns
+    renderWeekdayPatterns(entriesMap);
 }
 
 function renderCalendar(year, month, entriesMap) {
@@ -278,16 +282,53 @@ function renderCalendar(year, month, entriesMap) {
     container.innerHTML = html;
 }
 
+/**
+ * Calculate and render weekday patterns
+ * @param {Object} entriesMap - Map of date strings to entry data
+ */
+function renderWeekdayPatterns(entriesMap) {
+    const allHabits = [...habits.morning, ...habits.evening];
+    const totalHabitsCount = allHabits.length;
+
+    if (totalHabitsCount === 0) {
+        renderWeekdayPattern({ rates: [] });
+        return;
+    }
+
+    // Calculate completion rate for each day of the week (0=Sun, 6=Sat)
+    const weekdayStats = Array.from({ length: 7 }, () => ({ completed: 0, possible: 0 }));
+
+    Object.entries(entriesMap).forEach(([dateString, entry]) => {
+        const date = new Date(dateString);
+        const dayOfWeek = date.getDay();
+
+        allHabits.forEach(habit => {
+            weekdayStats[dayOfWeek].possible++;
+            const type = habit.type;
+            if (entry && entry[type] && entry[type].includes(habit.id)) {
+                weekdayStats[dayOfWeek].completed++;
+            }
+        });
+    });
+
+    const rates = weekdayStats.map(stat => ({
+        rate: stat.possible > 0 ? Math.round((stat.completed / stat.possible) * 100) : 0
+    }));
+
+    renderWeekdayPattern({ rates });
+}
+
 function renderCompletionChart(year, month, lastDay, entriesMap) {
     const canvas = document.getElementById('completion-chart');
     if (!canvas) return;
 
     const labels = [];
-    const data = [];
-    const allHabits = [...habits.morning, ...habits.evening];
-    const totalHabitsCount = allHabits.length;
+    const amData = [];
+    const pmData = [];
+    const morningHabitsCount = habits.morning.length;
+    const eveningHabitsCount = habits.evening.length;
 
-    if (totalHabitsCount === 0) {
+    if (morningHabitsCount === 0 && eveningHabitsCount === 0) {
         // No habits, hide chart
         if (completionChartInstance) {
             completionChartInstance.destroy();
@@ -296,25 +337,36 @@ function renderCompletionChart(year, month, lastDay, entriesMap) {
         return;
     }
 
-    // Calculate completion percentage for each day
+    // Calculate completion percentage for each day (separate AM and PM)
     for (let day = 1; day <= lastDay; day++) {
         const dateString = formatDate(new Date(year, month, day));
         const entry = entriesMap[dateString];
 
         labels.push(day);
 
-        let completedCount = 0;
-        if (entry) {
-            allHabits.forEach(habit => {
-                const type = habit.type;
-                if (entry[type] && entry[type].includes(habit.id)) {
-                    completedCount++;
+        // Calculate AM (morning) completion
+        let amCompleted = 0;
+        if (entry && morningHabitsCount > 0) {
+            habits.morning.forEach(habit => {
+                if (entry.morning && entry.morning.includes(habit.id)) {
+                    amCompleted++;
                 }
             });
         }
+        const amPercentage = morningHabitsCount > 0 ? Math.round((amCompleted / morningHabitsCount) * 100) : 0;
+        amData.push(amPercentage);
 
-        const percentage = Math.round((completedCount / totalHabitsCount) * 100);
-        data.push(percentage);
+        // Calculate PM (evening) completion
+        let pmCompleted = 0;
+        if (entry && eveningHabitsCount > 0) {
+            habits.evening.forEach(habit => {
+                if (entry.evening && entry.evening.includes(habit.id)) {
+                    pmCompleted++;
+                }
+            });
+        }
+        const pmPercentage = eveningHabitsCount > 0 ? Math.round((pmCompleted / eveningHabitsCount) * 100) : 0;
+        pmData.push(pmPercentage);
     }
 
     // Destroy existing chart if it exists
@@ -322,36 +374,78 @@ function renderCompletionChart(year, month, lastDay, entriesMap) {
         completionChartInstance.destroy();
     }
 
-    // Create new chart
+    // Create new chart with two datasets
     const ctx = canvas.getContext('2d');
+    const datasets = [];
+
+    // AM dataset (acid green color)
+    if (morningHabitsCount > 0) {
+        datasets.push({
+            label: 'AM',
+            data: amData,
+            borderColor: '#ccff00',
+            backgroundColor: '#ccff00',
+            borderWidth: 2,
+            fill: false,
+            tension: 0,
+            pointRadius: 0,
+            pointHoverRadius: 6,
+            pointBackgroundColor: '#ccff00',
+            pointBorderColor: '#000000',
+            pointBorderWidth: 2,
+            pointHoverBackgroundColor: '#ccff00',
+            pointHoverBorderColor: '#ffffff',
+            pointHoverBorderWidth: 2
+        });
+    }
+
+    // PM dataset (purple color)
+    if (eveningHabitsCount > 0) {
+        datasets.push({
+            label: 'PM',
+            data: pmData,
+            borderColor: '#6a00ff',
+            backgroundColor: '#6a00ff',
+            borderWidth: 2,
+            fill: false,
+            tension: 0,
+            pointRadius: 0,
+            pointHoverRadius: 6,
+            pointBackgroundColor: '#6a00ff',
+            pointBorderColor: '#000000',
+            pointBorderWidth: 2,
+            pointHoverBackgroundColor: '#6a00ff',
+            pointHoverBorderColor: '#ffffff',
+            pointHoverBorderWidth: 2
+        });
+    }
+
     completionChartInstance = new Chart(ctx, {
         type: 'line',
         data: {
             labels,
-            datasets: [{
-                label: 'Completion %',
-                data,
-                borderColor: '#ffffff',
-                backgroundColor: 'transparent',
-                borderWidth: 2,
-                fill: false,
-                tension: 0, // Brutalist: sharp lines
-                pointRadius: 0,
-                pointHoverRadius: 6,
-                pointBackgroundColor: '#ffffff',
-                pointBorderColor: '#000000',
-                pointBorderWidth: 2,
-                pointHoverBackgroundColor: '#6a00ff', // Electric Purple
-                pointHoverBorderColor: '#ffffff',
-                pointHoverBorderWidth: 2
-            }]
+            datasets
         },
         options: {
             responsive: true,
             maintainAspectRatio: false,
             plugins: {
                 legend: {
-                    display: false
+                    display: true,
+                    position: 'bottom',
+                    labels: {
+                        color: '#ffffff',
+                        font: {
+                            family: 'Courier New',
+                            size: 12,
+                            weight: 'bold'
+                        },
+                        padding: 20,
+                        usePointStyle: true,
+                        pointStyle: 'rect',
+                        boxWidth: 12,
+                        boxHeight: 12
+                    }
                 },
                 tooltip: {
                     backgroundColor: '#000000',
@@ -360,8 +454,8 @@ function renderCompletionChart(year, month, lastDay, entriesMap) {
                     borderColor: '#ffffff',
                     borderWidth: 2,
                     padding: 12,
-                    cornerRadius: 0, // Brutalist: no rounded corners
-                    displayColors: false,
+                    cornerRadius: 0,
+                    displayColors: true,
                     titleFont: {
                         family: 'Courier New'
                     },
@@ -375,7 +469,7 @@ function renderCompletionChart(year, month, lastDay, entriesMap) {
                             return monthName.toUpperCase();
                         },
                         label: (context) => {
-                            return `${context.parsed.y}% COMPLETED`;
+                            return `${context.dataset.label}: ${context.parsed.y}%`;
                         }
                     }
                 }
