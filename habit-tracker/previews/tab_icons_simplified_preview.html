@@ -48,7 +48,7 @@
 
         .icon-row {
             display: grid;
-            grid-template-columns: repeat(4, 1fr);
+            grid-template-columns: repeat(5, 1fr);
             gap: 20px;
         }
 
@@ -122,6 +122,23 @@
                     <circle class="today-dot" cx="12" cy="12" r="2" fill="currentColor" stroke="none" />
                 </svg>
                 <span class="label">Today</span>
+            </div>
+
+            <!-- Mindset (Bulb) Interactive -->
+            <div class="icon-card interactive" onclick="setActive(this)">
+                <svg class="icon-svg" viewBox="0 0 24 24">
+                    <!-- Rays -->
+                    <g class="bulb-rays" stroke-width="2">
+                        <line x1="12" y1="2" x2="12" y2="4" />
+                        <line x1="5" y1="5" x2="6.5" y2="6.5" />
+                        <line x1="19" y1="5" x2="17.5" y2="6.5" />
+                    </g>
+                    <!-- Bulb Body -->
+                    <path class="bulb-glass" d="M9 20 h6 v2 h-6 z M12 6 a 6 6 0 0 1 6 6 c 0 2.5 -2 3.5 -2 5 h -8 c 0 -1.5 -2 -2.5 -2 -5 a 6 6 0 0 1 6 -6" />
+                    <!-- Internal filament (Z shape) -->
+                    <polyline class="bulb-filament" points="10 12 14 12 10 15 14 15" stroke-width="2" />
+                </svg>
+                <span class="label">Mindset</span>
             </div>
 
             <!-- Insights Interactive -->
@@ -205,6 +222,32 @@
             transform: translateX(8px);
         }
 
+        /* --- BULB (MINDSET) ANIMATIONS --- */
+        .bulb-glass {
+            transition: fill 0.3s ease;
+        }
+        .bulb-filament {
+            opacity: 1;
+            transition: opacity 0.2s ease;
+        }
+        .bulb-rays {
+            opacity: 0;
+            transform-origin: center;
+            transform: scale(0.5);
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        /* When active: Fill bulb, hide filament, show rays */
+        .icon-card.active .bulb-glass {
+            fill: currentColor;
+        }
+        .icon-card.active .bulb-filament {
+            opacity: 0;
+        }
+        .icon-card.active .bulb-rays {
+            opacity: 1;
+            transform: scale(1.2);
+        }
+
     </style>
 
     <script>
@@ -235,6 +278,13 @@
                     <circle cx="12" cy="12" r="10" />
                 </svg>
                 <span class="label">Today</span>
+            </div>
+            <!-- Mindset -->
+            <div class="icon-card">
+                <svg class="icon-svg solid" viewBox="0 0 24 24">
+                    <path d="M9 21h6v-2H9v2zm3-19C8.14 2 5 5.14 5 9c0 2.38 1.19 4.47 3 5.74V17c0 .55.45 1 1 1h6c.55 0 1-.45 1-1v-2.26c1.81-1.27 3-3.36 3-5.74 0-3.86-3.14-7-7-7z" />
+                </svg>
+                <span class="label">Mindset</span>
             </div>
             <!-- Insights -->
             <div class="icon-card">
@@ -273,6 +323,13 @@
                     <circle cx="12" cy="12" r="2" fill="currentColor" stroke="none" />
                 </svg>
                 <span class="label">Today</span>
+            </div>
+            <!-- Mindset -->
+            <div class="icon-card">
+                <svg class="icon-svg" viewBox="0 0 24 24">
+                    <path d="M9 20 h6 v2 h-6 z M12 6 a 6 6 0 0 1 6 6 c 0 2.5 -2 3.5 -2 5 h -8 c 0 -1.5 -2 -2.5 -2 -5 a 6 6 0 0 1 6 -6" />
+                </svg>
+                <span class="label">Mindset</span>
             </div>
             <!-- Insights -->
             <div class="icon-card">
@@ -313,6 +370,14 @@
                     <line x1="12" y1="8" x2="12" y2="16" />
                 </svg>
                 <span class="label">Today</span>
+            </div>
+            <!-- Mindset -->
+            <div class="icon-card">
+                <svg class="icon-svg" viewBox="0 0 24 24" style="stroke-width: 4;">
+                    <circle cx="12" cy="11" r="6" />
+                    <line x1="12" y1="17" x2="12" y2="21" />
+                </svg>
+                <span class="label">Mindset</span>
             </div>
             <!-- Insights -->
             <div class="icon-card">
