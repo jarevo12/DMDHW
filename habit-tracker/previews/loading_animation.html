@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Loading Animation Prototype</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: #f0f0f0; /* Light grey background for contrast with the loader container */
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+            color: #333;
+        }
+
+        h2 {
+            margin-bottom: 30px;
+            font-weight: normal;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            font-size: 0.9rem;
+            color: #666;
+        }
+
+        /* Container imitating the 'Light: Mono' style (White BG) */
+        .loader-container {
+            width: 200px;
+            height: 200px;
+            background-color: #ffffff;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border-radius: 22px; /* iOS style approximation */
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            color: #000000; /* Sets the 'currentColor' for SVG to black */
+        }
+
+        .logo-loader {
+            width: 65%;
+            height: 65%;
+        }
+
+        /* Animation Keyframes 
+           Total duration: 1.5s
+           0% - 33%: Bottom visible
+           33% - 66%: Bottom + Middle visible
+           66% - 90%: All visible
+           90% - 100%: All disappear (reset)
+        */
+
+        .step {
+            opacity: 0;
+            animation: buildUp 1.5s infinite;
+        }
+
+        .step-bottom {
+            animation-delay: 0s;
+        }
+
+        .step-middle {
+            animation-delay: 0.5s;
+        }
+
+        .step-top {
+            animation-delay: 1.0s;
+        }
+
+        @keyframes buildUp {
+            0% { opacity: 1; }
+            90% { opacity: 1; }  /* Stay visible until the very end of the cycle */
+            95% { opacity: 0; }  /* Quick fade out or instant cut */
+            100% { opacity: 0; }
+        }
+
+        /* 
+           Alternative logic for "Step 1, Step 2, Step 3, Clear":
+           If we want distinct steps:
+           0.0s: Bottom ON
+           0.5s: Middle ON
+           1.0s: Top ON
+           1.5s: All OFF -> Loop
+           
+           The animation 'buildUp' needs to handle the *entrance*.
+           However, doing it with delays in a repeating animation is tricky because
+           the delay only applies to the *first* iteration in standard CSS if not careful,
+           OR we have to structure the keyframes so the "off" state is the default and it turns "on" at specific percentages.
+        */
+
+        /* REFINED ANIMATION LOGIC */
+        /* Total Cycle: 1.5s */
+        
+        @keyframes cycle-bottom {
+            0%   { opacity: 1; } /* Starts Visible */
+            90%  { opacity: 1; }
+            95%  { opacity: 0; }
+            100% { opacity: 0; }
+        }
+
+        @keyframes cycle-middle {
+            0%   { opacity: 0; }
+            33%  { opacity: 0; }
+            33.1% { opacity: 1; } /* Appears at ~0.5s */
+            90%  { opacity: 1; }
+            95%  { opacity: 0; }
+            100% { opacity: 0; }
+        }
+
+        @keyframes cycle-top {
+            0%   { opacity: 0; }
+            66%  { opacity: 0; }
+            66.1% { opacity: 1; } /* Appears at ~1.0s */
+            90%  { opacity: 1; }
+            95%  { opacity: 0; }
+            100% { opacity: 0; }
+        }
+
+        .loader-rect {
+            /* Reset transition */
+            transition: none;
+        }
+
+        /* Apply specific animations */
+        #rect-bottom {
+            animation: cycle-bottom 1.5s infinite linear;
+        }
+        #rect-middle {
+            animation: cycle-middle 1.5s infinite linear;
+        }
+        #rect-top {
+            animation: cycle-top 1.5s infinite linear;
+        }
+
+    </style>
+</head>
+<body>
+
+    <h2>Loading...</h2>
+
+    <div class="loader-container">
+        <svg class="logo-loader" viewBox="0 0 100 100" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+            <!-- Bottom -->
+            <rect id="rect-bottom" class="loader-rect" x="10" y="70" width="80" height="20" />
+            <!-- Middle -->
+            <rect id="rect-middle" class="loader-rect" x="25" y="45" width="50" height="20" />
+            <!-- Top -->
+            <rect id="rect-top" class="loader-rect" x="40" y="20" width="20" height="20" />
+        </svg>
+    </div>
+
+</body>
+</html>

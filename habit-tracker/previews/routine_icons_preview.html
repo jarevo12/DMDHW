@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Routine Icons Preview</title>
+    <style>
+        /* Base Reset */
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { 
+            font-family: 'SF Mono', 'Consolas', 'Monaco', monospace;
+            background-color: #111; 
+            color: #eee; 
+            padding: 40px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 60px;
+        }
+
+        h1 { margin-bottom: 10px; text-transform: uppercase; border-bottom: 4px solid #eee; padding-bottom: 10px; color: #fff; }
+        
+        .set-container {
+            width: 100%;
+            max-width: 400px;
+            margin-bottom: 40px;
+        }
+
+        .set-label {
+            font-weight: bold; margin-bottom: 15px; color: #ccff00; 
+            text-transform: uppercase; font-size: 0.8rem; letter-spacing: 1px;
+            border-bottom: 1px solid #333; padding-bottom: 5px;
+        }
+
+        /* Card Styles (Reused from previous step) */
+        .habit-item {
+            background: #0a0a0a;
+            border: 1px solid #333;
+            padding: 15px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            cursor: pointer;
+            margin-bottom: 10px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .fill-layer {
+            position: absolute; top: 0; left: 0; height: 100%; width: 0%; z-index: 1;
+            transition: width 0.4s cubic-bezier(0.25, 1, 0.5, 1);
+        }
+        
+        /* Morning Styles */
+        .habit-item.morning .fill-layer { background-color: #ccff00; }
+        .habit-item.morning:hover .fill-layer { width: 10px; } /* Hover hint */
+
+        /* Evening Styles */
+        .habit-item.evening .fill-layer { background-color: #6a00ff; }
+        .habit-item.evening:hover .fill-layer { width: 10px; } /* Hover hint */
+
+        .habit-text {
+            font-weight: 900; font-size: 14px; text-transform: uppercase; letter-spacing: 1px;
+            position: relative; z-index: 2; color: #fff;
+        }
+
+        /* Icon Container */
+        .icon-box {
+            width: 32px; height: 32px;
+            border: 2px solid #666;
+            display: flex; align-items: center; justify-content: center;
+            position: relative; z-index: 2;
+            background: #0a0a0a;
+            color: #fff;
+        }
+
+        .habit-item.morning .icon-box { color: #ccff00; border-color: #ccff00; }
+        .habit-item.evening .icon-box { color: #a78bfa; border-color: #a78bfa; }
+
+
+        /* =========================================
+           ICON SET SVG STYLES
+           ========================================= */
+        svg {
+            width: 20px; height: 20px;
+            fill: currentColor;
+        }
+
+    </style>
+</head>
+<body>
+
+    <h1>Routine Icon Options</h1>
+    
+    <!-- SET A: GEOMETRIC (Abstract Rise/Set) -->
+    <div class="set-container">
+        <div class="set-label">Set A: Geometric (Rise / Set)</div>
+        
+        <!-- Morning -->
+        <div class="habit-item morning">
+            <div class="fill-layer"></div>
+            <div class="icon-box">
+                <svg viewBox="0 0 24 24">
+                    <!-- Top half filled, implying sun up -->
+                    <rect x="2" y="2" width="20" height="10" />
+                    <rect x="2" y="14" width="20" height="2" opacity="0.5" />
+                    <rect x="2" y="18" width="20" height="2" opacity="0.3" />
+                </svg>
+            </div>
+            <div class="habit-text">07:00 Morning Routine</div>
+        </div>
+
+        <!-- Evening -->
+        <div class="habit-item evening">
+            <div class="fill-layer"></div>
+            <div class="icon-box">
+                <svg viewBox="0 0 24 24">
+                     <!-- Bottom half filled, implying sun down/grounded -->
+                    <rect x="2" y="4" width="20" height="2" opacity="0.3" />
+                    <rect x="2" y="8" width="20" height="2" opacity="0.5" />
+                    <rect x="2" y="12" width="20" height="10" />
+                </svg>
+            </div>
+            <div class="habit-text">21:30 Evening Wind Down</div>
+        </div>
+    </div>
+
+
+    <!-- SET B: ASTRO BRUTALIST (Star / Void) -->
+    <div class="set-container">
+        <div class="set-label">Set B: Astro Brutalist (Star / Void)</div>
+        
+        <!-- Morning -->
+        <div class="habit-item morning">
+            <div class="fill-layer"></div>
+            <div class="icon-box">
+                <svg viewBox="0 0 24 24">
+                    <!-- Spiked "Sun" -->
+                    <path d="M12 2L14.5 9.5L22 12L14.5 14.5L12 22L9.5 14.5L2 12L9.5 9.5L12 2Z" />
+                </svg>
+            </div>
+            <div class="habit-text">07:00 Morning Routine</div>
+        </div>
+
+        <!-- Evening -->
+        <div class="habit-item evening">
+            <div class="fill-layer"></div>
+            <div class="icon-box">
+                <svg viewBox="0 0 24 24">
+                    <!-- Solid Circle "Moon" / Void -->
+                    <circle cx="12" cy="12" r="8" />
+                </svg>
+            </div>
+            <div class="habit-text">21:30 Evening Wind Down</div>
+        </div>
+    </div>
+
+
+    <!-- SET C: HORIZON (Line / Arc) -->
+    <div class="set-container">
+        <div class="set-label">Set C: Horizon (Above / Below)</div>
+        
+        <!-- Morning -->
+        <div class="habit-item morning">
+            <div class="fill-layer"></div>
+            <div class="icon-box">
+                <svg viewBox="0 0 24 24" style="fill:none; stroke:currentColor; stroke-width:3;">
+                    <!-- Semi-circle ABOVE line -->
+                    <path d="M4 14 H20" />
+                    <path d="M12 14 V6" stroke-dasharray="2 2" /> 
+                    <path d="M6 14 A6 6 0 0 1 18 14" />
+                </svg>
+            </div>
+            <div class="habit-text">07:00 Morning Routine</div>
+        </div>
+
+        <!-- Evening -->
+        <div class="habit-item evening">
+            <div class="fill-layer"></div>
+            <div class="icon-box">
+                <svg viewBox="0 0 24 24" style="fill:none; stroke:currentColor; stroke-width:3;">
+                    <!-- Semi-circle BELOW line -->
+                    <path d="M4 10 H20" />
+                     <path d="M12 10 V18" stroke-dasharray="2 2" />
+                    <path d="M6 10 A6 6 0 0 0 18 10" />
+                </svg>
+            </div>
+            <div class="habit-text">21:30 Evening Wind Down</div>
+        </div>
+    </div>
+    
+     <!-- SET D: ARROWS (Active / Rest) -->
+    <div class="set-container">
+        <div class="set-label">Set D: Directional (Start / End)</div>
+        
+        <!-- Morning -->
+        <div class="habit-item morning">
+            <div class="fill-layer"></div>
+            <div class="icon-box">
+                <svg viewBox="0 0 24 24">
+                    <!-- Play / Start -->
+                    <polygon points="5,3 19,12 5,21" />
+                </svg>
+            </div>
+            <div class="habit-text">07:00 Morning Routine</div>
+        </div>
+
+        <!-- Evening -->
+        <div class="habit-item evening">
+            <div class="fill-layer"></div>
+            <div class="icon-box">
+                <svg viewBox="0 0 24 24">
+                    <!-- Stop / Square -->
+                    <rect x="4" y="4" width="16" height="16" />
+                </svg>
+            </div>
+            <div class="habit-text">21:30 Evening Wind Down</div>
+        </div>
+    </div>
+
+</body>
+</html>

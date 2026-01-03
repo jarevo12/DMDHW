@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Swiss Brutalism: Simplified Icons</title>
+    <style>
+        :root {
+            --bg: #050505;
+            --fg: #f0f0f0;
+            --accent: #ccff00;
+            --gray: #333333;
+        }
+
+        body {
+            font-family: 'SF Mono', 'Consolas', 'Monaco', monospace;
+            background-color: var(--bg);
+            color: var(--fg);
+            padding: 40px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        h1 {
+            font-size: 1rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            border-bottom: 2px solid var(--fg);
+            padding-bottom: 10px;
+            margin-bottom: 60px;
+        }
+
+        h2 {
+            font-size: 0.8rem;
+            color: var(--accent);
+            text-transform: uppercase;
+            margin-bottom: 20px;
+            text-align: left;
+            width: 100%;
+        }
+
+        .set-container {
+            width: 100%;
+            max-width: 800px;
+            margin-bottom: 80px;
+        }
+
+        .icon-row {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 20px;
+        }
+
+        .icon-card {
+            background: #111;
+            border: 1px solid #222;
+            padding: 30px 10px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 15px;
+            transition: all 0.2s;
+        }
+
+        .icon-card:hover {
+            border-color: var(--accent);
+            background: #161616;
+        }
+
+        .icon-svg {
+            width: 48px;
+            height: 48px;
+            color: var(--fg);
+            fill: none;
+            stroke: currentColor;
+            stroke-width: 3; /* Thick default stroke for Brutalism */
+            stroke-linecap: square;
+            stroke-linejoin: miter;
+        }
+
+        /* Solid variants use fill instead of stroke */
+        .icon-svg.solid {
+            fill: currentColor;
+            stroke: none;
+        }
+
+        .label {
+            font-size: 0.6rem;
+            text-transform: uppercase;
+            color: #666;
+            letter-spacing: 1px;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Simplified Tab Icons</h1>
+
+    <!-- INTERACTIVE PROTOTYPE (OPTION B) -->
+    <div class="set-container" style="border: 2px solid var(--accent); padding: 20px; border-radius: 8px; margin-bottom: 60px;">
+        <h2 style="color: var(--fg); border-bottom: none;">Option B: Interactive Prototype (Tap to Activate)</h2>
+        <p style="color: #666; font-size: 0.8rem; margin-bottom: 20px;">Icons transform and hold their state when active.</p>
+        
+        <div class="icon-row" id="demo-row">
+            <!-- Dashboard Interactive -->
+            <div class="icon-card interactive" onclick="setActive(this)">
+                <svg class="icon-svg" viewBox="0 0 24 24">
+                    <rect class="dash-frame" x="3" y="3" width="18" height="18" stroke-width="3" />
+                    <g class="dash-cross">
+                        <line x1="12" y1="3" x2="12" y2="21" stroke-width="2" />
+                        <line x1="3" y1="12" x2="21" y2="12" stroke-width="2" />
+                    </g>
+                </svg>
+                <span class="label">Dashboard</span>
+            </div>
+
+            <!-- Today Interactive -->
+            <div class="icon-card interactive" onclick="setActive(this)">
+                <svg class="icon-svg" viewBox="0 0 24 24">
+                    <circle class="today-ring" cx="12" cy="12" r="9" stroke-width="3" />
+                    <circle class="today-dot" cx="12" cy="12" r="2" fill="currentColor" stroke="none" />
+                </svg>
+                <span class="label">Today</span>
+            </div>
+
+            <!-- Insights Interactive -->
+            <div class="icon-card interactive" onclick="setActive(this)">
+                <svg class="icon-svg" viewBox="0 0 24 24">
+                    <path class="insight-line" d="M4 20 L10 14 L14 16 L20 10" stroke-width="3" stroke-linejoin="round" />
+                </svg>
+                <span class="label">Insights</span>
+            </div>
+
+            <!-- Settings Interactive -->
+            <div class="icon-card interactive" onclick="setActive(this)">
+                <svg class="icon-svg" viewBox="0 0 24 24">
+                    <line x1="4" y1="8" x2="20" y2="8" stroke-width="3" />
+                    <line x1="4" y1="16" x2="20" y2="16" stroke-width="3" />
+                    <rect class="setting-knob-1" x="14" y="6" width="4" height="4" fill="currentColor" stroke="none" />
+                    <rect class="setting-knob-2" x="6" y="14" width="4" height="4" fill="currentColor" stroke="none" />
+                </svg>
+                <span class="label">Settings</span>
+            </div>
+        </div>
+    </div>
+
+    <style>
+        /* Interactive Styles */
+        .icon-card.interactive {
+            cursor: pointer;
+            position: relative;
+        }
+        
+        /* Active State Container Styling */
+        .icon-card.active {
+            border-color: var(--accent);
+            background: #1a1a1a;
+        }
+        .icon-card.active .label {
+            color: var(--accent);
+        }
+        .icon-card.active .icon-svg {
+            color: var(--accent);
+        }
+
+        /* --- DASHBOARD ANIMATIONS --- */
+        .dash-frame, .dash-cross {
+            transform-origin: center;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        /* When active: cross rotates 90deg and scales up slightly */
+        .icon-card.active .dash-cross {
+            transform: rotate(90deg) scale(1.1);
+            stroke-width: 3; /* Thicken */
+        }
+        
+        /* --- TODAY ANIMATIONS --- */
+        .today-dot {
+            transition: r 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        /* When active: dot grows significantly */
+        .icon-card.active .today-dot {
+            r: 5;
+        }
+
+        /* --- INSIGHTS ANIMATIONS --- */
+        .insight-line {
+            transition: all 0.4s ease;
+        }
+        /* When active: path morphs to a 'better' trend */
+        .icon-card.active .insight-line {
+            d: path('M4 20 L10 10 L14 14 L20 4'); /* Higher peaks */
+        }
+
+        /* --- SETTINGS ANIMATIONS --- */
+        .setting-knob-1, .setting-knob-2 {
+            transition: transform 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55); /* Bounce effect */
+        }
+        /* When active: knobs slide to opposite sides */
+        .icon-card.active .setting-knob-1 {
+            transform: translateX(-8px);
+        }
+        .icon-card.active .setting-knob-2 {
+            transform: translateX(8px);
+        }
+
+    </style>
+
+    <script>
+        function setActive(element) {
+            // Remove active class from all interactive cards
+            const cards = document.querySelectorAll('.icon-card.interactive');
+            cards.forEach(card => card.classList.remove('active'));
+            
+            // Add active class to clicked card
+            element.classList.add('active');
+        }
+    </script>
+
+    <!-- SET A: HEAVY BLOCK -->
+    <div class="set-container">
+        <h2>Option A: "Heavy Block" (Solid, High Contrast)</h2>
+        <div class="icon-row">
+            <!-- Dashboard -->
+            <div class="icon-card">
+                <svg class="icon-svg solid" viewBox="0 0 24 24">
+                    <path d="M2 2h9v9H2z M13 2h9v9h-9z M2 13h9v9H2z M13 13h9v9h-9z" />
+                </svg>
+                <span class="label">Dashboard</span>
+            </div>
+            <!-- Today -->
+            <div class="icon-card">
+                <svg class="icon-svg solid" viewBox="0 0 24 24">
+                    <circle cx="12" cy="12" r="10" />
+                </svg>
+                <span class="label">Today</span>
+            </div>
+            <!-- Insights -->
+            <div class="icon-card">
+                <svg class="icon-svg solid" viewBox="0 0 24 24">
+                    <path d="M2 22h20V12h-6v4h-6V8H2z" /> <!-- Abstract chart shape -->
+                </svg>
+                <span class="label">Insights</span>
+            </div>
+            <!-- Settings -->
+            <div class="icon-card">
+                <svg class="icon-svg solid" viewBox="0 0 24 24">
+                    <polygon points="12 2 22 8.5 22 15.5 12 22 2 15.5 2 8.5" />
+                </svg>
+                <span class="label">Settings</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- SET B: WIREFRAME -->
+    <div class="set-container">
+        <h2>Option B: "Wireframe" (Clean, Open)</h2>
+        <div class="icon-row">
+            <!-- Dashboard -->
+            <div class="icon-card">
+                <svg class="icon-svg" viewBox="0 0 24 24">
+                    <rect x="3" y="3" width="18" height="18" stroke-width="3" />
+                    <line x1="12" y1="3" x2="12" y2="21" stroke-width="2" />
+                    <line x1="3" y1="12" x2="21" y2="12" stroke-width="2" />
+                </svg>
+                <span class="label">Dashboard</span>
+            </div>
+            <!-- Today -->
+            <div class="icon-card">
+                <svg class="icon-svg" viewBox="0 0 24 24">
+                    <circle cx="12" cy="12" r="9" stroke-width="3" />
+                    <circle cx="12" cy="12" r="2" fill="currentColor" stroke="none" />
+                </svg>
+                <span class="label">Today</span>
+            </div>
+            <!-- Insights -->
+            <div class="icon-card">
+                <svg class="icon-svg" viewBox="0 0 24 24">
+                    <polyline points="4 20 10 10 14 14 20 4" stroke-width="3" />
+                </svg>
+                <span class="label">Insights</span>
+            </div>
+            <!-- Settings -->
+            <div class="icon-card">
+                <svg class="icon-svg" viewBox="0 0 24 24">
+                    <line x1="4" y1="8" x2="20" y2="8" stroke-width="3" />
+                    <line x1="4" y1="16" x2="20" y2="16" stroke-width="3" />
+                    <rect x="14" y="6" width="4" height="4" fill="currentColor" stroke="none" />
+                    <rect x="6" y="14" width="4" height="4" fill="currentColor" stroke="none" />
+                </svg>
+                <span class="label">Settings</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- SET C: CONSTRUCTIVIST -->
+    <div class="set-container">
+        <h2>Option C: "Constructivist" (Abstract, Elemental)</h2>
+        <div class="icon-row">
+            <!-- Dashboard -->
+            <div class="icon-card">
+                <svg class="icon-svg" viewBox="0 0 24 24" style="stroke-width: 4;">
+                    <rect x="4" y="4" width="7" height="16" />
+                    <rect x="13" y="4" width="7" height="7" />
+                </svg>
+                <span class="label">Dashboard</span>
+            </div>
+            <!-- Today -->
+            <div class="icon-card">
+                <svg class="icon-svg" viewBox="0 0 24 24" style="stroke-width: 4;">
+                    <rect x="4" y="4" width="16" height="16" rx="10" /> <!-- Squircle -->
+                    <line x1="12" y1="8" x2="12" y2="16" />
+                </svg>
+                <span class="label">Today</span>
+            </div>
+            <!-- Insights -->
+            <div class="icon-card">
+                <svg class="icon-svg" viewBox="0 0 24 24" style="stroke-width: 4;">
+                    <line x1="4" y1="20" x2="20" y2="4" />
+                    <line x1="20" y1="4" x2="10" y2="4" /> <!-- Arrow head hint -->
+                </svg>
+                <span class="label">Insights</span>
+            </div>
+            <!-- Settings -->
+            <div class="icon-card">
+                <svg class="icon-svg" viewBox="0 0 24 24" style="stroke-width: 4;">
+                    <circle cx="12" cy="12" r="7" />
+                    <line x1="12" y1="2" x2="12" y2="22" stroke-width="2" />
+                    <line x1="2" y1="12" x2="22" y2="12" stroke-width="2" />
+                </svg>
+                <span class="label">Settings</span>
+            </div>
+        </div>
+    </div>
+
+</body>
+</html>

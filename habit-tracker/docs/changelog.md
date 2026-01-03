@@ -4,6 +4,15 @@ This document summarizes the key improvements, features, and architectural decis
 
 ---
 
+## January 03, 2026 - Motivational Audio Prep & Previews
+
+**Session Focus:** Prepare "You vs You" audio assets and generate initial transcription output.
+
+### Updates
+*   **Audio Processing:** Converted the MP3 to a 16 kHz mono WAV and segmented it for transcription.
+*   **Transcription Output:** Generated initial Whisper transcripts for the first five audio segments.
+*   **Preview Assets:** Added/updated HTML previews for routine/tabs/loading/icon explorations and a new morning/evening card image.
+
 ## January 2, 2026 - Dashboard Habit Strength Update
 
 **Session Focus:** Move Habit Strength to the Dashboard and scope scores to the selected month.

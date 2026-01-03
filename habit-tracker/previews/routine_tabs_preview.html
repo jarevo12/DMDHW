@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Animated Routine Tabs</title>
+    <style>
+        /* Base Reset */
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { 
+            font-family: 'SF Mono', 'Consolas', 'Monaco', monospace;
+            background-color: #000; 
+            color: #fff; 
+            padding: 60px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+        }
+
+        h1 { 
+            margin-bottom: 40px; 
+            text-transform: uppercase; 
+            font-size: 0.9rem; 
+            letter-spacing: 2px;
+            color: #888;
+        }
+
+        /* TAB CONTAINER */
+        .tab-switcher {
+            display: flex;
+            width: 100%;
+            max-width: 420px;
+            height: 64px;
+            border: 2px solid #333;
+            background: #000;
+            position: relative;
+        }
+
+        /* INDIVIDUAL TAB */
+        .tab {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 16px; /* Spacing between icon and text */
+            cursor: pointer;
+            position: relative;
+            transition: background-color 0.3s ease, color 0.3s ease;
+            overflow: hidden; /* Key for the 'rising' animation masking */
+        }
+
+        .tab-text {
+            font-weight: 900;
+            font-size: 16px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            z-index: 2;
+        }
+
+        /* ICONS */
+        .tab-icon {
+            width: 32px; /* Bigger Icon */
+            height: 32px;
+            fill: none;
+            stroke: currentColor;
+            stroke-width: 2.5;
+            stroke-linecap: square;
+            stroke-linejoin: round;
+            z-index: 2;
+        }
+
+        /* =========================================
+           STATE STYLES
+           ========================================= */
+
+        /* INACTIVE STATE */
+        .tab.inactive {
+            background-color: #000;
+            color: #444; /* Dimmed text */
+        }
+        .tab.inactive .tab-icon {
+            opacity: 0.5;
+        }
+
+        /* ACTIVE MORNING (Acid Green) */
+        .tab.morning.active {
+            background-color: #ccff00;
+            color: #000; /* High contrast text */
+        }
+
+        /* ACTIVE EVENING (Purple) */
+        .tab.evening.active {
+            background-color: #6a00ff;
+            color: #fff; /* White text */
+        }
+
+
+        /* =========================================
+           ANIMATIONS
+           ========================================= */
+        
+        /* 1. MORNING ANIMATION (Sun Rises) */
+        /* Target the 'sun-arc' and 'sun-ray' inside the SVG */
+        .morning .sun-arc {
+            transform-origin: 50% 15px; /* Pivot near the horizon line */
+            transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1); /* Bounce effect */
+        }
+        
+        .morning.inactive .sun-arc {
+            transform: translateY(15px) scale(0.5); /* Hidden below horizon */
+            opacity: 0;
+        }
+        .morning.active .sun-arc {
+            transform: translateY(0) scale(1); /* Rises up */
+            opacity: 1;
+        }
+
+        .morning .sun-ray {
+            transition: opacity 0.3s ease 0.2s, transform 0.3s ease 0.2s;
+        }
+        .morning.inactive .sun-ray { opacity: 0; transform: scaleY(0); transform-origin: bottom; }
+        .morning.active .sun-ray { opacity: 1; transform: scaleY(1); }
+
+
+        /* 2. EVENING ANIMATION (Moon Sets/Appears) */
+        /* For evening, maybe it 'drops' into place from above? */
+        .evening .moon-arc {
+            transform-origin: 50% 9px;
+            transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        .evening.inactive .moon-arc {
+            transform: translateY(-15px) rotate(-10deg); /* Hidden above */
+            opacity: 0;
+        }
+        .evening.active .moon-arc {
+            transform: translateY(0) rotate(0deg); /* Drops down */
+            opacity: 1;
+        }
+
+    </style>
+</head>
+<body>
+
+    <h1>Interactive Tab Prototype</h1>
+
+    <div class="tab-switcher">
+        
+        <!-- MORNING TAB -->
+        <div class="tab morning active" onclick="switchTab('morning')">
+            <svg class="tab-icon" viewBox="0 0 24 24">
+                <!-- Horizon Line (Always visible) -->
+                <line x1="2" y1="15" x2="22" y2="15" />
+                
+                <!-- Sun Components -->
+                <g class="sun-parts">
+                    <!-- The Ray -->
+                    <line class="sun-ray" x1="12" y1="15" x2="12" y2="9" stroke-dasharray="2 2" />
+                    <!-- The Arc -->
+                    <path class="sun-arc" d="M6 15 A6 6 0 0 1 18 15" />
+                </g>
+            </svg>
+            <span class="tab-text">Morning</span>
+        </div>
+
+        <!-- EVENING TAB -->
+        <div class="tab evening inactive" onclick="switchTab('evening')">
+            <svg class="tab-icon" viewBox="0 0 24 24">
+                <!-- Horizon Line (Always visible) -->
+                <line x1="2" y1="9" x2="22" y2="9" />
+                
+                <!-- Moon Components -->
+                <path class="moon-arc" d="M6 9 A6 6 0 0 0 18 9" />
+            </svg>
+            <span class="tab-text">Evening</span>
+        </div>
+
+    </div>
+
+    <script>
+        function switchTab(selected) {
+            const morningTab = document.querySelector('.tab.morning');
+            const eveningTab = document.querySelector('.tab.evening');
+
+            if (selected === 'morning') {
+                morningTab.classList.remove('inactive');
+                morningTab.classList.add('active');
+                
+                eveningTab.classList.remove('active');
+                eveningTab.classList.add('inactive');
+            } else {
+                eveningTab.classList.remove('inactive');
+                eveningTab.classList.add('active');
+
+                morningTab.classList.remove('active');
+                morningTab.classList.add('inactive');
+            }
+        }
+    </script>
+
+</body>
+</html>

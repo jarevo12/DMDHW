@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Swiss Brutalism: Tab Icons</title>
+    <style>
+        :root {
+            --bg: #000000;
+            --fg: #ffffff;
+            --accent: #ccff00; /* Brutalist Green */
+            --border-width: 3px;
+        }
+
+        body {
+            font-family: 'SF Mono', 'Consolas', 'Monaco', 'Menlo', monospace;
+            background-color: #111;
+            color: var(--fg);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 60px 20px;
+            margin: 0;
+        }
+
+        h1 {
+            text-transform: uppercase;
+            font-size: 1.2rem;
+            letter-spacing: 4px;
+            border-bottom: 4px solid var(--fg);
+            padding-bottom: 10px;
+            margin-bottom: 50px;
+        }
+
+        .icon-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 40px;
+            max-width: 600px;
+        }
+
+        .icon-box {
+            background-color: var(--bg);
+            border: 1px solid #333;
+            padding: 40px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+            transition: border-color 0.3s ease;
+        }
+
+        .icon-box:hover {
+            border-color: var(--accent);
+        }
+
+        .icon-svg {
+            width: 64px;
+            height: 64px;
+            fill: none;
+            stroke: currentColor;
+            stroke-width: 2.5;
+            stroke-linecap: square;
+            stroke-linejoin: miter;
+        }
+
+        .label {
+            text-transform: uppercase;
+            font-size: 0.75rem;
+            letter-spacing: 2px;
+            color: #888;
+        }
+
+        /* Active State Preview */
+        .tab-bar-preview {
+            margin-top: 80px;
+            background: var(--bg);
+            width: 100%;
+            max-width: 400px;
+            display: flex;
+            justify-content: space-around;
+            padding: 20px 0;
+            border: var(--border-width) solid var(--fg);
+        }
+
+        .tab-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+            color: #666;
+            cursor: pointer;
+        }
+
+        .tab-item.active {
+            color: var(--accent);
+        }
+
+        .tab-item.active .icon-svg {
+            stroke: var(--accent);
+        }
+
+        .tab-item .icon-svg {
+            width: 28px;
+            height: 28px;
+            stroke-width: 3;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Tab Icon Set: Brutalist</h1>
+
+    <div class="icon-grid">
+        <!-- DASHBOARD -->
+        <div class="icon-box">
+            <svg class="icon-svg" viewBox="0 0 24 24">
+                <rect x="3" y="3" width="7" height="7" />
+                <rect x="14" y="3" width="7" height="11" />
+                <rect x="3" y="14" width="11" height="7" />
+                <rect x="18" y="18" width="3" height="3" fill="currentColor" stroke="none" />
+            </svg>
+            <div class="label">Dashboard</div>
+        </div>
+
+        <!-- TODAY -->
+        <div class="icon-box">
+            <svg class="icon-svg" viewBox="0 0 24 24">
+                <circle cx="12" cy="12" r="9" />
+                <rect x="10.5" y="10.5" width="3" height="3" fill="currentColor" stroke="none" />
+                <path d="M12 3v3M12 18v3M3 12h3M18 12h3" opacity="0.5" />
+            </svg>
+            <div class="label">Today</div>
+        </div>
+
+        <!-- INSIGHTS -->
+        <div class="icon-box">
+            <svg class="icon-svg" viewBox="0 0 24 24">
+                <path d="M3 21h18M3 17h6M3 13h12M3 9h18" stroke-dasharray="1 2" opacity="0.3" />
+                <polyline points="4 17 10 11 14 15 20 5" stroke="var(--accent)" stroke-width="3" />
+            </svg>
+            <div class="label">Insights</div>
+        </div>
+
+        <!-- SETTINGS -->
+        <div class="icon-box">
+            <svg class="icon-svg" viewBox="0 0 24 24">
+                <path d="M4 4h6v6H4zM14 14h6v6h-6z" />
+                <path d="M14 4h6v6h-6zM4 14h6v6H4z" stroke-dasharray="2 2" />
+            </svg>
+            <div class="label">Settings</div>
+        </div>
+    </div>
+
+    <div class="label" style="margin-top: 60px;">Tab Bar Mockup</div>
+    <div class="tab-bar-preview">
+        <div class="tab-item">
+            <svg class="icon-svg" viewBox="0 0 24 24">
+                <rect x="3" y="3" width="7" height="7" />
+                <rect x="14" y="3" width="7" height="11" />
+                <rect x="3" y="14" width="11" height="7" />
+                <rect x="18" y="18" width="3" height="3" fill="currentColor" stroke="none" />
+            </svg>
+        </div>
+        <div class="tab-item active">
+            <svg class="icon-svg" viewBox="0 0 24 24">
+                <circle cx="12" cy="12" r="9" />
+                <rect x="10.5" y="10.5" width="3" height="3" fill="currentColor" stroke="none" />
+                <path d="M12 3v3M12 18v3M3 12h3M18 12h3" opacity="0.5" />
+            </svg>
+        </div>
+        <div class="tab-item">
+            <svg class="icon-svg" viewBox="0 0 24 24">
+                <path d="M3 21h18M3 17h6M3 13h12M3 9h18" stroke-dasharray="1 2" opacity="0.3" />
+                <polyline points="4 17 10 11 14 15 20 5" stroke-width="3" />
+            </svg>
+        </div>
+        <div class="tab-item">
+            <svg class="icon-svg" viewBox="0 0 24 24">
+                <path d="M4 4h6v6H4zM14 14h6v6h-6z" />
+                <path d="M14 4h6v6h-6zM4 14h6v6H4z" stroke-dasharray="2 2" />
+            </svg>
+        </div>
+    </div>
+
+</body>
+</html>
