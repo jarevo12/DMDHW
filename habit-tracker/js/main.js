@@ -44,6 +44,7 @@ import {
     nextOnboardingStep, previousOnboardingStep
 } from './onboarding.js';
 import { renderDashboard, updateDashboardData } from './dashboard.js';
+import { setDashboardMonth } from './state.js';
 import { renderTodayCalendar, selectCalendarDate, previousMonth, nextMonth, toggleCalendar } from './calendar-picker.js';
 
 // Insights
@@ -385,6 +386,7 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('today-btn').addEventListener('click', () => {
         setCurrentDate(new Date());
         updateDateDisplay();
+        renderHabits();
         subscribeToEntry();
         if (calendarState.isOpen) {
             setCalendarState({ isOpen: false });
@@ -399,6 +401,7 @@ document.addEventListener('DOMContentLoaded', () => {
         newDate.setDate(newDate.getDate() - 1);
         setCurrentDate(newDate);
         updateDateDisplay();
+        renderHabits();
         subscribeToEntry();
     });
 
@@ -412,6 +415,7 @@ document.addEventListener('DOMContentLoaded', () => {
             newDate.setDate(newDate.getDate() + 1);
             setCurrentDate(newDate);
             updateDateDisplay();
+            renderHabits();
             subscribeToEntry();
         }
     });
@@ -424,9 +428,14 @@ document.addEventListener('DOMContentLoaded', () => {
     document.querySelectorAll('.tab-btn').forEach(btn => {
         btn.addEventListener('click', () => {
             setCurrentTab(btn.dataset.tab);
-            document.querySelectorAll('.tab-btn').forEach(b => b.classList.toggle('active', b === btn));
+            document.querySelectorAll('.tab-btn').forEach(b => {
+                const isActive = b === btn;
+                b.classList.toggle('active', isActive);
+                b.classList.toggle('inactive', !isActive);
+            });
             document.getElementById('morning-habits').classList.toggle('active', currentTab === 'morning');
             document.getElementById('evening-habits').classList.toggle('active', currentTab === 'evening');
+            renderHabits();
             updateProgress();
         });
     });
@@ -482,7 +491,11 @@ document.addEventListener('DOMContentLoaded', () => {
     // Dashboard tabs
     document.querySelectorAll('.dash-tab').forEach(btn => {
         btn.addEventListener('click', () => {
-            document.querySelectorAll('.dash-tab').forEach(b => b.classList.toggle('active', b === btn));
+            document.querySelectorAll('.dash-tab').forEach(b => {
+                const isActive = b === btn;
+                b.classList.toggle('active', isActive);
+                b.classList.toggle('inactive', !isActive);
+            });
             renderDashboard();
         });
     });
@@ -492,6 +505,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (monthSelector) {
         monthSelector.addEventListener('change', (e) => {
             const [year, month] = e.target.value.split('-').map(Number);
+            setDashboardMonth(year, month);
             updateDashboardData(year, month);
         });
     }

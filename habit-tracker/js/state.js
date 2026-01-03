@@ -38,6 +38,12 @@ export let onboardingStep = 1;
 export let onboardingHabits = { morning: [], evening: [] };
 export let onboardingSelectedGoal = null;
 
+// Dashboard state
+export let dashboardMonth = {
+    year: new Date().getFullYear(),
+    month: new Date().getMonth()
+};
+
 // Schedule modal state
 export let currentScheduleCallback = null;
 export let currentScheduleHabit = null;
@@ -89,6 +95,10 @@ export function setSettingsFilter(filter) {
 
 export function setSettingsSearch(search) {
     settingsSearch = search;
+}
+
+export function setDashboardMonth(year, month) {
+    dashboardMonth = { year, month };
 }
 
 export function setOnboardingStep(step) {

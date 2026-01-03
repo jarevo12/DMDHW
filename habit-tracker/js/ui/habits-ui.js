@@ -1,7 +1,7 @@
 // ========== HABITS UI ==========
 // Functions for rendering the habits list in the main view
 
-import { habits, currentDate, currentEntry } from '../state.js';
+import { habits, currentDate, currentEntry, currentTab } from '../state.js';
 import { formatDate, escapeHtml } from '../utils.js';
 import { getScheduledHabitsForDate, getUnscheduledHabitsForDate, getScheduleLabel } from '../schedule.js';
 import { toggleHabit } from '../entries.js';
@@ -19,7 +19,7 @@ export function renderHabits() {
     renderHabitList('evening-habits', scheduled.evening, 'evening');
 
     // Render Not Today section
-    renderNotTodaySection(unscheduled);
+    renderNotTodaySection(unscheduled, currentTab);
 }
 
 /**
@@ -42,10 +42,14 @@ function renderHabitList(containerId, habitList, type) {
         return;
     }
 
-    container.innerHTML = habitList.map(habit => `
-        <div class="habit-item" data-id="${habit.id}" data-type="${type}">
-            <div class="habit-checkbox"></div>
-            <span class="habit-name">${escapeHtml(habit.name)}</span>
+    container.innerHTML = habitList.map((habit, index) => `
+        <div class="habit-item opt-d ${type === 'morning' ? 'opt-d-morning' : 'opt-d-evening'}" data-id="${habit.id}" data-type="${type}">
+            <div class="fill-layer"></div>
+            <div class="habit-icon"></div>
+            <div class="habit-text">
+                <span class="habit-number">${index + 1}.</span>
+                <span class="habit-label">${escapeHtml(habit.name)}</span>
+            </div>
         </div>
     `).join('');
 
@@ -67,54 +71,37 @@ function renderHabitList(containerId, habitList, type) {
  * Render the "Not Today" section for unscheduled habits
  * @param {Object} unscheduled - Object with morning and evening arrays
  */
-function renderNotTodaySection(unscheduled) {
+function renderNotTodaySection(unscheduled, activeTab) {
     const section = document.getElementById('not-today-section');
     const container = document.getElementById('not-today-habits');
     const countEl = document.querySelector('.not-today-count');
 
     if (!section || !container) return;
 
-    const totalUnscheduled = unscheduled.morning.length + unscheduled.evening.length;
+    const isEvening = activeTab === 'evening';
+    const list = isEvening ? unscheduled.evening : unscheduled.morning;
+    const label = isEvening ? 'Evening' : 'Morning';
+    const icon = isEvening ? '&#9790;' : '&#9788;';
 
-    if (totalUnscheduled === 0) {
+    if (list.length === 0) {
         section.classList.add('hidden');
         return;
     }
 
     section.classList.remove('hidden');
-    if (countEl) countEl.textContent = `(${totalUnscheduled})`;
+    if (countEl) countEl.textContent = `(${list.length})`;
 
-    let html = '';
-
-    if (unscheduled.morning.length > 0) {
-        html += `
-            <div class="not-today-type">
-                <span class="type-label">&#9788; Morning</span>
-                ${unscheduled.morning.map(habit => `
-                    <div class="not-today-habit">
-                        <span class="habit-name">${escapeHtml(habit.name)}</span>
-                        <span class="schedule-badge">${getScheduleLabel(habit.schedule)}</span>
-                    </div>
-                `).join('')}
-            </div>
-        `;
-    }
-
-    if (unscheduled.evening.length > 0) {
-        html += `
-            <div class="not-today-type">
-                <span class="type-label">&#9790; Evening</span>
-                ${unscheduled.evening.map(habit => `
-                    <div class="not-today-habit">
-                        <span class="habit-name">${escapeHtml(habit.name)}</span>
-                        <span class="schedule-badge">${getScheduleLabel(habit.schedule)}</span>
-                    </div>
-                `).join('')}
-            </div>
-        `;
-    }
-
-    container.innerHTML = html;
+    container.innerHTML = `
+        <div class="not-today-type">
+            <span class="type-label">${icon} ${label}</span>
+            ${list.map(habit => `
+                <div class="not-today-habit">
+                    <span class="habit-name">${escapeHtml(habit.name)}</span>
+                    <span class="schedule-badge">${getScheduleLabel(habit.schedule)}</span>
+                </div>
+            `).join('')}
+        </div>
+    `;
 }
 
 /**

@@ -402,10 +402,14 @@ export function renderHabitStrength(strengthData, habitMap, options = {}) {
         return;
     }
 
-    // Sort by strength descending
-    const sorted = filtered.sort((a, b) => b.strength - a.strength);
+    // Preserve habit order from the main list
+    const sorted = filtered.sort((a, b) => {
+        const orderA = habitMap[a.habitId || a.id]?.order ?? 0;
+        const orderB = habitMap[b.habitId || b.id]?.order ?? 0;
+        return orderA - orderB;
+    });
 
-    sorted.forEach(habit => {
+    sorted.forEach((habit, index) => {
         const item = document.createElement('div');
         item.className = 'strength-item';
 
@@ -423,7 +427,7 @@ export function renderHabitStrength(strengthData, habitMap, options = {}) {
 
         item.innerHTML = `
             <div class="strength-header">
-                <span class="strength-name">${escapeHtml(habit.name)}</span>
+                <span class="strength-name">${index + 1}. ${escapeHtml(habit.name)}</span>
                 <span class="strength-status ${habit.status}">${habit.status.toUpperCase()}</span>
             </div>
             <div class="strength-streaks">

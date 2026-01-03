@@ -2,9 +2,10 @@
 // Functions for rendering the analytics dashboard
 
 import { getDb, collection, getDocs } from './firebase-init.js';
-import { habits, currentUser } from './state.js';
+import { habits, currentUser, dashboardMonth, setDashboardMonth } from './state.js';
 import { formatDate } from './utils.js';
 import { renderHabitStrength, renderWeekdayPattern } from './ui/insights-ui.js';
+import { getScheduledHabitsForDate, isHabitScheduledForDate } from './schedule.js';
 
 // Global chart instance
 let completionChartInstance = null;
@@ -14,20 +15,30 @@ let completionChartInstance = null;
  */
 export async function renderDashboard() {
     const now = new Date();
-    const year = now.getFullYear();
-    const month = now.getMonth();
+    const baseYear = now.getFullYear();
+    const baseMonth = now.getMonth();
+    const year = dashboardMonth.year;
+    const month = dashboardMonth.month;
 
     // Populate month selector
     const monthSelector = document.getElementById('month-selector');
     if (monthSelector) {
         monthSelector.innerHTML = '';
+        let selectedFound = false;
         for (let i = 0; i < 12; i++) {
-            const d = new Date(year, month - i, 1);
+            const d = new Date(baseYear, baseMonth - i, 1);
             const option = document.createElement('option');
             option.value = `${d.getFullYear()}-${d.getMonth()}`;
             option.textContent = d.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
-            if (i === 0) option.selected = true;
+            if (d.getFullYear() === year && d.getMonth() === month) {
+                option.selected = true;
+                selectedFound = true;
+            }
             monthSelector.appendChild(option);
+        }
+        if (!selectedFound) {
+            monthSelector.value = `${baseYear}-${baseMonth}`;
+            setDashboardMonth(baseYear, baseMonth);
         }
     }
 
@@ -107,65 +118,74 @@ export async function updateDashboardData(year, month) {
     renderDashboardHabitStrength(currentType, habitStreaks, entriesMap, year, month, lastDay);
 
     // Render completion chart
-    renderCompletionChart(year, month, lastDay, entriesMap);
+    renderCompletionChart(year, month, lastDay, entriesMap, currentType);
 
-    // Calculate overall completion rate
+    // Calculate overall completion rate (active type only)
     let totalCompleted = 0;
     let totalPossible = 0;
-    const allHabits = [...habits.morning, ...habits.evening];
+    const typeHabitsCount = typeHabits.length;
 
-    for (let day = 1; day <= lastDay; day++) {
-        const dateString = formatDate(new Date(year, month, day));
-        const entry = entriesMap[dateString];
-
-        allHabits.forEach(habit => {
-            totalPossible++;
-            const type = habit.type;
-            if (entry && entry[type] && entry[type].includes(habit.id)) {
-                totalCompleted++;
+    if (typeHabitsCount > 0) {
+        for (let day = 1; day <= lastDay; day++) {
+            const dateString = formatDate(new Date(year, month, day));
+            const entry = entriesMap[dateString];
+            const scheduled = getScheduledHabitsForDate(habits, dateString)[currentType];
+            if (scheduled.length === 0) {
+                continue;
             }
-        });
+
+            scheduled.forEach(habit => {
+                totalPossible++;
+                if (entry && entry[currentType] && entry[currentType].includes(habit.id)) {
+                    totalCompleted++;
+                }
+            });
+        }
     }
 
     const overallRate = totalPossible > 0 ? Math.round((totalCompleted / totalPossible) * 100) : 0;
     const overallRateEl = document.getElementById('overall-rate');
     if (overallRateEl) overallRateEl.textContent = `${overallRate}%`;
 
-    // Calculate streaks
+    // Calculate streaks (active type only, within selected month)
     let currentStreak = 0;
     let bestStreak = 0;
-    let tempStreak = 0;
 
-    for (let i = 0; i <= 365; i++) {
-        const checkDate = new Date(todayDate);
-        checkDate.setDate(checkDate.getDate() - i);
-        const dateString = formatDate(checkDate);
-        const entry = entriesMap[dateString];
+    if (typeHabitsCount > 0) {
+        const startDate = new Date(year, month, 1);
+        const endDate = new Date(year, month, lastDay);
 
-        if (!entry) {
-            if (i === 0) continue; // Today not logged yet
-            if (currentStreak === 0) currentStreak = tempStreak;
-            tempStreak = 0;
-            continue;
+        const isTypeComplete = (dateObj) => {
+            const dateString = formatDate(dateObj);
+            const entry = entriesMap[dateString];
+            if (!entry) return false;
+            return typeHabits.every(h => entry[currentType]?.includes(h.id));
+        };
+
+        // Current streak: count backward from end of selected month
+        const cursor = new Date(endDate);
+        while (cursor >= startDate) {
+            if (isTypeComplete(cursor)) {
+                currentStreak++;
+            } else {
+                break;
+            }
+            cursor.setDate(cursor.getDate() - 1);
         }
 
-        const morningComplete = habits.morning.length > 0
-            ? habits.morning.every(h => entry.morning?.includes(h.id))
-            : true;
-        const eveningComplete = habits.evening.length > 0
-            ? habits.evening.every(h => entry.evening?.includes(h.id))
-            : true;
-
-        if (morningComplete && eveningComplete) {
-            tempStreak++;
-            bestStreak = Math.max(bestStreak, tempStreak);
-        } else {
-            if (currentStreak === 0) currentStreak = tempStreak;
-            tempStreak = 0;
+        // Best streak: longest run within selected month
+        let tempStreak = 0;
+        const dayIter = new Date(startDate);
+        while (dayIter <= endDate) {
+            if (isTypeComplete(dayIter)) {
+                tempStreak++;
+                bestStreak = Math.max(bestStreak, tempStreak);
+            } else {
+                tempStreak = 0;
+            }
+            dayIter.setDate(dayIter.getDate() + 1);
         }
     }
-
-    if (currentStreak === 0) currentStreak = tempStreak;
 
     const currentStreakEl = document.getElementById('current-streak');
     const bestStreakEl = document.getElementById('best-streak');
@@ -222,9 +242,16 @@ function buildMonthlyHabitStrength(entriesMap, allHabits, year, month, lastDay) 
     }
 
     const strengthData = allHabits.map(habit => {
-        const completions = monthEntries.map(entry => (
-            entry[habit.type]?.includes(habit.id) ? 1 : 0
-        ));
+        const completions = [];
+
+        for (let day = 1; day <= lastDay; day++) {
+            const dateString = formatDate(new Date(year, month, day));
+            if (!isHabitScheduledForDate(habit, dateString)) {
+                continue;
+            }
+            const entry = entriesMap[dateString];
+            completions.push(entry && entry[habit.type]?.includes(habit.id) ? 1 : 0);
+        }
 
         const { strength, status } = calculateHabitStrength(completions);
 
@@ -240,21 +267,12 @@ function buildMonthlyHabitStrength(entriesMap, allHabits, year, month, lastDay) 
 }
 
 function calculateHabitStrength(completions) {
-    const decayRate = 0.1;
-    const growthRate = 0.05;
-    const maxStrength = 100;
+    if (!completions || completions.length === 0) {
+        return { strength: 0, status: 'fragile' };
+    }
 
-    let strength = 0;
-
-    completions.forEach(completed => {
-        if (completed === 1) {
-            strength = Math.min(maxStrength, strength + (maxStrength - strength) * growthRate);
-        } else {
-            strength = Math.max(0, strength - strength * decayRate);
-        }
-    });
-
-    strength = Math.round(strength);
+    const completedCount = completions.reduce((sum, value) => sum + (value === 1 ? 1 : 0), 0);
+    const strength = Math.round((completedCount / completions.length) * 100);
 
     if (strength >= 81) return { strength, status: 'mastered' };
     if (strength >= 51) return { strength, status: 'strong' };
@@ -353,18 +371,23 @@ function renderWeekdayPatterns(entriesMap) {
     renderWeekdayPattern({ rates });
 }
 
-function renderCompletionChart(year, month, lastDay, entriesMap) {
+function renderCompletionChart(year, month, lastDay, entriesMap, currentType) {
     const canvas = document.getElementById('completion-chart');
     if (!canvas) return;
 
     const labels = [];
-    const amData = [];
-    const pmData = [];
+    const data = [];
     const morningHabitsCount = habits.morning.length;
     const eveningHabitsCount = habits.evening.length;
+    const isMorning = currentType === 'morning';
+    const habitsList = isMorning ? habits.morning : habits.evening;
+    const entryKey = isMorning ? 'morning' : 'evening';
+    const selectedCount = isMorning ? morningHabitsCount : eveningHabitsCount;
+    const chartLabel = isMorning ? 'Morning' : 'Evening';
+    const chartColor = isMorning ? '#ccff00' : '#6a00ff';
 
-    if (morningHabitsCount === 0 && eveningHabitsCount === 0) {
-        // No habits, hide chart
+    if (selectedCount === 0) {
+        // No habits for selected type, hide chart
         if (completionChartInstance) {
             completionChartInstance.destroy();
             completionChartInstance = null;
@@ -372,36 +395,29 @@ function renderCompletionChart(year, month, lastDay, entriesMap) {
         return;
     }
 
-    // Calculate completion percentage for each day (separate AM and PM)
+    // Calculate completion percentage for each day (selected type only)
     for (let day = 1; day <= lastDay; day++) {
         const dateString = formatDate(new Date(year, month, day));
         const entry = entriesMap[dateString];
+        const scheduled = getScheduledHabitsForDate(habits, dateString)[currentType];
+        const scheduledCount = scheduled.length;
 
         labels.push(day);
 
-        // Calculate AM (morning) completion
-        let amCompleted = 0;
-        if (entry && morningHabitsCount > 0) {
-            habits.morning.forEach(habit => {
-                if (entry.morning && entry.morning.includes(habit.id)) {
-                    amCompleted++;
+        let completed = 0;
+        if (entry && scheduledCount > 0) {
+            scheduled.forEach(habit => {
+                if (entry[entryKey] && entry[entryKey].includes(habit.id)) {
+                    completed++;
                 }
             });
         }
-        const amPercentage = morningHabitsCount > 0 ? Math.round((amCompleted / morningHabitsCount) * 100) : 0;
-        amData.push(amPercentage);
-
-        // Calculate PM (evening) completion
-        let pmCompleted = 0;
-        if (entry && eveningHabitsCount > 0) {
-            habits.evening.forEach(habit => {
-                if (entry.evening && entry.evening.includes(habit.id)) {
-                    pmCompleted++;
-                }
-            });
+        if (scheduledCount === 0) {
+            data.push(null);
+        } else {
+            const percentage = Math.round((completed / scheduledCount) * 100);
+            data.push(percentage);
         }
-        const pmPercentage = eveningHabitsCount > 0 ? Math.round((pmCompleted / eveningHabitsCount) * 100) : 0;
-        pmData.push(pmPercentage);
     }
 
     // Destroy existing chart if it exists
@@ -409,51 +425,81 @@ function renderCompletionChart(year, month, lastDay, entriesMap) {
         completionChartInstance.destroy();
     }
 
-    // Create new chart with two datasets
+    // Create new chart with selected dataset
     const ctx = canvas.getContext('2d');
-    const datasets = [];
+    const datasets = [{
+        label: chartLabel,
+        data,
+        borderColor: chartColor,
+        backgroundColor: chartColor,
+        borderWidth: 2,
+        fill: false,
+        tension: 0,
+        pointRadius: 0,
+        pointHoverRadius: 6,
+        pointBackgroundColor: chartColor,
+        pointBorderColor: '#000000',
+        pointBorderWidth: 2,
+        pointHoverBackgroundColor: chartColor,
+        pointHoverBorderColor: '#ffffff',
+        pointHoverBorderWidth: 2
+    }];
 
-    // AM dataset (acid green color)
-    if (morningHabitsCount > 0) {
-        datasets.push({
-            label: 'AM',
-            data: amData,
-            borderColor: '#ccff00',
-            backgroundColor: '#ccff00',
-            borderWidth: 2,
-            fill: false,
-            tension: 0,
-            pointRadius: 0,
-            pointHoverRadius: 6,
-            pointBackgroundColor: '#ccff00',
-            pointBorderColor: '#000000',
-            pointBorderWidth: 2,
-            pointHoverBackgroundColor: '#ccff00',
-            pointHoverBorderColor: '#ffffff',
-            pointHoverBorderWidth: 2
-        });
-    }
+    const noScheduleOverlayColor = 'rgba(160, 160, 160, 0.2)';
+    const noScheduleOverlay = {
+        id: 'noScheduleOverlay',
+        beforeDatasetsDraw(chart, args, options) {
+            const dataset = chart.data.datasets?.[0];
+            if (!dataset || !Array.isArray(dataset.data)) return;
+            const values = dataset.data;
+            if (!values.length) return;
 
-    // PM dataset (purple color)
-    if (eveningHabitsCount > 0) {
-        datasets.push({
-            label: 'PM',
-            data: pmData,
-            borderColor: '#6a00ff',
-            backgroundColor: '#6a00ff',
-            borderWidth: 2,
-            fill: false,
-            tension: 0,
-            pointRadius: 0,
-            pointHoverRadius: 6,
-            pointBackgroundColor: '#6a00ff',
-            pointBorderColor: '#000000',
-            pointBorderWidth: 2,
-            pointHoverBackgroundColor: '#6a00ff',
-            pointHoverBorderColor: '#ffffff',
-            pointHoverBorderWidth: 2
-        });
-    }
+            const { ctx, chartArea, scales } = chart;
+            const xScale = scales.x;
+            if (!chartArea || !xScale) return;
+
+            const getPixelForIndex = (index) => xScale.getPixelForValue(index);
+            const step = values.length > 1
+                ? Math.abs(getPixelForIndex(1) - getPixelForIndex(0))
+                : chartArea.right - chartArea.left;
+
+            const drawRun = (startIndex, endIndex) => {
+                if (startIndex > endIndex) return;
+                const prevIndex = startIndex - 1;
+                const nextIndex = endIndex + 1;
+                const leftBoundary = prevIndex >= 0
+                    ? getPixelForIndex(prevIndex)
+                    : getPixelForIndex(startIndex) - step / 2;
+                const rightBoundary = nextIndex < values.length
+                    ? getPixelForIndex(nextIndex)
+                    : getPixelForIndex(endIndex) + step / 2;
+                const left = Math.max(leftBoundary, chartArea.left);
+                const right = Math.min(rightBoundary, chartArea.right);
+                if (right <= left) return;
+
+                ctx.save();
+                ctx.fillStyle = options.color || noScheduleOverlayColor;
+                ctx.fillRect(left, chartArea.top, right - left, chartArea.bottom - chartArea.top);
+                ctx.restore();
+            };
+
+            let runStart = null;
+            for (let i = 0; i <= values.length; i++) {
+                const value = values[i];
+                const isEmpty = value === null || value === undefined;
+                if (isEmpty && runStart === null) {
+                    runStart = i;
+                }
+                if (!isEmpty && runStart !== null) {
+                    drawRun(runStart, i - 1);
+                    runStart = null;
+                }
+            }
+            if (runStart !== null) {
+                drawRun(runStart, values.length - 1);
+            }
+        }
+    };
 
     completionChartInstance = new Chart(ctx, {
         type: 'line',
@@ -461,13 +507,25 @@ function renderCompletionChart(year, month, lastDay, entriesMap) {
             labels,
             datasets
         },
+        plugins: [noScheduleOverlay],
         options: {
             responsive: true,
             maintainAspectRatio: false,
             plugins: {
+                noScheduleOverlay: {
+                    color: noScheduleOverlayColor
+                },
                 legend: {
                     display: true,
                     position: 'bottom',
+                    onClick: (event, legendItem, legend) => {
+                        if (legendItem.datasetIndex === undefined || legendItem.datasetIndex < 0) {
+                            return;
+                        }
+                        const chart = legend.chart;
+                        chart.toggleDataVisibility(legendItem.datasetIndex);
+                        chart.update();
+                    },
                     labels: {
                         color: '#ffffff',
                         font: {
@@ -479,7 +537,20 @@ function renderCompletionChart(year, month, lastDay, entriesMap) {
                         usePointStyle: true,
                         pointStyle: 'rect',
                         boxWidth: 12,
-                        boxHeight: 12
+                        boxHeight: 12,
+                        generateLabels: (chart) => {
+                            const labels = Chart.defaults.plugins.legend.labels.generateLabels(chart);
+                            labels.push({
+                                text: 'No scheduled habits',
+                                fillStyle: noScheduleOverlayColor,
+                                strokeStyle: 'rgba(160, 160, 160, 0.6)',
+                                lineWidth: 1,
+                                hidden: false,
+                                datasetIndex: -1,
+                                pointStyle: 'rect'
+                            });
+                            return labels;
+                        }
                     }
                 },
                 tooltip: {
@@ -504,6 +575,9 @@ function renderCompletionChart(year, month, lastDay, entriesMap) {
                             return monthName.toUpperCase();
                         },
                         label: (context) => {
+                            if (context.parsed.y === null) {
+                                return `${context.dataset.label}: No scheduled habits`;
+                            }
                             return `${context.dataset.label}: ${context.parsed.y}%`;
                         }
                     }
@@ -531,6 +605,10 @@ function renderCompletionChart(year, month, lastDay, entriesMap) {
                 y: {
                     min: 0,
                     max: 100,
+                    grace: '5%',
+                    afterBuildTicks: (scale) => {
+                        scale.ticks = [0, 20, 40, 60, 80, 100].map(value => ({ value }));
+                    },
                     grid: {
                         color: '#333333',
                         drawBorder: false,
@@ -543,6 +621,7 @@ function renderCompletionChart(year, month, lastDay, entriesMap) {
                             size: 10,
                             weight: 'bold'
                         },
+                        stepSize: 20,
                         callback: (value) => value + '%'
                     }
                 }

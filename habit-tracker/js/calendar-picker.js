@@ -6,6 +6,7 @@ import { habits, currentUser, currentDate, calendarState, setCalendarState, setC
 import { formatDate } from './utils.js';
 import { subscribeToEntry } from './entries.js';
 import { updateDateDisplay } from './ui/progress.js';
+import { renderHabits } from './ui/habits-ui.js';
 
 /**
  * Render the calendar picker for date selection
@@ -112,6 +113,7 @@ export function selectCalendarDate(dateString) {
     setCurrentDate(new Date(y, m - 1, d));
 
     updateDateDisplay();
+    renderHabits();
     subscribeToEntry();
 
     // Close calendar

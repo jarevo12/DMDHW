@@ -282,6 +282,16 @@ button, input, select {
     border-radius: 0;
 }
 
+.btn-icon svg {
+    width: 24px;
+    height: 24px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 2.5;
+    stroke-linecap: square;
+    stroke-linejoin: miter;
+}
+
 .btn-icon:hover {
     background: var(--text-primary);
     color: var(--bg-primary);
@@ -397,7 +407,8 @@ button, input, select {
     border-bottom: var(--border-width) solid var(--border-color);
 }
 
-.tab-btn {
+.tab-btn,
+.dash-tab {
     padding: var(--spacing-md);
     background: transparent;
     border: none;
@@ -411,15 +422,110 @@ button, input, select {
     justify-content: center;
     gap: var(--spacing-sm);
     border-radius: 0;
+    min-height: 64px;
+    position: relative;
+    overflow: hidden;
+    transition: background-color 0.3s ease, color 0.3s ease;
 }
 
-.tab-btn:last-child {
+.tab-btn:last-child,
+.dash-tab:last-child {
     border-right: none;
 }
 
-.tab-btn.active {
+.tab-btn.active,
+.dash-tab.active {
     background: var(--accent-primary);
     color: var(--text-primary);
+}
+
+.tab-btn.inactive,
+.dash-tab.inactive {
+    background: var(--bg-primary);
+    color: var(--text-muted);
+}
+
+.tab-btn.morning.active,
+.dash-tab.morning.active {
+    background: var(--accent-success);
+    color: var(--text-inverse);
+}
+
+.tab-btn.evening.active,
+.dash-tab.evening.active {
+    background: var(--accent-primary);
+    color: var(--text-primary);
+}
+
+.tab-btn .tab-icon,
+.dash-tab .tab-icon {
+    width: 32px;
+    height: 32px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 2.5;
+    stroke-linecap: square;
+    stroke-linejoin: round;
+    flex-shrink: 0;
+}
+
+.tab-btn.inactive .tab-icon,
+.dash-tab.inactive .tab-icon {
+    opacity: 0.5;
+}
+
+.tab-btn.morning .sun-arc,
+.dash-tab.morning .sun-arc {
+    transform-origin: 50% 15px;
+    transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.4s ease;
+}
+
+.tab-btn.morning.inactive .sun-arc,
+.dash-tab.morning.inactive .sun-arc {
+    transform: translateY(15px) scale(0.5);
+    opacity: 0;
+}
+
+.tab-btn.morning.active .sun-arc,
+.dash-tab.morning.active .sun-arc {
+    transform: translateY(0) scale(1);
+    opacity: 1;
+}
+
+.tab-btn.morning .sun-ray,
+.dash-tab.morning .sun-ray {
+    transition: opacity 0.3s ease 0.2s, transform 0.3s ease 0.2s;
+    transform-origin: bottom;
+}
+
+.tab-btn.morning.inactive .sun-ray,
+.dash-tab.morning.inactive .sun-ray {
+    opacity: 0;
+    transform: scaleY(0);
+}
+
+.tab-btn.morning.active .sun-ray,
+.dash-tab.morning.active .sun-ray {
+    opacity: 1;
+    transform: scaleY(1);
+}
+
+.tab-btn.evening .moon-arc,
+.dash-tab.evening .moon-arc {
+    transform-origin: 50% 9px;
+    transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.4s ease;
+}
+
+.tab-btn.evening.inactive .moon-arc,
+.dash-tab.evening.inactive .moon-arc {
+    transform: translateY(-15px) rotate(-10deg);
+    opacity: 0;
+}
+
+.tab-btn.evening.active .moon-arc,
+.dash-tab.evening.active .moon-arc {
+    transform: translateY(0) rotate(0deg);
+    opacity: 1;
 }
 
 /* ===== Habit List ===== */
@@ -437,41 +543,115 @@ button, input, select {
 }
 
 .habit-item {
+    background: #0a0a0a;
+    border: 1px solid #333;
+    padding: 18px 15px;
     display: flex;
     align-items: center;
-    padding: var(--spacing-md);
-    border-bottom: var(--border-width-thin) solid var(--border-color);
+    gap: 15px;
     cursor: pointer;
+    transition: all 0.2s ease;
     position: relative;
+    overflow: hidden;
 }
 
 .habit-item:active {
     background: #111;
 }
 
-.habit-checkbox {
+.habit-item.opt-d .fill-layer {
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 100%;
+    width: 0%;
+    z-index: 1;
+    transition: width 0.4s cubic-bezier(0.25, 1, 0.5, 1);
+}
+
+.habit-icon {
     width: 24px;
     height: 24px;
-    border: 3px solid var(--border-color);
-    margin-right: var(--spacing-md);
+    border: 2px solid #666;
     flex-shrink: 0;
     position: relative;
+    z-index: 2;
+    transition: all 0.3s ease;
 }
 
-.habit-item.completed .habit-checkbox {
-    background: var(--text-primary);
-}
-
-.habit-name {
-    font-weight: 700;
+.habit-text {
+    font-family: 'SF Mono', 'Consolas', 'Monaco', monospace;
+    font-weight: 900;
+    font-size: 14px;
     text-transform: uppercase;
-    font-size: 0.9rem;
-    flex: 1;
+    letter-spacing: 1px;
+    position: relative;
+    z-index: 2;
+    color: #fff;
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+    transition: color 0.3s ease;
 }
 
-.habit-item.completed .habit-name {
-    text-decoration: line-through;
-    color: var(--text-secondary);
+.habit-number {
+    min-width: 28px;
+    text-align: right;
+}
+
+.habit-item.opt-d-morning .fill-layer {
+    background-color: #ccff00;
+}
+
+.habit-item.opt-d-evening .fill-layer {
+    background-color: #6a00ff;
+}
+
+.habit-item.opt-d-morning.completed .fill-layer,
+.habit-item.opt-d-evening.completed .fill-layer {
+    width: 100%;
+}
+
+.habit-item.opt-d-morning.completed .habit-text {
+    color: #000;
+    transition-delay: 0.1s;
+}
+
+.habit-item.opt-d-evening.completed .habit-text {
+    color: #fff;
+    transition-delay: 0.1s;
+}
+
+.habit-item.opt-d-morning.completed .habit-icon {
+    border-color: #000;
+    background: #000;
+}
+
+.habit-item.opt-d-evening.completed .habit-icon {
+    border-color: #fff;
+    background: #fff;
+}
+
+.habit-item.opt-d-morning.completed .habit-icon::after,
+.habit-item.opt-d-evening.completed .habit-icon::after {
+    content: "";
+    display: block;
+    width: 10px;
+    height: 5px;
+    transform: rotate(-45deg);
+    position: absolute;
+    top: 5px;
+    left: 4px;
+    border-bottom: 3px solid currentColor;
+    border-left: 3px solid currentColor;
+}
+
+.habit-item.opt-d-morning.completed .habit-icon::after {
+    color: #ccff00;
+}
+
+.habit-item.opt-d-evening.completed .habit-icon::after {
+    color: #6a00ff;
 }
 
 /* Not Today Section */
@@ -763,23 +943,6 @@ button, input, select {
     display: grid;
     grid-template-columns: 1fr 1fr;
     border-bottom: var(--border-width) solid var(--border-color);
-}
-
-.dash-tab {
-    padding: var(--spacing-md);
-    background: transparent;
-    border: none;
-    border-right: var(--border-width-thin) solid var(--border-color);
-    color: var(--text-secondary);
-    font-weight: 900;
-    text-transform: uppercase;
-    cursor: pointer;
-    border-radius: 0;
-}
-
-.dash-tab.active {
-    background: var(--accent-success);
-    color: var(--text-inverse);
 }
 
 .chart-section {

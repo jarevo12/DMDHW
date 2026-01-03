@@ -4,6 +4,20 @@ This document summarizes the key improvements, features, and architectural decis
 
 ---
 
+## January 03, 2026 - Today + Dashboard UI & Analytics Refinements
+
+**Session Focus:** Align Today/Dashboard visuals, refine habit interactions, and correct analytics logic across tabs/months.
+
+### Updates
+*   **Today & Dashboard Tabs:** Morning/Evening cards now share animated SVG icons, acid green/purple states, and dashboard tabs moved above summary cards.
+*   **Habit Interactions:** Completion animation switched to slide-wipe fill with color-coded checkmarks; added habit numbering in Today and Dashboard lists.
+*   **Not Today Scope:** Unscheduled habits list now respects the active tab and refreshes on tab switches/date navigation.
+*   **Calendar Icon Refresh:** Replaced the Today header calendar icon with the grid-style SVG and matching strokes.
+*   **Completion Trend:** Daily trend now filters by active tab, uses Morning/Evening labels, adds no-schedule overlays + legend key, and includes headroom with fixed 20% ticks.
+*   **Month Persistence:** Dashboard month selection now persists across app tabs and Morning/Evening toggles.
+*   **Metrics Accuracy:** Overall rate and streaks now honor selected month, active habit type, and skip unscheduled days.
+*   **Habit Strength:** Scores now reflect percent of scheduled-day completions within the selected month, ordered to match Today list.
+
 ## January 03, 2026 - Motivational Audio Prep & Previews
 
 **Session Focus:** Prepare "You vs You" audio assets and generate initial transcription output.
