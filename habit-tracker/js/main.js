@@ -450,12 +450,14 @@ document.addEventListener('DOMContentLoaded', () => {
     document.querySelectorAll('.nav-btn').forEach(btn => {
         btn.addEventListener('click', () => {
             const view = btn.dataset.view;
-            document.querySelectorAll('.nav-btn').forEach(b => b.classList.toggle('active', b.dataset.view === view));
 
             if (view === 'today') showScreen('main');
             else if (view === 'dashboard') {
                 showScreen('dashboard');
                 renderDashboard();
+            }
+            else if (view === 'mindset') {
+                showScreen('mindset');
             }
             else if (view === 'insights') {
                 showScreen('insights');
@@ -463,6 +465,17 @@ document.addEventListener('DOMContentLoaded', () => {
                 runInsightsAnalysis(30, 'all'); // Default: 30 days, all types
             }
             else if (view === 'settings') showScreen('settings');
+
+            requestAnimationFrame(() => {
+                const navButtons = document.querySelectorAll('.nav-btn');
+                navButtons.forEach(b => b.classList.toggle('active', b.dataset.view === view));
+                navButtons.forEach(b => b.classList.remove('pulse'));
+                document.querySelectorAll(`.nav-btn[data-view="${view}"]`).forEach(target => {
+                    void target.offsetWidth;
+                    target.classList.add('pulse');
+                    setTimeout(() => target.classList.remove('pulse'), 800);
+                });
+            });
         });
     });
 

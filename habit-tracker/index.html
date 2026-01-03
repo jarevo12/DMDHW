@@ -232,19 +232,57 @@
             <!-- Bottom Navigation -->
             <nav class="bottom-nav" role="navigation" aria-label="Main navigation">
                 <button class="nav-btn" data-view="dashboard" aria-label="Dashboard">
-                    <span class="nav-icon" aria-hidden="true">&#9632;</span>
+                    <span class="nav-icon" aria-hidden="true">
+                        <svg class="nav-svg nav-dashboard" viewBox="0 0 24 24">
+                            <rect class="dash-frame" x="3" y="3" width="18" height="18" stroke-width="3" />
+                            <g class="dash-cross">
+                                <line x1="12" y1="3" x2="12" y2="21" stroke-width="2" />
+                                <line x1="3" y1="12" x2="21" y2="12" stroke-width="2" />
+                            </g>
+                        </svg>
+                    </span>
                     <span>Dashboard</span>
                 </button>
                 <button class="nav-btn active" data-view="today" aria-label="Today's habits">
-                    <span class="nav-icon" aria-hidden="true">&#10003;</span>
+                    <span class="nav-icon" aria-hidden="true">
+                        <svg class="nav-svg nav-today" viewBox="0 0 24 24">
+                            <circle class="today-ring" cx="12" cy="12" r="9" stroke-width="3" />
+                            <circle class="today-dot" cx="12" cy="12" r="2" />
+                        </svg>
+                    </span>
                     <span>Today</span>
                 </button>
+                <button class="nav-btn" data-view="mindset" aria-label="Mindset">
+                    <span class="nav-icon" aria-hidden="true">
+                        <svg class="nav-svg nav-mindset" viewBox="0 0 24 24">
+                            <g class="bulb-rays" stroke-width="2">
+                                <line x1="12" y1="2" x2="12" y2="4" />
+                                <line x1="5" y1="5" x2="6.5" y2="6.5" />
+                                <line x1="19" y1="5" x2="17.5" y2="6.5" />
+                            </g>
+                            <path class="bulb-glass" d="M9 20 h6 v2 h-6 z M12 6 a 6 6 0 0 1 6 6 c 0 2.5 -2 3.5 -2 5 h -8 c 0 -1.5 -2 -2.5 -2 -5 a 6 6 0 0 1 6 -6" />
+                            <polyline class="bulb-filament" points="10 12 14 12 10 15 14 15" stroke-width="2" />
+                        </svg>
+                    </span>
+                    <span>Mindset</span>
+                </button>
                 <button class="nav-btn" data-view="insights" aria-label="Insights">
-                    <span class="nav-icon" aria-hidden="true">&#9733;</span>
+                    <span class="nav-icon" aria-hidden="true">
+                        <svg class="nav-svg nav-insights" viewBox="0 0 24 24">
+                            <path class="insight-line" d="M4 20 L10 14 L14 16 L20 10" stroke-width="3" stroke-linejoin="round" />
+                        </svg>
+                    </span>
                     <span>Insights</span>
                 </button>
                 <button class="nav-btn" data-view="settings" aria-label="Settings">
-                    <span class="nav-icon" aria-hidden="true">&#9881;</span>
+                    <span class="nav-icon" aria-hidden="true">
+                        <svg class="nav-svg nav-settings" viewBox="0 0 24 24">
+                            <line x1="4" y1="8" x2="20" y2="8" stroke-width="3" />
+                            <line x1="4" y1="16" x2="20" y2="16" stroke-width="3" />
+                            <rect class="setting-knob-1" x="14" y="6" width="4" height="4" />
+                            <rect class="setting-knob-2" x="6" y="14" width="4" height="4" />
+                        </svg>
+                    </span>
                     <span>Settings</span>
                 </button>
             </nav>
@@ -318,19 +356,57 @@
             <!-- Bottom Navigation -->
             <nav class="bottom-nav" role="navigation" aria-label="Main navigation">
                 <button class="nav-btn active" data-view="dashboard" aria-label="Dashboard">
-                    <span class="nav-icon" aria-hidden="true">&#9632;</span>
+                    <span class="nav-icon" aria-hidden="true">
+                        <svg class="nav-svg nav-dashboard" viewBox="0 0 24 24">
+                            <rect class="dash-frame" x="3" y="3" width="18" height="18" stroke-width="3" />
+                            <g class="dash-cross">
+                                <line x1="12" y1="3" x2="12" y2="21" stroke-width="2" />
+                                <line x1="3" y1="12" x2="21" y2="12" stroke-width="2" />
+                            </g>
+                        </svg>
+                    </span>
                     <span>Dashboard</span>
                 </button>
                 <button class="nav-btn" data-view="today" aria-label="Today's habits">
-                    <span class="nav-icon" aria-hidden="true">&#10003;</span>
+                    <span class="nav-icon" aria-hidden="true">
+                        <svg class="nav-svg nav-today" viewBox="0 0 24 24">
+                            <circle class="today-ring" cx="12" cy="12" r="9" stroke-width="3" />
+                            <circle class="today-dot" cx="12" cy="12" r="2" />
+                        </svg>
+                    </span>
                     <span>Today</span>
                 </button>
+                <button class="nav-btn" data-view="mindset" aria-label="Mindset">
+                    <span class="nav-icon" aria-hidden="true">
+                        <svg class="nav-svg nav-mindset" viewBox="0 0 24 24">
+                            <g class="bulb-rays" stroke-width="2">
+                                <line x1="12" y1="2" x2="12" y2="4" />
+                                <line x1="5" y1="5" x2="6.5" y2="6.5" />
+                                <line x1="19" y1="5" x2="17.5" y2="6.5" />
+                            </g>
+                            <path class="bulb-glass" d="M9 20 h6 v2 h-6 z M12 6 a 6 6 0 0 1 6 6 c 0 2.5 -2 3.5 -2 5 h -8 c 0 -1.5 -2 -2.5 -2 -5 a 6 6 0 0 1 6 -6" />
+                            <polyline class="bulb-filament" points="10 12 14 12 10 15 14 15" stroke-width="2" />
+                        </svg>
+                    </span>
+                    <span>Mindset</span>
+                </button>
                 <button class="nav-btn" data-view="insights" aria-label="Insights">
-                    <span class="nav-icon" aria-hidden="true">&#9733;</span>
+                    <span class="nav-icon" aria-hidden="true">
+                        <svg class="nav-svg nav-insights" viewBox="0 0 24 24">
+                            <path class="insight-line" d="M4 20 L10 14 L14 16 L20 10" stroke-width="3" stroke-linejoin="round" />
+                        </svg>
+                    </span>
                     <span>Insights</span>
                 </button>
                 <button class="nav-btn" data-view="settings" aria-label="Settings">
-                    <span class="nav-icon" aria-hidden="true">&#9881;</span>
+                    <span class="nav-icon" aria-hidden="true">
+                        <svg class="nav-svg nav-settings" viewBox="0 0 24 24">
+                            <line x1="4" y1="8" x2="20" y2="8" stroke-width="3" />
+                            <line x1="4" y1="16" x2="20" y2="16" stroke-width="3" />
+                            <rect class="setting-knob-1" x="14" y="6" width="4" height="4" />
+                            <rect class="setting-knob-2" x="6" y="14" width="4" height="4" />
+                        </svg>
+                    </span>
                     <span>Settings</span>
                 </button>
             </nav>
@@ -420,19 +496,126 @@
             <!-- Bottom Navigation -->
             <nav class="bottom-nav" role="navigation" aria-label="Main navigation">
                 <button class="nav-btn" data-view="dashboard" aria-label="Dashboard">
-                    <span class="nav-icon" aria-hidden="true">&#9632;</span>
+                    <span class="nav-icon" aria-hidden="true">
+                        <svg class="nav-svg nav-dashboard" viewBox="0 0 24 24">
+                            <rect class="dash-frame" x="3" y="3" width="18" height="18" stroke-width="3" />
+                            <g class="dash-cross">
+                                <line x1="12" y1="3" x2="12" y2="21" stroke-width="2" />
+                                <line x1="3" y1="12" x2="21" y2="12" stroke-width="2" />
+                            </g>
+                        </svg>
+                    </span>
                     <span>Dashboard</span>
                 </button>
                 <button class="nav-btn" data-view="today" aria-label="Today's habits">
-                    <span class="nav-icon" aria-hidden="true">&#10003;</span>
+                    <span class="nav-icon" aria-hidden="true">
+                        <svg class="nav-svg nav-today" viewBox="0 0 24 24">
+                            <circle class="today-ring" cx="12" cy="12" r="9" stroke-width="3" />
+                            <circle class="today-dot" cx="12" cy="12" r="2" />
+                        </svg>
+                    </span>
                     <span>Today</span>
                 </button>
+                <button class="nav-btn" data-view="mindset" aria-label="Mindset">
+                    <span class="nav-icon" aria-hidden="true">
+                        <svg class="nav-svg nav-mindset" viewBox="0 0 24 24">
+                            <g class="bulb-rays" stroke-width="2">
+                                <line x1="12" y1="2" x2="12" y2="4" />
+                                <line x1="5" y1="5" x2="6.5" y2="6.5" />
+                                <line x1="19" y1="5" x2="17.5" y2="6.5" />
+                            </g>
+                            <path class="bulb-glass" d="M9 20 h6 v2 h-6 z M12 6 a 6 6 0 0 1 6 6 c 0 2.5 -2 3.5 -2 5 h -8 c 0 -1.5 -2 -2.5 -2 -5 a 6 6 0 0 1 6 -6" />
+                            <polyline class="bulb-filament" points="10 12 14 12 10 15 14 15" stroke-width="2" />
+                        </svg>
+                    </span>
+                    <span>Mindset</span>
+                </button>
                 <button class="nav-btn active" data-view="insights" aria-label="Insights">
-                    <span class="nav-icon" aria-hidden="true">&#9733;</span>
+                    <span class="nav-icon" aria-hidden="true">
+                        <svg class="nav-svg nav-insights" viewBox="0 0 24 24">
+                            <path class="insight-line" d="M4 20 L10 14 L14 16 L20 10" stroke-width="3" stroke-linejoin="round" />
+                        </svg>
+                    </span>
                     <span>Insights</span>
                 </button>
                 <button class="nav-btn" data-view="settings" aria-label="Settings">
-                    <span class="nav-icon" aria-hidden="true">&#9881;</span>
+                    <span class="nav-icon" aria-hidden="true">
+                        <svg class="nav-svg nav-settings" viewBox="0 0 24 24">
+                            <line x1="4" y1="8" x2="20" y2="8" stroke-width="3" />
+                            <line x1="4" y1="16" x2="20" y2="16" stroke-width="3" />
+                            <rect class="setting-knob-1" x="14" y="6" width="4" height="4" />
+                            <rect class="setting-knob-2" x="6" y="14" width="4" height="4" />
+                        </svg>
+                    </span>
+                    <span>Settings</span>
+                </button>
+            </nav>
+        </div>
+
+        <!-- Mindset Screen -->
+        <div id="mindset-screen" class="screen">
+            <header class="app-header">
+                <h1>Mindset</h1>
+            </header>
+
+            <main class="mindset-content">
+                <div class="mindset-placeholder">Building</div>
+            </main>
+
+            <!-- Bottom Navigation -->
+            <nav class="bottom-nav" role="navigation" aria-label="Main navigation">
+                <button class="nav-btn" data-view="dashboard" aria-label="Dashboard">
+                    <span class="nav-icon" aria-hidden="true">
+                        <svg class="nav-svg nav-dashboard" viewBox="0 0 24 24">
+                            <rect class="dash-frame" x="3" y="3" width="18" height="18" stroke-width="3" />
+                            <g class="dash-cross">
+                                <line x1="12" y1="3" x2="12" y2="21" stroke-width="2" />
+                                <line x1="3" y1="12" x2="21" y2="12" stroke-width="2" />
+                            </g>
+                        </svg>
+                    </span>
+                    <span>Dashboard</span>
+                </button>
+                <button class="nav-btn" data-view="today" aria-label="Today's habits">
+                    <span class="nav-icon" aria-hidden="true">
+                        <svg class="nav-svg nav-today" viewBox="0 0 24 24">
+                            <circle class="today-ring" cx="12" cy="12" r="9" stroke-width="3" />
+                            <circle class="today-dot" cx="12" cy="12" r="2" />
+                        </svg>
+                    </span>
+                    <span>Today</span>
+                </button>
+                <button class="nav-btn active" data-view="mindset" aria-label="Mindset">
+                    <span class="nav-icon" aria-hidden="true">
+                        <svg class="nav-svg nav-mindset" viewBox="0 0 24 24">
+                            <g class="bulb-rays" stroke-width="2">
+                                <line x1="12" y1="2" x2="12" y2="4" />
+                                <line x1="5" y1="5" x2="6.5" y2="6.5" />
+                                <line x1="19" y1="5" x2="17.5" y2="6.5" />
+                            </g>
+                            <path class="bulb-glass" d="M9 20 h6 v2 h-6 z M12 6 a 6 6 0 0 1 6 6 c 0 2.5 -2 3.5 -2 5 h -8 c 0 -1.5 -2 -2.5 -2 -5 a 6 6 0 0 1 6 -6" />
+                            <polyline class="bulb-filament" points="10 12 14 12 10 15 14 15" stroke-width="2" />
+                        </svg>
+                    </span>
+                    <span>Mindset</span>
+                </button>
+                <button class="nav-btn" data-view="insights" aria-label="Insights">
+                    <span class="nav-icon" aria-hidden="true">
+                        <svg class="nav-svg nav-insights" viewBox="0 0 24 24">
+                            <path class="insight-line" d="M4 20 L10 14 L14 16 L20 10" stroke-width="3" stroke-linejoin="round" />
+                        </svg>
+                    </span>
+                    <span>Insights</span>
+                </button>
+                <button class="nav-btn" data-view="settings" aria-label="Settings">
+                    <span class="nav-icon" aria-hidden="true">
+                        <svg class="nav-svg nav-settings" viewBox="0 0 24 24">
+                            <line x1="4" y1="8" x2="20" y2="8" stroke-width="3" />
+                            <line x1="4" y1="16" x2="20" y2="16" stroke-width="3" />
+                            <rect class="setting-knob-1" x="14" y="6" width="4" height="4" />
+                            <rect class="setting-knob-2" x="6" y="14" width="4" height="4" />
+                        </svg>
+                    </span>
                     <span>Settings</span>
                 </button>
             </nav>
@@ -484,19 +667,57 @@
             <!-- Bottom Navigation -->
             <nav class="bottom-nav" role="navigation" aria-label="Main navigation">
                 <button class="nav-btn" data-view="dashboard" aria-label="Dashboard">
-                    <span class="nav-icon" aria-hidden="true">&#9632;</span>
+                    <span class="nav-icon" aria-hidden="true">
+                        <svg class="nav-svg nav-dashboard" viewBox="0 0 24 24">
+                            <rect class="dash-frame" x="3" y="3" width="18" height="18" stroke-width="3" />
+                            <g class="dash-cross">
+                                <line x1="12" y1="3" x2="12" y2="21" stroke-width="2" />
+                                <line x1="3" y1="12" x2="21" y2="12" stroke-width="2" />
+                            </g>
+                        </svg>
+                    </span>
                     <span>Dashboard</span>
                 </button>
                 <button class="nav-btn" data-view="today" aria-label="Today's habits">
-                    <span class="nav-icon" aria-hidden="true">&#10003;</span>
+                    <span class="nav-icon" aria-hidden="true">
+                        <svg class="nav-svg nav-today" viewBox="0 0 24 24">
+                            <circle class="today-ring" cx="12" cy="12" r="9" stroke-width="3" />
+                            <circle class="today-dot" cx="12" cy="12" r="2" />
+                        </svg>
+                    </span>
                     <span>Today</span>
                 </button>
+                <button class="nav-btn" data-view="mindset" aria-label="Mindset">
+                    <span class="nav-icon" aria-hidden="true">
+                        <svg class="nav-svg nav-mindset" viewBox="0 0 24 24">
+                            <g class="bulb-rays" stroke-width="2">
+                                <line x1="12" y1="2" x2="12" y2="4" />
+                                <line x1="5" y1="5" x2="6.5" y2="6.5" />
+                                <line x1="19" y1="5" x2="17.5" y2="6.5" />
+                            </g>
+                            <path class="bulb-glass" d="M9 20 h6 v2 h-6 z M12 6 a 6 6 0 0 1 6 6 c 0 2.5 -2 3.5 -2 5 h -8 c 0 -1.5 -2 -2.5 -2 -5 a 6 6 0 0 1 6 -6" />
+                            <polyline class="bulb-filament" points="10 12 14 12 10 15 14 15" stroke-width="2" />
+                        </svg>
+                    </span>
+                    <span>Mindset</span>
+                </button>
                 <button class="nav-btn" data-view="insights" aria-label="Insights">
-                    <span class="nav-icon" aria-hidden="true">&#9733;</span>
+                    <span class="nav-icon" aria-hidden="true">
+                        <svg class="nav-svg nav-insights" viewBox="0 0 24 24">
+                            <path class="insight-line" d="M4 20 L10 14 L14 16 L20 10" stroke-width="3" stroke-linejoin="round" />
+                        </svg>
+                    </span>
                     <span>Insights</span>
                 </button>
                 <button class="nav-btn active" data-view="settings" aria-label="Settings">
-                    <span class="nav-icon" aria-hidden="true">&#9881;</span>
+                    <span class="nav-icon" aria-hidden="true">
+                        <svg class="nav-svg nav-settings" viewBox="0 0 24 24">
+                            <line x1="4" y1="8" x2="20" y2="8" stroke-width="3" />
+                            <line x1="4" y1="16" x2="20" y2="16" stroke-width="3" />
+                            <rect class="setting-knob-1" x="14" y="6" width="4" height="4" />
+                            <rect class="setting-knob-2" x="6" y="14" width="4" height="4" />
+                        </svg>
+                    </span>
                     <span>Settings</span>
                 </button>
             </nav>

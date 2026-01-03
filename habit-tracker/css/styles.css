@@ -536,7 +536,7 @@ button, input, select {
 /* ===== Bottom Nav ===== */
 .bottom-nav {
     display: grid;
-    grid-template-columns: repeat(4, 1fr);
+    grid-template-columns: repeat(5, 1fr);
     border-top: var(--border-width) solid var(--border-color);
     height: var(--nav-height);
     background: var(--bg-primary);
@@ -576,7 +576,139 @@ button, input, select {
 }
 
 .nav-icon {
-    font-size: 1.4rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+}
+
+.nav-svg {
+    width: 26px;
+    height: 26px;
+    color: currentColor;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 3;
+    stroke-linecap: square;
+    stroke-linejoin: miter;
+}
+
+.today-dot,
+.setting-knob-1,
+.setting-knob-2 {
+    fill: currentColor;
+    stroke: none;
+}
+
+.bulb-glass {
+    fill: none;
+}
+
+/* Bottom nav icon animations */
+.dash-frame,
+.dash-cross {
+    transform-origin: center;
+    transform-box: fill-box;
+    transition: all 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.nav-btn.active .dash-cross {
+    transform: rotate(90deg) scale(1.1);
+    stroke-width: 3;
+}
+
+.today-dot {
+    transition: r 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.nav-btn.active .today-dot {
+    r: 5;
+}
+
+.insight-line {
+    transition: all 0.8s ease;
+}
+
+.nav-btn.active .insight-line {
+    d: path('M4 20 L10 10 L14 14 L20 4');
+}
+
+.setting-knob-1,
+.setting-knob-2 {
+    transition: transform 0.8s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+}
+
+.nav-btn.active .setting-knob-1 {
+    transform: translateX(-8px);
+}
+
+.nav-btn.active .setting-knob-2 {
+    transform: translateX(8px);
+}
+
+.bulb-glass {
+    transition: fill 0.8s ease;
+}
+
+.bulb-filament {
+    opacity: 1;
+    transition: opacity 0.8s ease;
+}
+
+.bulb-rays {
+    opacity: 0;
+    transform-origin: center;
+    transform-box: fill-box;
+    transform: scale(0.5);
+    transition: transform 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.8s ease;
+}
+
+.nav-btn.active .bulb-glass {
+    fill: currentColor;
+}
+
+.nav-btn.active .bulb-filament {
+    opacity: 0;
+}
+
+.nav-btn.active .bulb-rays {
+    opacity: 1;
+    transform: scale(1.2);
+}
+
+@keyframes nav-pulse {
+    0% {
+        transform: scale(1);
+    }
+    45% {
+        transform: scale(1.12);
+    }
+    100% {
+        transform: scale(1);
+    }
+}
+
+.nav-btn.pulse .nav-svg {
+    animation: nav-pulse 0.8s ease;
+}
+
+/* ===== Mindset ===== */
+.mindset-content {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: var(--spacing-lg);
+}
+
+.mindset-placeholder {
+    border: var(--border-width-thin) solid var(--border-color);
+    padding: var(--spacing-lg);
+    font-size: 1rem;
+    font-weight: 900;
+    text-transform: uppercase;
+    letter-spacing: 1px;
 }
 
 /* ===== Dashboard ===== */
