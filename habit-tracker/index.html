@@ -363,9 +363,21 @@
 
                 <!-- Daily Completion Chart -->
                 <section class="chart-section">
-                    <h2>Daily Completion Trend</h2>
+                    <h2>Daily habits completion trend</h2>
                     <div class="chart-container">
                         <canvas id="completion-chart"></canvas>
+                    </div>
+                </section>
+
+                <!-- Weekly Goals Completion Trend -->
+                <section class="chart-section" id="weekly-goal-trend-section">
+                    <h2>Weekly goals completion trend</h2>
+                    <div class="weekly-goal-filter" id="weekly-goal-filter"></div>
+                    <div class="chart-container" id="weekly-goal-chart-container">
+                        <canvas id="weekly-goal-trend-chart"></canvas>
+                    </div>
+                    <div class="no-insights hidden" id="weekly-goal-trend-empty">
+                        No weekly goals to display.
                     </div>
                 </section>
 

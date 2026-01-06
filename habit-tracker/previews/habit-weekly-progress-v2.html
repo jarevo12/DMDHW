@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Weekly Habit Progress Visualization - Version 2</title>
+    <!-- Using CDN for Chart.js to ensure it works when downloaded and viewed locally -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root {
+            --bg-primary: #000000;
+            --text-primary: #ffffff;
+            --text-secondary: #aaaaaa;
+            --accent-primary: #6a00ff; /* Electric Purple */
+            --accent-secondary: #ccff00; /* Acid Green */
+            --border-color: #ffffff;
+            --border-width: 4px;
+            --border-width-thin: 2px;
+            --font-mono: 'Courier New', Courier, monospace;
+            --font-sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            --spacing-md: 16px;
+            --spacing-lg: 24px;
+            --spacing-xl: 32px;
+        }
+
+        body {
+            font-family: var(--font-mono);
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            padding: var(--spacing-xl);
+        }
+
+        h1, h2 {
+            font-family: var(--font-sans);
+            font-weight: 900;
+            text-transform: uppercase;
+            letter-spacing: -1px;
+            line-height: 1;
+            border-bottom: var(--border-width) solid var(--border-color);
+            padding-bottom: var(--spacing-md);
+            margin-bottom: var(--spacing-lg);
+        }
+        
+        h1 {
+            font-size: 2.5rem;
+        }
+
+        h2 {
+            font-size: 1.5rem;
+            margin-top: var(--spacing-xl);
+            border-bottom-width: var(--border-width-thin);
+        }
+        
+        h2::before {
+            content: '// ';
+            color: var(--accent-primary);
+        }
+
+        .chart-container {
+            border: var(--border-width-thin) solid var(--border-color);
+            padding: var(--spacing-md);
+            margin-bottom: var(--spacing-xl);
+            background: #111;
+            height: 400px; /* Explicit height for Chart.js */
+            position: relative;
+        }
+        
+        .small-multiples-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: var(--spacing-lg);
+        }
+
+        .small-chart {
+            height: 250px; /* Specific height for small charts */
+        }
+        
+        .small-chart h3 {
+            font-family: var(--font-mono);
+            text-transform: uppercase;
+            font-size: 1rem;
+            margin-bottom: var(--spacing-md);
+            padding-bottom: var(--spacing-md);
+            border-bottom: var(--border-width-thin) solid var(--border-color);
+            height: 40px; /* Fixed header height */
+        }
+        
+        .small-chart canvas {
+            max-height: calc(100% - 60px); /* Canvas takes remaining height */
+        }
+
+        /* Heatmap Styles */
+        .heatmap-container {
+            display: grid;
+            gap: 8px;
+            grid-template-columns: 120px repeat(8, 1fr);
+            font-family: var(--font-mono);
+            text-transform: uppercase;
+            font-size: 0.75rem;
+            height: auto; /* Heatmap doesn't need fixed height */
+            overflow-x: auto;
+        }
+
+        .heatmap-header {
+            font-weight: 900;
+            text-align: center;
+        }
+        
+        .heatmap-label {
+            font-weight: 900;
+            text-align: right;
+            padding-right: 8px;
+        }
+        
+        .heatmap-cell {
+            aspect-ratio: 1;
+            border: var(--border-width-thin) solid transparent;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--bg-primary);
+            font-weight: 900;
+            font-size: 0.7rem;
+        }
+        .heatmap-cell.selected {
+             border-color: var(--text-primary);
+        }
+
+    </style>
+</head>
+<body>
+
+    <h1>Weekly Habit Progress (V2)</h1>
+
+    <!-- ======================= OPTION 1: MULTI-LINE CHART ======================= -->
+    <h2>Option 1: Multi-Line Chart</h2>
+    <div class="chart-container">
+        <canvas id="multiLineChart"></canvas>
+    </div>
+
+    <!-- ======================= OPTION 2: SMALL MULTIPLES ======================= -->
+    <h2>Option 2: Small Multiples (Trellis)</h2>
+    <div id="smallMultiplesGrid" class="small-multiples-grid">
+        <!-- Small charts will be generated here by JavaScript -->
+    </div>
+    
+    <!-- ======================= OPTION 3: HEATMAP ======================= -->
+    <h2>Option 3: Heatmap Grid</h2>
+    <div class="chart-container">
+        <div id="heatmap" class="heatmap-container">
+             <!-- Heatmap will be generated here by JavaScript -->
+        </div>
+    </div>
+
+
+    <script>
+        // ======================= MOCK DATA =======================
+        const weeklyHabitsData = {
+            "JOURNALING": [1.0, 1.0, 0.8, 0.6, 1.0, 0.4, 0.8, 1.0],
+            "READ BOOK": [0.5, 0.7, 0.7, 0.9, 0.8, 1.0, 1.0, 0.9],
+            "GYM (3x/wk)": [1.0, 0.33, 0.66, 0.33, 0.66, 1.0, 0.66, 1.0],
+            "NO SUGAR": [0.2, 0.4, 0.1, 0.0, 0.3, 0.5, 0.2, 0.1]
+        };
+        const weeks = Array.from({ length: 8 }, (_, i) => `WK ${i + 1}`);
+        const habitColors = {
+            "JOURNALING": 'rgba(106, 0, 255, 1)',      // Accent Purple
+            "READ BOOK": 'rgba(204, 255, 0, 1)',       // Accent Green
+            "GYM (3x/wk)": 'rgba(255, 255, 255, 1)',    // White
+            "NO SUGAR": 'rgba(255, 0, 0, 1)',          // Red
+        };
+
+        // ======================= CHART CONFIGS =======================
+        const globalChartOptions = {
+            maintainAspectRatio: false,
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    max: 1,
+                    ticks: { 
+                        color: '#aaaaaa',
+                        font: { family: "'Courier New', Courier, monospace" },
+                        callback: (value) => value * 100 + '%'
+                    },
+                    grid: { color: '#333' }
+                },
+                x: {
+                    ticks: { 
+                        color: '#aaaaaa', 
+                        font: { family: "'Courier New', Courier, monospace" } 
+                    },
+                    grid: { display: false }
+                }
+            },
+            plugins: {
+                legend: {
+                    labels: { 
+                        color: '#ffffff',
+                        font: { family: "'Courier New', Courier, monospace", weight: 'bold' }
+                    }
+                }
+            },
+            elements: {
+                line: {
+                    tension: 0.1,
+                    borderWidth: 2,
+                },
+                point: {
+                    radius: 3,
+                    borderWidth: 2,
+                }
+            }
+        };
+
+        // Check if Chart is defined
+        if (typeof Chart === 'undefined') {
+            console.error("Chart.js is not loaded!");
+            document.body.insertAdjacentHTML('afterbegin', '<div style="background:red; color:white; padding:10px; font-weight:bold;">ERROR: Chart.js could not be loaded. Charts will not render.</div>');
+        } else {
+            console.log("Chart.js loaded successfully.");
+        }
+
+        try {
+            // --- 1. Multi-Line Chart ---
+            const multiLineCanvas = document.getElementById('multiLineChart');
+            if (multiLineCanvas && typeof Chart !== 'undefined') {
+                const multiLineCtx = multiLineCanvas.getContext('2d');
+                new Chart(multiLineCtx, {
+                    type: 'line',
+                    data: {
+                        labels: weeks,
+                        datasets: Object.keys(weeklyHabitsData).map(habitName => ({
+                            label: habitName,
+                            data: weeklyHabitsData[habitName],
+                            borderColor: habitColors[habitName],
+                            backgroundColor: habitColors[habitName],
+                            pointBackgroundColor: '#111',
+                            pointBorderColor: habitColors[habitName],
+                            pointHoverRadius: 6,
+                            pointHoverBorderWidth: 3,
+                        }))
+                    },
+                    options: globalChartOptions
+                });
+            }
+        } catch (e) {
+            console.error("Error rendering Multi-Line Chart:", e);
+        }
+        
+        try {
+            // --- 2. Small Multiples ---
+            const smallMultiplesContainer = document.getElementById('smallMultiplesGrid');
+            if (smallMultiplesContainer && typeof Chart !== 'undefined') {
+                Object.keys(weeklyHabitsData).forEach(habitName => {
+                    const container = document.createElement('div');
+                    container.className = 'chart-container small-chart';
+                    
+                    const title = document.createElement('h3');
+                    title.innerText = habitName;
+                    
+                    const canvas = document.createElement('canvas');
+                    
+                    container.appendChild(title);
+                    container.appendChild(canvas);
+                    smallMultiplesContainer.appendChild(container);
+                    
+                    const smallChartCtx = canvas.getContext('2d');
+                    const smallChartOptions = JSON.parse(JSON.stringify(globalChartOptions)); // deep copy
+                    smallChartOptions.plugins.legend.display = false; // No legend for small charts
+
+                    new Chart(smallChartCtx, {
+                        type: 'line',
+                        data: {
+                            labels: weeks,
+                            datasets: [{
+                                label: habitName,
+                                data: weeklyHabitsData[habitName],
+                                borderColor: habitColors[habitName],
+                                backgroundColor: habitColors[habitName],
+                                pointBackgroundColor: '#111',
+                                pointBorderColor: habitColors[habitName],
+                            }]
+                        },
+                        options: smallChartOptions,
+                    });
+                });
+            }
+        } catch (e) {
+            console.error("Error rendering Small Multiples:", e);
+        }
+        
+        try {
+            // --- 3. Heatmap ---
+            const heatmapContainer = document.getElementById('heatmap');
+            if (heatmapContainer) {
+                // Remove fixed height from parent if it was set by generic class
+                heatmapContainer.parentElement.style.height = 'auto';
+
+                // Create header row
+                heatmapContainer.appendChild(document.createElement('div')); // Empty corner
+                weeks.forEach(week => {
+                    const headerCell = document.createElement('div');
+                    headerCell.className = 'heatmap-header';
+                    headerCell.innerText = week;
+                    heatmapContainer.appendChild(headerCell);
+                });
+
+                // Create data rows
+                Object.keys(weeklyHabitsData).forEach(habitName => {
+                    const labelCell = document.createElement('div');
+                    labelCell.className = 'heatmap-label';
+                    labelCell.innerText = habitName;
+                    heatmapContainer.appendChild(labelCell);
+
+                    weeklyHabitsData[habitName].forEach(rate => {
+                        const cell = document.createElement('div');
+                        cell.className = 'heatmap-cell';
+                        cell.innerText = Math.round(rate * 100);
+                        
+                        let bgColor;
+                        if (rate >= 1.0) {
+                            bgColor = '#ccff00'; // Accent Green (Success)
+                        } else if (rate > 0.66) {
+                            bgColor = '#ADDF00';
+                        } else if (rate > 0.33) {
+                            bgColor = '#8EB000';
+                        } else if (rate > 0) {
+                            bgColor = '#444';
+                        } else {
+                            bgColor = '#111';
+                            cell.innerText = '0';
+                            cell.style.color = '#555';
+                            cell.style.border = '2px solid #222'
+                        }
+                        cell.style.backgroundColor = bgColor;
+                        
+                        // Add a border to the cell with the highest value in the row
+                        if (rate === Math.max(...weeklyHabitsData[habitName])) {
+                            cell.classList.add('selected');
+                        }
+
+                        heatmapContainer.appendChild(cell);
+                    });
+                });
+            }
+        } catch (e) {
+            console.error("Error rendering Heatmap:", e);
+        }
+
+
+    </script>
+
+</body>
+</html>

@@ -2591,6 +2591,69 @@ button, input, select {
     color: var(--text-secondary);
 }
 
+/* Weekly Goals Trend */
+.weekly-goal-filter {
+    margin-bottom: var(--spacing-md);
+}
+
+.weekly-goal-dropdown {
+    position: relative;
+    display: inline-block;
+}
+
+.weekly-goal-dropdown .dropdown-toggle {
+    padding: 6px 10px;
+    border: 1px solid #333;
+    background: #000;
+    color: var(--text-secondary);
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    cursor: pointer;
+}
+
+.weekly-goal-dropdown .dropdown-panel {
+    position: absolute;
+    top: 110%;
+    left: 0;
+    min-width: 240px;
+    padding: 8px;
+    border: 1px solid #333;
+    background: #0a0a0a;
+    z-index: 5;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.weekly-goal-dropdown .dropdown-panel.hidden {
+    display: none;
+}
+
+.weekly-goal-dropdown .dropdown-action {
+    padding: 6px 8px;
+    border: 1px solid #333;
+    background: #000;
+    color: var(--text-secondary);
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    cursor: pointer;
+}
+
+.weekly-goal-dropdown .dropdown-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    color: var(--text-secondary);
+}
+
+.weekly-goal-dropdown .dropdown-item input {
+    accent-color: var(--accent-primary);
+}
+
 /* Data Notice */
 .data-notice {
     padding: var(--spacing-xl);

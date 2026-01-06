@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Weekly Goals Visualization Options</title>
+    <style>
+        :root {
+            --bg: #0a0a0a;
+            --panel: #111;
+            --text: #f4f4f4;
+            --muted: #8a8a8a;
+            --accent: #ccff00;
+            --accent-2: #6a00ff;
+            --border: #333;
+            --danger: #ff3b3b;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            padding: 24px;
+            background: var(--bg);
+            color: var(--text);
+            font-family: "SF Mono", "Consolas", "Monaco", monospace;
+            letter-spacing: 0.5px;
+        }
+
+        h1, h2, h3 {
+            text-transform: uppercase;
+            margin: 0 0 12px 0;
+        }
+
+        h1 {
+            font-size: 1.4rem;
+            border: 2px solid var(--text);
+            display: inline-block;
+            padding: 6px 10px;
+        }
+
+        h2 {
+            font-size: 1rem;
+        }
+
+        p {
+            margin: 6px 0 16px 0;
+            color: var(--muted);
+            font-size: 0.85rem;
+            line-height: 1.4;
+        }
+
+        .page {
+            display: grid;
+            gap: 24px;
+            max-width: 1100px;
+            margin: 0 auto;
+        }
+
+        .panel {
+            border: 1px solid var(--border);
+            padding: 16px;
+            background: var(--panel);
+        }
+
+        .legend {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+            font-size: 0.7rem;
+            color: var(--muted);
+        }
+
+        .legend-chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .legend-swatch {
+            width: 12px;
+            height: 12px;
+            border: 1px solid var(--border);
+        }
+
+        .legend-swatch.low { background: #222; }
+        .legend-swatch.mid { background: #555; }
+        .legend-swatch.high { background: var(--accent); border-color: var(--accent); }
+
+        .heatmap {
+            display: grid;
+            gap: 6px;
+        }
+
+        .heatmap-grid {
+            display: grid;
+            grid-template-columns: 140px repeat(6, 1fr);
+            gap: 6px;
+        }
+
+        .heatmap-header,
+        .heatmap-label {
+            font-size: 0.7rem;
+            color: var(--muted);
+            text-transform: uppercase;
+        }
+
+        .heatmap-cell {
+            height: 32px;
+            border: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.7rem;
+        }
+
+        .cell-0 { background: #1a1a1a; color: #777; }
+        .cell-50 { background: #404040; }
+        .cell-75 { background: #8aa400; color: #000; }
+        .cell-100 { background: var(--accent); color: #000; border-color: var(--accent); }
+
+        .small-multiples {
+            display: grid;
+            gap: 12px;
+        }
+
+        .spark-row {
+            display: grid;
+            grid-template-columns: 140px 1fr;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .spark-label {
+            font-size: 0.75rem;
+            color: var(--text);
+        }
+
+        .spark-bars {
+            display: grid;
+            grid-template-columns: repeat(6, 1fr);
+            gap: 6px;
+        }
+
+        .spark-bar {
+            height: 32px;
+            border: 1px solid var(--border);
+            position: relative;
+            background: #0f0f0f;
+        }
+
+        .spark-fill {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            background: var(--accent);
+        }
+
+        .spark-value {
+            position: absolute;
+            top: 4px;
+            right: 4px;
+            font-size: 0.6rem;
+            color: #000;
+            background: var(--accent);
+            padding: 1px 4px;
+        }
+
+        .weekly-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+            gap: 12px;
+        }
+
+        .week-card {
+            border: 1px solid var(--border);
+            padding: 10px;
+            background: #0f0f0f;
+        }
+
+        .week-title {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            margin-bottom: 8px;
+            color: var(--muted);
+        }
+
+        .week-bar {
+            height: 18px;
+            border: 1px solid var(--border);
+            position: relative;
+            margin-bottom: 6px;
+            overflow: hidden;
+        }
+
+        .week-bar-fill {
+            height: 100%;
+            background: var(--accent);
+        }
+
+        .week-bar-label {
+            font-size: 0.65rem;
+            color: var(--muted);
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .chip {
+            border: 1px solid var(--border);
+            padding: 2px 6px;
+            font-size: 0.65rem;
+            text-transform: uppercase;
+            background: #000;
+            color: var(--text);
+        }
+    </style>
+</head>
+<body>
+    <div class="page">
+        <header class="panel">
+            <h1>Weekly Goals Dashboard Concepts</h1>
+            <p>Three options for showing weekly-goal habit evolution across weeks. All use the same sample data for comparison.</p>
+        </header>
+
+        <section class="panel">
+            <h2>Option A — Heatmap Grid (Habits x Weeks)</h2>
+            <p>Fast pattern recognition. Good when there are many weekly-goal habits.</p>
+            <div class="legend">
+                <span class="legend-chip"><span class="legend-swatch low"></span>0%</span>
+                <span class="legend-chip"><span class="legend-swatch mid"></span>50%</span>
+                <span class="legend-chip"><span class="legend-swatch high"></span>100%</span>
+            </div>
+            <div class="heatmap">
+                <div class="heatmap-grid" id="heatmap-grid"></div>
+            </div>
+        </section>
+
+        <section class="panel">
+            <h2>Option B — Small Multiples (Mini Bars per Habit)</h2>
+            <p>Clear per-habit progress trend while keeping the list compact.</p>
+            <div class="small-multiples" id="small-multiples"></div>
+        </section>
+
+        <section class="panel">
+            <h2>Option C — Weekly Cards (Each Week Shows All Habits)</h2>
+            <p>Best for week-by-week review and coaching. Scales well up to ~5 habits.</p>
+            <div class="weekly-cards" id="weekly-cards"></div>
+        </section>
+    </div>
+
+    <script>
+        const weeks = ['W1', 'W2', 'W3', 'W4', 'W5', 'W6'];
+        const habits = [
+            { name: 'Study Deep Work', values: [100, 50, 100, 0, 100, 100] },
+            { name: 'Gym Sessions', values: [100, 100, 50, 50, 100, 0] },
+            { name: 'No-Sugar Days', values: [50, 100, 100, 50, 0, 100] },
+            { name: 'Outdoor Walks', values: [100, 100, 100, 100, 50, 50] }
+        ];
+
+        const heatmapGrid = document.getElementById('heatmap-grid');
+        if (heatmapGrid) {
+            heatmapGrid.innerHTML = [
+                '<span class="heatmap-header">Habit</span>',
+                ...weeks.map(week => `<span class="heatmap-header">${week}</span>`),
+                ...habits.flatMap(habit => [
+                    `<span class="heatmap-label">${habit.name}</span>`,
+                    ...habit.values.map(value => {
+                        const level = value >= 100 ? '100' : value >= 75 ? '75' : value >= 50 ? '50' : '0';
+                        return `<div class="heatmap-cell cell-${level}">${value}%</div>`;
+                    })
+                ])
+            ].join('');
+        }
+
+        const multiples = document.getElementById('small-multiples');
+        if (multiples) {
+            multiples.innerHTML = habits.map(habit => `
+                <div class="spark-row">
+                    <div class="spark-label">${habit.name}</div>
+                    <div class="spark-bars">
+                        ${habit.values.map(value => `
+                            <div class="spark-bar">
+                                <div class="spark-fill" style="height:${value}%;"></div>
+                                <div class="spark-value">${value}%</div>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        const cards = document.getElementById('weekly-cards');
+        if (cards) {
+            cards.innerHTML = weeks.map((week, weekIndex) => `
+                <div class="week-card">
+                    <div class="week-title">${week} Summary</div>
+                    ${habits.map(habit => `
+                        <div class="week-bar">
+                            <div class="week-bar-fill" style="width:${habit.values[weekIndex]}%;"></div>
+                        </div>
+                        <div class="week-bar-label">
+                            <span>${habit.name}</span>
+                            <span class="chip">${habit.values[weekIndex]}%</span>
+                        </div>
+                    `).join('')}
+                </div>
+            `).join('');
+        }
+    </script>
+</body>
+</html>

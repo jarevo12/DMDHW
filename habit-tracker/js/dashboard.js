@@ -9,6 +9,15 @@ import { getScheduledHabitsForDate, isHabitScheduledForDate } from './schedule.j
 
 // Global chart instance
 let completionChartInstance = null;
+let weeklyGoalTrendChartInstance = null;
+const weeklyGoalSelections = {
+    morning: new Set(),
+    evening: new Set()
+};
+let lastDashboardEntriesMap = null;
+let lastDashboardLastDay = null;
+let lastDashboardYear = null;
+let lastDashboardMonth = null;
 
 /**
  * Render the dashboard with stats and charts
@@ -94,6 +103,10 @@ export async function updateDashboardData(year, month) {
     entriesSnapshot.forEach(doc => {
         entriesMap[doc.id] = doc.data();
     });
+    lastDashboardEntriesMap = entriesMap;
+    lastDashboardLastDay = lastDay;
+    lastDashboardYear = year;
+    lastDashboardMonth = month;
 
     const todayDate = new Date();
 
@@ -110,6 +123,7 @@ export async function updateDashboardData(year, month) {
 
     // Render completion chart
     renderCompletionChart(year, month, lastDay, chartStartDay, entriesMap, currentType);
+    renderWeeklyGoalTrend(year, month, lastDay, entriesMap, currentType);
 
     // Calculate overall completion rate (active type only)
     let totalCompleted = 0;
@@ -209,8 +223,14 @@ function renderDashboardHabitStrength(currentType, dailyHabitStreaks, weeklyHabi
     const weeklyContainer = document.getElementById('strength-list-weekly');
     if (!dailyContainer && !weeklyContainer) return;
 
+    const todayString = formatDate(new Date());
     const allHabits = [...habits.morning, ...habits.evening];
-    const dailyHabits = allHabits.filter(habit => habit.schedule?.type !== 'weekly_goal');
+    const dailyHabits = allHabits.filter(habit => {
+        if (habit.schedule?.type === 'weekly_goal') return false;
+        if (habit.schedule?.type !== 'interval') return true;
+        const startDate = habit.schedule?.intervalStartDate;
+        return !startDate || startDate <= todayString;
+    });
     const weeklyHabits = allHabits.filter(habit => habit.schedule?.type === 'weekly_goal');
 
     if (allHabits.length === 0) {
@@ -841,4 +861,245 @@ function renderCompletionChart(year, month, lastDay, startDay, entriesMap, curre
             }
         }
     });
+}
+
+function renderWeeklyGoalTrend(year, month, lastDay, entriesMap, currentType) {
+    const section = document.getElementById('weekly-goal-trend-section');
+    const filterEl = document.getElementById('weekly-goal-filter');
+    const canvas = document.getElementById('weekly-goal-trend-chart');
+    const emptyEl = document.getElementById('weekly-goal-trend-empty');
+    const chartContainer = document.getElementById('weekly-goal-chart-container');
+    if (!section || !filterEl || !canvas || !emptyEl || !chartContainer) return;
+
+    const weeklyHabits = habits[currentType].filter(habit => habit.schedule?.type === 'weekly_goal');
+    if (weeklyHabits.length === 0) {
+        if (weeklyGoalTrendChartInstance) {
+            weeklyGoalTrendChartInstance.destroy();
+            weeklyGoalTrendChartInstance = null;
+        }
+        filterEl.innerHTML = '';
+        chartContainer.classList.add('hidden');
+        emptyEl.classList.remove('hidden');
+        return;
+    }
+
+    const selection = weeklyGoalSelections[currentType] || new Set();
+    if (selection.size === 0) {
+        weeklyHabits.forEach(habit => selection.add(habit.id));
+    } else {
+        const validIds = new Set(weeklyHabits.map(h => h.id));
+        Array.from(selection).forEach(id => {
+            if (!validIds.has(id)) selection.delete(id);
+        });
+    }
+    weeklyGoalSelections[currentType] = selection;
+
+    renderWeeklyGoalFilter(filterEl, weeklyHabits, selection, currentType);
+
+    const weekRanges = buildMonthlyWeekRanges(year, month, lastDay);
+    const labels = weekRanges.map((range, index) => `WK ${index + 1}`);
+    const palette = ['#6a00ff', '#ccff00', '#ffffff', '#ff3b3b', '#00e5ff', '#ffa600'];
+
+    const datasets = weeklyHabits
+        .filter(habit => selection.has(habit.id))
+        .map((habit, index) => {
+            const goalValue = habit.schedule?.timesPerWeek;
+            const goal = Number.isFinite(goalValue) && goalValue > 0 ? goalValue : 1;
+            const data = weekRanges.map(range => {
+                if (!range) return null;
+                const doneCount = countHabitCompletions(entriesMap, habit, range.start, range.end);
+                return Math.round((Math.min(doneCount, goal) / goal) * 100);
+            });
+            const color = palette[index % palette.length];
+            return {
+                label: `${habit.name} (${goal}x/wk)`,
+                data,
+                borderColor: color,
+                backgroundColor: color,
+                pointBackgroundColor: '#111',
+                pointBorderColor: color,
+                pointHoverRadius: 6,
+                pointHoverBorderWidth: 3,
+                borderWidth: 2,
+                tension: 0.1,
+                spanGaps: true
+            };
+        });
+
+    if (weeklyGoalTrendChartInstance) {
+        weeklyGoalTrendChartInstance.destroy();
+        weeklyGoalTrendChartInstance = null;
+    }
+
+    if (datasets.length === 0) {
+        chartContainer.classList.add('hidden');
+        emptyEl.classList.remove('hidden');
+        return;
+    }
+
+    chartContainer.classList.remove('hidden');
+    emptyEl.classList.add('hidden');
+
+    const ctx = canvas.getContext('2d');
+    weeklyGoalTrendChartInstance = new Chart(ctx, {
+        type: 'line',
+        data: { labels, datasets },
+        options: {
+            maintainAspectRatio: false,
+            scales: {
+                y: {
+                    min: 0,
+                    max: 100,
+                    grace: '5%',
+                    afterBuildTicks: (scale) => {
+                        scale.ticks = [0, 20, 40, 60, 80, 100].map(value => ({ value }));
+                    },
+                    grid: {
+                        color: '#333333',
+                        drawBorder: false,
+                        tickColor: '#ffffff'
+                    },
+                    ticks: {
+                        color: '#ffffff',
+                        font: {
+                            family: 'Courier New',
+                            size: 10,
+                            weight: 'bold'
+                        },
+                        stepSize: 20,
+                        callback: (value) => value + '%'
+                    }
+                },
+                x: {
+                    grid: {
+                        display: false
+                    },
+                    ticks: {
+                        color: '#ffffff',
+                        font: {
+                            family: 'Courier New',
+                            size: 10,
+                            weight: 'bold'
+                        }
+                    }
+                }
+            },
+            plugins: {
+                legend: {
+                    labels: {
+                        color: '#ffffff',
+                        font: { family: "'Courier New', Courier, monospace", weight: 'bold' }
+                    }
+                },
+                tooltip: {
+                    backgroundColor: '#000000',
+                    titleColor: '#ffffff',
+                    bodyColor: '#ffffff',
+                    borderColor: '#ffffff',
+                    borderWidth: 2,
+                    padding: 12,
+                    cornerRadius: 0,
+                    displayColors: true,
+                    titleFont: {
+                        family: 'Courier New'
+                    },
+                    bodyFont: {
+                        family: 'Courier New'
+                    },
+                    callbacks: {
+                        label: (context) => {
+                            const value = context.parsed?.y;
+                            const percent = Number.isFinite(value) ? Math.round(value) : 0;
+                            return `${context.dataset.label}: ${percent}%`;
+                        }
+                    }
+                }
+            },
+            elements: {
+                line: { borderWidth: 2 },
+                point: { radius: 3, borderWidth: 2 }
+            }
+        }
+    });
+}
+
+function renderWeeklyGoalFilter(container, weeklyHabits, selection, currentType) {
+    container.dataset.type = currentType;
+    container.innerHTML = `
+        <div class="weekly-goal-dropdown">
+            <button type="button" class="dropdown-toggle" data-action="toggle">
+                Filter weekly goals
+            </button>
+            <div class="dropdown-panel hidden" data-role="panel">
+                <button type="button" class="dropdown-action" data-action="all">Select all</button>
+                ${weeklyHabits.map(habit => {
+                    const goalValue = habit.schedule?.timesPerWeek;
+                    const goal = Number.isFinite(goalValue) && goalValue > 0 ? goalValue : 1;
+                    const checked = selection.has(habit.id) ? 'checked' : '';
+                    return `
+                        <label class="dropdown-item">
+                            <input type="checkbox" data-id="${habit.id}" ${checked}>
+                            <span>${habit.name} (${goal}x/wk)</span>
+                        </label>
+                    `;
+                }).join('')}
+            </div>
+        </div>
+    `;
+
+    if (!container.dataset.bound) {
+        container.addEventListener('click', (event) => {
+            const target = event.target;
+            if (!(target instanceof HTMLElement)) return;
+            const panel = container.querySelector('[data-role="panel"]');
+            if (target.dataset.action === 'toggle' && panel) {
+                panel.classList.toggle('hidden');
+                return;
+            }
+            if (target.dataset.action === 'all') {
+                const type = container.dataset.type || 'morning';
+                const selections = weeklyGoalSelections[type] || new Set();
+                const habitIds = Array.from(container.querySelectorAll('input[type="checkbox"]'))
+                    .map(input => input.dataset.id)
+                    .filter(Boolean);
+                selections.clear();
+                habitIds.forEach(id => selections.add(id));
+                weeklyGoalSelections[type] = selections;
+                renderWeeklyGoalTrend(lastDashboardYear, lastDashboardMonth, lastDashboardLastDay, lastDashboardEntriesMap, type);
+            }
+        });
+        container.addEventListener('change', (event) => {
+            const target = event.target;
+            if (!(target instanceof HTMLInputElement)) return;
+            const habitId = target.dataset.id;
+            if (!habitId) return;
+            const type = container.dataset.type || 'morning';
+            const selections = weeklyGoalSelections[type] || new Set();
+            if (target.checked) {
+                selections.add(habitId);
+            } else {
+                selections.delete(habitId);
+            }
+            weeklyGoalSelections[type] = selections;
+            renderWeeklyGoalTrend(lastDashboardYear, lastDashboardMonth, lastDashboardLastDay, lastDashboardEntriesMap, type);
+        });
+        container.dataset.bound = 'true';
+    }
+}
+
+function buildMonthlyWeekRanges(year, month, lastDay) {
+    const ranges = [];
+    for (let i = 0; i < 4; i++) {
+        const startDay = i * 7 + 1;
+        const endDay = Math.min(startDay + 6, lastDay);
+        if (startDay > lastDay) {
+            ranges.push(null);
+        } else {
+            ranges.push({
+                start: new Date(year, month, startDay),
+                end: new Date(year, month, endDay, 23, 59, 59, 999)
+            });
+        }
+    }
+    return ranges;
 }
