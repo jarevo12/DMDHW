@@ -32,7 +32,7 @@ import { getScheduleLabel } from './schedule.js';
 // UI
 import { showScreen, updateLoadingStatus, showError } from './ui/screens.js';
 import { updateProgress, updateDateDisplay } from './ui/progress.js';
-import { renderHabits, updateHabitCheckmarks } from './ui/habits-ui.js';
+import { renderHabits, renderWeeklyGoalsSection, updateHabitCheckmarks } from './ui/habits-ui.js';
 import { renderEditableHabits, setOpenHabitModalCallback, setOpenDeleteModalCallback } from './ui/settings-ui.js';
 
 // Complex features
@@ -150,7 +150,7 @@ setHabitsChangeCallback((newHabits) => {
 
 // Set up entry change callback
 setEntryChangeCallback((entry) => {
-    renderHabits();
+    renderWeeklyGoalsSection();
     updateHabitCheckmarks();
     updateProgress();
     // Invalidate insights cache when entries change

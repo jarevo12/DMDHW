@@ -378,7 +378,13 @@ export function renderTrendChart(trendData) {
  * Render the habit strength progress bars
  */
 export function renderHabitStrength(strengthData, habitMap, options = {}) {
-    const { containerId = 'strength-list', filterType = null, streaksById = {} } = options;
+    const {
+        containerId = 'strength-list',
+        filterType = null,
+        streaksById = {},
+        showStreaks = true,
+        streakUnit = 'days'
+    } = options;
     const container = document.getElementById(containerId);
     if (!container) return;
 
@@ -424,26 +430,29 @@ export function renderHabitStrength(strengthData, habitMap, options = {}) {
         const habitStreaks = streaksById[habitId] || {};
         const currentStreak = Number.isFinite(habitStreaks.currentStreak) ? habitStreaks.currentStreak : 0;
         const bestStreak = Number.isFinite(habitStreaks.bestStreak) ? habitStreaks.bestStreak : 0;
+        const streaksHtml = showStreaks ? `
+            <div class="strength-streaks">
+                <span class="streak-badge" title="Current streak">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"></path>
+                    </svg>
+                    ${currentStreak} ${streakUnit}
+                </span>
+                <span class="streak-badge best" title="Best streak">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+                    </svg>
+                    ${bestStreak} ${streakUnit}
+                </span>
+            </div>
+        ` : '';
 
         item.innerHTML = `
             <div class="strength-header">
                 <span class="strength-name">${index + 1}. ${escapeHtml(habit.name)}</span>
                 <span class="strength-status ${habit.status}">${habit.status.toUpperCase()}</span>
             </div>
-            <div class="strength-streaks">
-                <span class="streak-badge" title="Current streak">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"></path>
-                    </svg>
-                    ${currentStreak} days
-                </span>
-                <span class="streak-badge best" title="Best streak">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                        <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
-                    </svg>
-                    ${bestStreak} days
-                </span>
-            </div>
+            ${streaksHtml}
             <div class="strength-bar-container">
                 <div class="strength-bar">
                     <div class="strength-fill ${habit.status}" style="width: ${habit.strength}%"></div>

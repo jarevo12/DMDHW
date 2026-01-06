@@ -26,11 +26,33 @@ export function isHabitScheduledForDate(habit, dateString) {
             return true;
 
         case 'interval':
-            const startDate = new Date((schedule.intervalStartDate || dateString) + 'T00:00:00');
-            const diffTime = date - startDate;
-            const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
             const interval = schedule.intervalDays || 1;
-            return diffDays >= 0 && diffDays % interval === 0;
+            const skipDays = schedule.intervalSkipDays || [];
+            if (skipDays.length >= 7) return false;
+
+            const startDateValue = schedule.intervalStartDate || dateString;
+            const startDate = new Date(startDateValue + 'T00:00:00');
+            if (Number.isNaN(startDate.getTime())) return false;
+
+            let effectiveStart = new Date(startDate);
+            while (skipDays.includes(effectiveStart.getDay())) {
+                effectiveStart.setDate(effectiveStart.getDate() + 1);
+            }
+
+            if (date < effectiveStart) return false;
+            if (skipDays.includes(dayOfWeek)) return false;
+
+            let eligibleDays = 0;
+            const cursor = new Date(effectiveStart);
+            while (cursor <= date) {
+                if (!skipDays.includes(cursor.getDay())) {
+                    eligibleDays++;
+                }
+                cursor.setDate(cursor.getDate() + 1);
+            }
+
+            if (eligibleDays === 0) return false;
+            return (eligibleDays - 1) % interval === 0;
 
         default:
             return true;
@@ -87,7 +109,13 @@ export function getScheduleLabel(schedule) {
         case 'weekly_goal':
             return `${schedule.timesPerWeek}x/week`;
         case 'interval':
-            return `Every ${schedule.intervalDays} days`;
+            const intervalDays = schedule.intervalDays || 1;
+            const intervalStart = schedule.intervalStartDate;
+            const skip = schedule.intervalSkipDays || [];
+            const skipLabel = skip.length
+                ? `, skip ${skip.map(d => DAY_NAMES[d].substring(0, 3)).join('/')}`
+                : '';
+            return `Every ${intervalDays} days${intervalStart ? ` from ${intervalStart}` : ''}${skipLabel}`;
         default:
             return 'Daily';
     }

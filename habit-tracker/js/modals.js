@@ -179,6 +179,8 @@ export function renderScheduleOptions(schedule) {
 
         case 'interval':
             const intervalDays = schedule.intervalDays || 2;
+            const intervalStartDate = schedule.intervalStartDate || formatDate(new Date());
+            const skipDays = schedule.intervalSkipDays || [];
             container.innerHTML = `
                 <div class="interval-input">
                     <div class="interval-row">
@@ -186,8 +188,45 @@ export function renderScheduleOptions(schedule) {
                         <input type="number" id="interval-days" min="2" max="30" value="${intervalDays}">
                         <span>days</span>
                     </div>
+                    <div class="interval-row">
+                        <span>Start date</span>
+                        <button type="button" class="btn btn-secondary interval-date-btn" id="interval-start-date-btn">Pick date</button>
+                        <span class="interval-date-value" id="interval-start-date-label">${intervalStartDate}</span>
+                        <input type="hidden" id="interval-start-date" value="${intervalStartDate}">
+                    </div>
+                    <div id="interval-calendar" class="interval-calendar hidden">
+                        <div class="interval-calendar-header">
+                            <button type="button" class="btn-icon interval-cal-prev" aria-label="Previous month">
+                                <span>&#8249;</span>
+                            </button>
+                            <span class="interval-calendar-label" id="interval-calendar-label"></span>
+                            <button type="button" class="btn-icon interval-cal-next" aria-label="Next month">
+                                <span>&#8250;</span>
+                            </button>
+                        </div>
+                        <div class="interval-calendar-weekdays">
+                            ${DAY_NAMES.map(name => `<span>${name.substring(0, 2)}</span>`).join('')}
+                        </div>
+                        <div class="interval-calendar-grid" id="interval-calendar-grid"></div>
+                    </div>
+                    <div class="interval-row">
+                        <span>Skip days</span>
+                        <div class="day-selector interval-skip-days">
+                            ${DAY_NAMES.map((name, i) => `
+                                <button class="day-chip ${skipDays.includes(i) ? 'selected' : ''}" data-day="${i}">
+                                    ${name.substring(0, 3)}
+                                </button>
+                            `).join('')}
+                        </div>
+                    </div>
                 </div>
             `;
+            container.querySelectorAll('.interval-skip-days .day-chip').forEach(chip => {
+                chip.addEventListener('click', () => {
+                    chip.classList.toggle('selected');
+                });
+            });
+            setupIntervalCalendar(intervalStartDate);
             break;
     }
 }
@@ -215,7 +254,9 @@ export function getScheduleFromModal() {
 
         case 'interval':
             schedule.intervalDays = parseInt(document.getElementById('interval-days').value) || 2;
-            schedule.intervalStartDate = formatDate(new Date());
+            schedule.intervalStartDate = document.getElementById('interval-start-date')?.value || formatDate(new Date());
+            schedule.intervalSkipDays = Array.from(document.querySelectorAll('.interval-skip-days .day-chip.selected'))
+                .map(chip => parseInt(chip.dataset.day));
             break;
     }
 
@@ -234,4 +275,81 @@ export function saveScheduleFromModal() {
     if (callback) {
         callback(schedule);
     }
+}
+
+function setupIntervalCalendar(initialDate) {
+    const calendarEl = document.getElementById('interval-calendar');
+    const gridEl = document.getElementById('interval-calendar-grid');
+    const labelEl = document.getElementById('interval-calendar-label');
+    const prevBtn = document.querySelector('.interval-cal-prev');
+    const nextBtn = document.querySelector('.interval-cal-next');
+    const toggleBtn = document.getElementById('interval-start-date-btn');
+    const valueInput = document.getElementById('interval-start-date');
+    const valueLabel = document.getElementById('interval-start-date-label');
+    if (!calendarEl || !gridEl || !labelEl || !prevBtn || !nextBtn || !toggleBtn || !valueInput || !valueLabel) {
+        return;
+    }
+
+    let selectedDate = initialDate || formatDate(new Date());
+    let current = new Date(selectedDate + 'T00:00:00');
+    if (Number.isNaN(current.getTime())) {
+        current = new Date();
+        selectedDate = formatDate(current);
+    }
+
+    const renderCalendar = () => {
+        const year = current.getFullYear();
+        const month = current.getMonth();
+        const monthStart = new Date(year, month, 1);
+        const monthEnd = new Date(year, month + 1, 0);
+        const startDay = monthStart.getDay();
+        labelEl.textContent = monthStart.toLocaleDateString('en-US', {
+            month: 'long',
+            year: 'numeric'
+        });
+
+        const cells = [];
+        for (let i = 0; i < startDay; i++) {
+            cells.push('<span class="interval-calendar-cell empty"></span>');
+        }
+        for (let day = 1; day <= monthEnd.getDate(); day++) {
+            const dateString = formatDate(new Date(year, month, day));
+            const isSelected = dateString === selectedDate;
+            cells.push(`
+                <button type="button" class="interval-calendar-day${isSelected ? ' selected' : ''}" data-date="${dateString}">
+                    ${day}
+                </button>
+            `);
+        }
+        gridEl.innerHTML = cells.join('');
+
+        gridEl.querySelectorAll('.interval-calendar-day').forEach(btn => {
+            btn.addEventListener('click', () => {
+                selectedDate = btn.dataset.date;
+                valueInput.value = selectedDate;
+                valueLabel.textContent = selectedDate;
+                calendarEl.classList.add('hidden');
+                renderCalendar();
+            });
+        });
+    };
+
+    toggleBtn.addEventListener('click', () => {
+        calendarEl.classList.toggle('hidden');
+        renderCalendar();
+    });
+
+    prevBtn.addEventListener('click', () => {
+        current.setMonth(current.getMonth() - 1);
+        renderCalendar();
+    });
+
+    nextBtn.addEventListener('click', () => {
+        current.setMonth(current.getMonth() + 1);
+        renderCalendar();
+    });
+
+    valueInput.value = selectedDate;
+    valueLabel.textContent = selectedDate;
+    renderCalendar();
 }

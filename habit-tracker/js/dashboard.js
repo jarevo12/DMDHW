@@ -100,49 +100,13 @@ export async function updateDashboardData(year, month) {
     // Calculate habit streaks for current type
     const currentType = document.querySelector('.dash-tab.active')?.dataset.type || 'morning';
     const typeHabits = habits[currentType];
+    const dailyHabits = typeHabits.filter(habit => habit.schedule?.type !== 'weekly_goal');
+    const weeklyHabits = typeHabits.filter(habit => habit.schedule?.type === 'weekly_goal');
 
-    const habitStreaks = {};
-    typeHabits.forEach(habit => {
-        // Calculate current streak for this habit
-        let currentHabitStreak = 0;
-        for (let i = 0; i <= 365; i++) {
-            const checkDate = new Date(todayDate);
-            checkDate.setDate(checkDate.getDate() - i);
-            const dateString = formatDate(checkDate);
-            const entry = entriesMap[dateString];
+    const dailyHabitStreaks = buildDailyHabitStreaks(dailyHabits, entriesMap, currentType, todayDate);
+    const weeklyHabitStreaks = buildWeeklyGoalStreaks(weeklyHabits, entriesMap, year, month, lastDay);
 
-            if (entry && entry[currentType]?.includes(habit.id)) {
-                currentHabitStreak++;
-            } else {
-                if (i === 0) continue; // Today not logged yet
-                break;
-            }
-        }
-
-        // Calculate best streak for this habit
-        let bestHabitStreak = 0;
-        let tempHabitStreak = 0;
-        for (let i = 0; i < 365; i++) {
-            const checkDate = new Date(todayDate);
-            checkDate.setDate(checkDate.getDate() - i);
-            const dateString = formatDate(checkDate);
-            const entry = entriesMap[dateString];
-
-            if (entry && entry[currentType]?.includes(habit.id)) {
-                tempHabitStreak++;
-                bestHabitStreak = Math.max(bestHabitStreak, tempHabitStreak);
-            } else {
-                tempHabitStreak = 0;
-            }
-        }
-
-        habitStreaks[habit.id] = {
-            currentStreak: currentHabitStreak,
-            bestStreak: bestHabitStreak
-        };
-    });
-
-    renderDashboardHabitStrength(currentType, habitStreaks, entriesMap, year, month, lastDay);
+    renderDashboardHabitStrength(currentType, dailyHabitStreaks, weeklyHabitStreaks, entriesMap, year, month, lastDay);
 
     // Render completion chart
     renderCompletionChart(year, month, lastDay, chartStartDay, entriesMap, currentType);
@@ -183,17 +147,25 @@ export async function updateDashboardData(year, month) {
         const startDate = new Date(year, month, 1);
         const endDate = new Date(year, month, lastDay);
 
-        const isTypeComplete = (dateObj) => {
+        const getTypeCompletion = (dateObj) => {
             const dateString = formatDate(dateObj);
             const entry = entriesMap[dateString];
+            const scheduled = getScheduledHabitsForDate(habits, dateString)[currentType]
+                .filter(habit => habit.schedule?.type !== 'weekly_goal');
+            if (scheduled.length === 0) return null;
             if (!entry) return false;
-            return typeHabits.every(h => entry[currentType]?.includes(h.id));
+            return scheduled.every(h => entry[currentType]?.includes(h.id));
         };
 
         // Current streak: count backward from end of selected month
         const cursor = new Date(endDate);
         while (cursor >= startDate) {
-            if (isTypeComplete(cursor)) {
+            const completion = getTypeCompletion(cursor);
+            if (completion === null) {
+                cursor.setDate(cursor.getDate() - 1);
+                continue;
+            }
+            if (completion) {
                 currentStreak++;
             } else {
                 break;
@@ -205,7 +177,12 @@ export async function updateDashboardData(year, month) {
         let tempStreak = 0;
         const dayIter = new Date(startDate);
         while (dayIter <= endDate) {
-            if (isTypeComplete(dayIter)) {
+            const completion = getTypeCompletion(dayIter);
+            if (completion === null) {
+                dayIter.setDate(dayIter.getDate() + 1);
+                continue;
+            }
+            if (completion) {
                 tempStreak++;
                 bestStreak = Math.max(bestStreak, tempStreak);
             } else {
@@ -227,13 +204,18 @@ export async function updateDashboardData(year, month) {
     renderWeekdayPatterns(entriesMap);
 }
 
-function renderDashboardHabitStrength(currentType, habitStreaks, entriesMap, year, month, lastDay) {
-    const container = document.getElementById('strength-list');
-    if (!container) return;
+function renderDashboardHabitStrength(currentType, dailyHabitStreaks, weeklyHabitStreaks, entriesMap, year, month, lastDay) {
+    const dailyContainer = document.getElementById('strength-list-daily');
+    const weeklyContainer = document.getElementById('strength-list-weekly');
+    if (!dailyContainer && !weeklyContainer) return;
 
     const allHabits = [...habits.morning, ...habits.evening];
+    const dailyHabits = allHabits.filter(habit => habit.schedule?.type !== 'weekly_goal');
+    const weeklyHabits = allHabits.filter(habit => habit.schedule?.type === 'weekly_goal');
+
     if (allHabits.length === 0) {
-        container.innerHTML = '<div class="no-insights">No habits to display.</div>';
+        if (dailyContainer) dailyContainer.innerHTML = '<div class="no-insights">No habits to display.</div>';
+        if (weeklyContainer) weeklyContainer.innerHTML = '<div class="no-insights">No habits to display.</div>';
         return;
     }
 
@@ -241,21 +223,44 @@ function renderDashboardHabitStrength(currentType, habitStreaks, entriesMap, yea
         map[habit.id] = {
             id: habit.id,
             name: habit.name,
-            type: habit.type
+            type: habit.type,
+            order: habit.order ?? 0
         };
         return map;
     }, {});
 
-    const { strengthData, entryCount } = buildMonthlyHabitStrength(entriesMap, allHabits, year, month, lastDay);
-    if (entryCount === 0) {
-        container.innerHTML = '<div class="no-insights">No habit data logged for this month yet.</div>';
-        return;
+    const { strengthData: dailyStrengthData, entryCount } = buildMonthlyHabitStrength(entriesMap, dailyHabits, year, month, lastDay);
+    const { strengthData: weeklyStrengthData, weekCount } = buildMonthlyWeeklyGoalStrength(entriesMap, weeklyHabits, year, month, lastDay);
+
+    if (dailyContainer) {
+        if (dailyHabits.length === 0) {
+            dailyContainer.innerHTML = '<div class="no-insights">No daily habits to display.</div>';
+        } else if (entryCount === 0) {
+            dailyContainer.innerHTML = '<div class="no-insights">No habit data logged for this month yet.</div>';
+        } else {
+            renderHabitStrength(dailyStrengthData, habitMap, {
+                containerId: 'strength-list-daily',
+                filterType: currentType,
+                streaksById: dailyHabitStreaks,
+                streakUnit: 'days'
+            });
+        }
     }
-    renderHabitStrength(strengthData, habitMap, {
-        containerId: 'strength-list',
-        filterType: currentType,
-        streaksById: habitStreaks
-    });
+
+    if (weeklyContainer) {
+        if (weeklyHabits.length === 0) {
+            weeklyContainer.innerHTML = '<div class="no-insights">No weekly goals habits to display.</div>';
+        } else if (weekCount === 0) {
+            weeklyContainer.innerHTML = '<div class="no-insights">No full weeks to analyze yet.</div>';
+        } else {
+            renderHabitStrength(weeklyStrengthData, habitMap, {
+                containerId: 'strength-list-weekly',
+                filterType: currentType,
+                streaksById: weeklyHabitStreaks,
+                streakUnit: 'weeks'
+            });
+        }
+    }
 }
 
 function buildMonthlyHabitStrength(entriesMap, allHabits, year, month, lastDay) {
@@ -292,6 +297,172 @@ function buildMonthlyHabitStrength(entriesMap, allHabits, year, month, lastDay) 
     });
 
     return { strengthData, entryCount: monthEntries.length };
+}
+
+function buildMonthlyWeeklyGoalStrength(entriesMap, weeklyHabits, year, month, lastDay) {
+    const startDate = new Date(year, month, 1);
+    const endDate = new Date(year, month, lastDay, 23, 59, 59, 999);
+    const includePartialWeek = isSameDay(endDate, new Date());
+    const weekRanges = getWeekRangesForPeriod(startDate, endDate, { includePartialWeek });
+
+    const strengthData = weeklyHabits.map(habit => {
+        const goalValue = habit.schedule?.timesPerWeek;
+        const goal = Number.isFinite(goalValue) && goalValue > 0 ? goalValue : 3;
+        const completions = weekRanges.map(weekRange => {
+            const doneCount = countHabitCompletions(entriesMap, habit, weekRange.start, weekRange.end);
+            return doneCount >= goal ? 1 : 0;
+        });
+
+        const { strength, status } = calculateHabitStrength(completions);
+
+        return {
+            habitId: habit.id,
+            name: habit.name,
+            strength,
+            status
+        };
+    });
+
+    return { strengthData, weekCount: weekRanges.length };
+}
+
+function buildDailyHabitStreaks(habitsList, entriesMap, currentType, todayDate) {
+    const streaks = {};
+    habitsList.forEach(habit => {
+        let currentHabitStreak = 0;
+        for (let i = 0; i <= 365; i++) {
+            const checkDate = new Date(todayDate);
+            checkDate.setDate(checkDate.getDate() - i);
+            const dateString = formatDate(checkDate);
+
+            if (!isHabitScheduledForDate(habit, dateString)) {
+                continue;
+            }
+
+            const entry = entriesMap[dateString];
+            if (entry && entry[currentType]?.includes(habit.id)) {
+                currentHabitStreak++;
+            } else {
+                if (i === 0) continue;
+                break;
+            }
+        }
+
+        let bestHabitStreak = 0;
+        let tempHabitStreak = 0;
+        for (let i = 0; i < 365; i++) {
+            const checkDate = new Date(todayDate);
+            checkDate.setDate(checkDate.getDate() - i);
+            const dateString = formatDate(checkDate);
+
+            if (!isHabitScheduledForDate(habit, dateString)) {
+                continue;
+            }
+
+            const entry = entriesMap[dateString];
+            if (entry && entry[currentType]?.includes(habit.id)) {
+                tempHabitStreak++;
+                bestHabitStreak = Math.max(bestHabitStreak, tempHabitStreak);
+            } else {
+                tempHabitStreak = 0;
+            }
+        }
+
+        streaks[habit.id] = {
+            currentStreak: currentHabitStreak,
+            bestStreak: bestHabitStreak
+        };
+    });
+
+    return streaks;
+}
+
+function buildWeeklyGoalStreaks(weeklyHabits, entriesMap, year, month, lastDay) {
+    const startDate = new Date(year, month, 1);
+    const endDate = new Date(year, month, lastDay, 23, 59, 59, 999);
+    const includePartialWeek = isSameDay(endDate, new Date());
+    const weekRanges = getWeekRangesForPeriod(startDate, endDate, { includePartialWeek });
+    const streaks = {};
+
+    weeklyHabits.forEach(habit => {
+        const goalValue = habit.schedule?.timesPerWeek;
+        const goal = Number.isFinite(goalValue) && goalValue > 0 ? goalValue : 3;
+        const completions = weekRanges.map(weekRange => {
+            const doneCount = countHabitCompletions(entriesMap, habit, weekRange.start, weekRange.end);
+            return doneCount >= goal;
+        });
+
+        let currentStreak = 0;
+        for (let i = completions.length - 1; i >= 0; i--) {
+            if (completions[i]) {
+                currentStreak++;
+            } else {
+                break;
+            }
+        }
+
+        let bestStreak = 0;
+        let tempStreak = 0;
+        completions.forEach(completed => {
+            if (completed) {
+                tempStreak++;
+                bestStreak = Math.max(bestStreak, tempStreak);
+            } else {
+                tempStreak = 0;
+            }
+        });
+
+        streaks[habit.id] = { currentStreak, bestStreak };
+    });
+
+    return streaks;
+}
+
+function getWeekRangesForPeriod(startDate, endDate, options = {}) {
+    const { includePartialWeek = false } = options;
+    const ranges = [];
+    const cursor = getWeekStart(startDate);
+
+    while (cursor <= endDate) {
+        const weekStart = new Date(cursor);
+        const weekEnd = new Date(weekStart);
+        weekEnd.setDate(weekEnd.getDate() + 6);
+        weekEnd.setHours(23, 59, 59, 999);
+
+        if (weekEnd <= endDate || includePartialWeek) {
+            ranges.push({ start: weekStart, end: weekEnd });
+        }
+
+        cursor.setDate(cursor.getDate() + 7);
+    }
+
+    return ranges;
+}
+
+function getWeekStart(date) {
+    const start = new Date(date);
+    const day = start.getDay();
+    const diff = (day + 6) % 7;
+    start.setDate(start.getDate() - diff);
+    start.setHours(0, 0, 0, 0);
+    return start;
+}
+
+function countHabitCompletions(entriesMap, habit, startDate, endDate) {
+    let doneCount = 0;
+    const cursor = new Date(startDate);
+    while (cursor <= endDate) {
+        const entry = entriesMap[formatDate(cursor)];
+        if (entry && entry[habit.type]?.includes(habit.id)) {
+            doneCount++;
+        }
+        cursor.setDate(cursor.getDate() + 1);
+    }
+    return doneCount;
+}
+
+function isSameDay(a, b) {
+    return formatDate(a) === formatDate(b);
 }
 
 function calculateHabitStrength(completions) {

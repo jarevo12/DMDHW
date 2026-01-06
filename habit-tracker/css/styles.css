@@ -1374,6 +1374,105 @@ button, input, select {
     border-color: var(--accent-primary);
 }
 
+.interval-input {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-md);
+}
+
+.interval-row {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+    flex-wrap: wrap;
+}
+
+.interval-row label {
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--text-secondary);
+}
+
+.interval-row input[type="number"],
+.interval-row input[type="date"] {
+    background: #000;
+    color: #fff;
+    border: 1px solid #333;
+    padding: 6px 8px;
+    font-family: var(--font-mono);
+    font-size: 0.8rem;
+}
+
+.interval-date-btn {
+    padding: 6px 10px;
+}
+
+.interval-date-value {
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+    font-family: var(--font-mono);
+}
+
+.interval-calendar {
+    border: 1px solid #333;
+    padding: var(--spacing-sm);
+    background: #0a0a0a;
+}
+
+.interval-calendar.hidden {
+    display: none;
+}
+
+.interval-calendar-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: var(--spacing-sm);
+}
+
+.interval-calendar-label {
+    font-size: 0.8rem;
+    font-weight: 700;
+    text-transform: uppercase;
+}
+
+.interval-calendar-weekdays {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 4px;
+    font-size: 0.65rem;
+    text-transform: uppercase;
+    color: var(--text-secondary);
+    margin-bottom: 4px;
+}
+
+.interval-calendar-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 4px;
+}
+
+.interval-calendar-cell.empty {
+    height: 28px;
+}
+
+.interval-calendar-day {
+    height: 28px;
+    border: 1px solid #333;
+    background: #000;
+    color: var(--text-primary);
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    cursor: pointer;
+}
+
+.interval-calendar-day.selected {
+    background: var(--accent-primary);
+    color: var(--bg-primary);
+    border-color: var(--accent-primary);
+}
+
 /* ===== Onboarding ===== */
 #onboarding-screen {
     background: var(--bg-primary);
@@ -2361,6 +2460,22 @@ button, input, select {
 }
 
 /* Habit Strength */
+.strength-section {
+    margin-top: var(--spacing-md);
+}
+
+.strength-section:first-of-type {
+    margin-top: 0;
+}
+
+.strength-subtitle {
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--text-secondary);
+    margin-bottom: var(--spacing-sm);
+}
+
 .strength-list {
     display: flex;
     flex-direction: column;

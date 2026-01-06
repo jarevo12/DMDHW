@@ -53,19 +53,23 @@ export function renderHabits() {
         morning: unscheduled.morning.filter(h => h.schedule?.type !== 'weekly_goal'),
         evening: unscheduled.evening.filter(h => h.schedule?.type !== 'weekly_goal')
     };
+    // Render scheduled habits
+    renderHabitList('morning-habits', dailyScheduled.morning, 'morning');
+    renderHabitList('evening-habits', dailyScheduled.evening, 'evening');
+    renderWeeklyGoalsSection();
+
+    // Render Not Today section
+    renderNotTodaySection(dailyUnscheduled, currentTab);
+}
+
+export function renderWeeklyGoalsSection() {
     const weeklyGoals = {
         morning: habits.morning.filter(h => h.schedule?.type === 'weekly_goal'),
         evening: habits.evening.filter(h => h.schedule?.type === 'weekly_goal')
     };
 
-    // Render scheduled habits
-    renderHabitList('morning-habits', dailyScheduled.morning, 'morning');
-    renderHabitList('evening-habits', dailyScheduled.evening, 'evening');
     renderWeeklyGoals('morning-weekly-habits', weeklyGoals.morning, 'morning');
     renderWeeklyGoals('evening-weekly-habits', weeklyGoals.evening, 'evening');
-
-    // Render Not Today section
-    renderNotTodaySection(dailyUnscheduled, currentTab);
 }
 
 /**

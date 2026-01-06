@@ -108,7 +108,13 @@ function renderHabitCard(habit) {
         else if (days.length === 2 && days.includes(0) && days.includes(6)) scheduleChip = 'Weekends';
         else scheduleChip = days.map(d => DAY_SHORTS[d]).join('/');
     }
-    else if (s.type === 'interval') scheduleChip = `Every ${s.intervalDays}d`;
+    else if (s.type === 'interval') {
+        const intervalDays = s.intervalDays || 1;
+        const startLabel = s.intervalStartDate ? ` from ${s.intervalStartDate}` : '';
+        const skip = s.intervalSkipDays || [];
+        const skipLabel = skip.length ? `, skip ${skip.map(d => DAY_SHORTS[d]).join('/')}` : '';
+        scheduleChip = `Every ${intervalDays}d${startLabel}${skipLabel}`;
+    }
 
     return `
         <div class="habit-card" draggable="true" data-id="${habit.id}" data-type="${habit.routineType}">
