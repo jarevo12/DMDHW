@@ -2,7 +2,7 @@
 // Functions for rendering the analytics dashboard
 
 import { getDb, collection, getDocs } from './firebase-init.js';
-import { habits, currentUser, dashboardMonth, setDashboardMonth } from './state.js';
+import { habits, currentUser, dashboardMonth, setDashboardMonth, accountCreatedAt } from './state.js';
 import { formatDate } from './utils.js';
 import { renderHabitStrength, renderWeekdayPattern } from './ui/insights-ui.js';
 import { getScheduledHabitsForDate, isHabitScheduledForDate } from './schedule.js';
@@ -19,14 +19,24 @@ export async function renderDashboard() {
     const baseMonth = now.getMonth();
     const year = dashboardMonth.year;
     const month = dashboardMonth.month;
+    const baseMonthDate = new Date(baseYear, baseMonth, 1);
+    const creationDate = accountCreatedAt ? new Date(accountCreatedAt) : null;
+    const creationMonthDate = creationDate && !Number.isNaN(creationDate.getTime())
+        ? new Date(creationDate.getFullYear(), creationDate.getMonth(), 1)
+        : null;
+    const earliestMonthDate = creationMonthDate && creationMonthDate <= baseMonthDate
+        ? creationMonthDate
+        : null;
 
     // Populate month selector
     const monthSelector = document.getElementById('month-selector');
     if (monthSelector) {
         monthSelector.innerHTML = '';
         let selectedFound = false;
-        for (let i = 0; i < 12; i++) {
-            const d = new Date(baseYear, baseMonth - i, 1);
+        let monthsAdded = 0;
+        let cursor = new Date(baseYear, baseMonth, 1);
+        while (true) {
+            const d = new Date(cursor);
             const option = document.createElement('option');
             option.value = `${d.getFullYear()}-${d.getMonth()}`;
             option.textContent = d.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
@@ -35,6 +45,16 @@ export async function renderDashboard() {
                 selectedFound = true;
             }
             monthSelector.appendChild(option);
+            monthsAdded++;
+            if (earliestMonthDate) {
+                if (d.getFullYear() === earliestMonthDate.getFullYear()
+                    && d.getMonth() === earliestMonthDate.getMonth()) {
+                    break;
+                }
+            } else if (monthsAdded >= 12) {
+                break;
+            }
+            cursor.setMonth(cursor.getMonth() - 1);
         }
         if (!selectedFound) {
             monthSelector.value = `${baseYear}-${baseMonth}`;
@@ -58,6 +78,13 @@ export async function updateDashboardData(year, month) {
     const lastDay = (year === today.getFullYear() && month === today.getMonth())
         ? today.getDate()
         : endDate.getDate();
+    const creationDate = accountCreatedAt ? new Date(accountCreatedAt) : null;
+    const chartStartDay = creationDate
+        && !Number.isNaN(creationDate.getTime())
+        && creationDate.getFullYear() === year
+        && creationDate.getMonth() === month
+        ? creationDate.getDate()
+        : 1;
 
     // Fetch all entries for the month
     const entriesRef = collection(db, `users/${currentUser.uid}/entries`);
@@ -118,15 +145,16 @@ export async function updateDashboardData(year, month) {
     renderDashboardHabitStrength(currentType, habitStreaks, entriesMap, year, month, lastDay);
 
     // Render completion chart
-    renderCompletionChart(year, month, lastDay, entriesMap, currentType);
+    renderCompletionChart(year, month, lastDay, chartStartDay, entriesMap, currentType);
 
     // Calculate overall completion rate (active type only)
     let totalCompleted = 0;
     let totalPossible = 0;
     const typeHabitsCount = typeHabits.length;
 
+    const overallStartDay = chartStartDay;
     if (typeHabitsCount > 0) {
-        for (let day = 1; day <= lastDay; day++) {
+        for (let day = overallStartDay; day <= lastDay; day++) {
             const dateString = formatDate(new Date(year, month, day));
             const entry = entriesMap[dateString];
             const scheduled = getScheduledHabitsForDate(habits, dateString)[currentType];
@@ -371,7 +399,7 @@ function renderWeekdayPatterns(entriesMap) {
     renderWeekdayPattern({ rates });
 }
 
-function renderCompletionChart(year, month, lastDay, entriesMap, currentType) {
+function renderCompletionChart(year, month, lastDay, startDay, entriesMap, currentType) {
     const canvas = document.getElementById('completion-chart');
     if (!canvas) return;
 
@@ -395,11 +423,21 @@ function renderCompletionChart(year, month, lastDay, entriesMap, currentType) {
         return;
     }
 
+    const safeStartDay = Math.min(Math.max(startDay, 1), lastDay);
+    if (safeStartDay > lastDay) {
+        if (completionChartInstance) {
+            completionChartInstance.destroy();
+            completionChartInstance = null;
+        }
+        return;
+    }
+
     // Calculate completion percentage for each day (selected type only)
-    for (let day = 1; day <= lastDay; day++) {
+    for (let day = safeStartDay; day <= lastDay; day++) {
         const dateString = formatDate(new Date(year, month, day));
         const entry = entriesMap[dateString];
-        const scheduled = getScheduledHabitsForDate(habits, dateString)[currentType];
+        const scheduled = getScheduledHabitsForDate(habits, dateString)[currentType]
+            .filter(habit => habit.schedule?.type !== 'weekly_goal');
         const scheduledCount = scheduled.length;
 
         labels.push(day);

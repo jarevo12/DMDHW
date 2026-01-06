@@ -375,6 +375,23 @@ button, input, select {
     border-radius: 0;
 }
 
+.calendar-day-btn.before-account {
+    background: repeating-linear-gradient(
+        135deg,
+        rgba(160, 160, 160, 0.25) 0,
+        rgba(160, 160, 160, 0.25) 1px,
+        transparent 1px,
+        transparent 6px
+    );
+    color: #666;
+    border-color: #444;
+    cursor: not-allowed;
+}
+
+.calendar-day-btn.before-account:disabled {
+    opacity: 1;
+}
+
 .calendar-day-btn:disabled {
     opacity: 0.2;
     border-color: #222;
@@ -533,6 +550,24 @@ button, input, select {
     padding: 0;
 }
 
+.habit-section {
+    border-bottom: var(--border-width) solid var(--border-color);
+}
+
+.habit-section:last-child {
+    border-bottom: none;
+}
+
+.section-header {
+    padding: var(--spacing-sm) var(--spacing-md);
+    font-size: 0.75rem;
+    font-weight: 900;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--text-secondary);
+    border-bottom: var(--border-width-thin) solid var(--border-color);
+}
+
 .habit-list {
     display: none;
     flex-direction: column;
@@ -540,6 +575,32 @@ button, input, select {
 
 .habit-list.active {
     display: flex;
+}
+
+.weekly-habit-list {
+    display: none;
+    flex-direction: column;
+    gap: var(--spacing-sm);
+    padding: var(--spacing-sm) 0 var(--spacing-md);
+}
+
+.weekly-habit-list.active {
+    display: flex;
+}
+
+.weekly-goal-item {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding: 0 var(--spacing-md);
+}
+
+.weekly-goal-empty {
+    padding: var(--spacing-md);
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    font-weight: 700;
 }
 
 .habit-item {
@@ -553,6 +614,14 @@ button, input, select {
     transition: all 0.2s ease;
     position: relative;
     overflow: hidden;
+}
+
+.habit-item.future-locked {
+    cursor: not-allowed;
+}
+
+.habit-item.future-denied {
+    animation: future-denied 0.35s ease;
 }
 
 .habit-item:active {
@@ -654,6 +723,21 @@ button, input, select {
     color: #6a00ff;
 }
 
+@keyframes future-denied {
+    0% {
+        transform: translateX(0);
+    }
+    35% {
+        transform: translateX(-2px);
+    }
+    70% {
+        transform: translateX(2px);
+    }
+    100% {
+        transform: translateX(0);
+    }
+}
+
 /* Not Today Section */
 .not-today-section {
     border-top: var(--border-width) solid var(--border-color);
@@ -691,6 +775,9 @@ button, input, select {
 .progress-section {
     padding: var(--spacing-md);
     border-top: var(--border-width) solid var(--border-color);
+    --progress-complete-color: #ccff00;
+    --progress-glow: rgba(204, 255, 0, 0.35);
+    --progress-neutral: #444;
 }
 
 .progress-bar {
@@ -698,13 +785,89 @@ button, input, select {
     border: 2px solid var(--border-color);
     margin-bottom: var(--spacing-xs);
     position: relative;
+    transform-origin: center;
 }
 
 .progress-fill {
     height: 100%;
     background: var(--accent-success);
     width: 0%;
-    transition: width 0.2s steps(4);
+    transition: width 0.2s steps(4), background-color 0.2s ease;
+}
+
+.progress-section.progress-evening,
+.weekly-progress.progress-evening {
+    --progress-complete-color: #6a00ff;
+    --progress-glow: rgba(106, 0, 255, 0.35);
+}
+
+.progress-section.progress-empty .progress-fill,
+.progress-section.progress-partial .progress-fill,
+.weekly-progress.progress-empty .progress-fill,
+.weekly-progress.progress-partial .progress-fill {
+    background: var(--progress-neutral);
+}
+
+.progress-section.progress-complete .progress-fill,
+.weekly-progress.progress-complete .progress-fill {
+    background: var(--progress-complete-color);
+}
+
+.progress-section.progress-reward .progress-fill,
+.weekly-progress.progress-reward .progress-fill {
+    animation: progress-reward 0.6s ease;
+}
+
+.progress-section.progress-reward .progress-bar {
+    animation: progress-shake 0.45s ease;
+}
+
+.weekly-progress.progress-reward .progress-bar {
+    animation: progress-shake 0.45s ease;
+}
+
+.weekly-progress {
+    --progress-complete-color: #ccff00;
+    --progress-glow: rgba(204, 255, 0, 0.35);
+    --progress-neutral: #444;
+}
+
+.weekly-progress .progress-bar {
+    height: 14px;
+}
+
+.weekly-progress .progress-text {
+    font-size: 0.7rem;
+}
+
+@keyframes progress-reward {
+    0% {
+        box-shadow: inset 0 0 0 rgba(0, 0, 0, 0), 0 0 0 rgba(0, 0, 0, 0);
+        transform: scaleY(1);
+    }
+    45% {
+        box-shadow: inset 0 0 8px rgba(255, 255, 255, 0.15), 0 0 10px var(--progress-glow);
+        transform: scaleY(1.08);
+    }
+    100% {
+        box-shadow: inset 0 0 0 rgba(0, 0, 0, 0), 0 0 0 rgba(0, 0, 0, 0);
+        transform: scaleY(1);
+    }
+}
+
+@keyframes progress-shake {
+    0% {
+        transform: translateX(0) scaleY(1);
+    }
+    30% {
+        transform: translateX(-1px) scaleY(1.15);
+    }
+    60% {
+        transform: translateX(1px) scaleY(1.1);
+    }
+    100% {
+        transform: translateX(0) scaleY(1);
+    }
 }
 
 .progress-text {

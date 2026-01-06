@@ -7,7 +7,8 @@ import { initializeFirebase, getDb, getAuthInstance, serverTimestamp } from './f
 // State management
 import {
     currentDate, currentTab, calendarState, settingsFilter, settingsSearch,
-    setCurrentDate, setCurrentTab, setCalendarState, setSettingsFilter, setSettingsSearch
+    setCurrentDate, setCurrentTab, setCalendarState, setSettingsFilter, setSettingsSearch,
+    setAccountCreatedAt, accountCreatedAt
 } from './state.js';
 
 // Auth
@@ -90,6 +91,20 @@ async function handleAuthStateChange(user) {
 
         // Check if user has completed onboarding
         const profile = await getUserProfile();
+        const rawCreatedAt = profile?.createdAt;
+        let createdAtDate = null;
+        if (rawCreatedAt?.toDate) {
+            createdAtDate = rawCreatedAt.toDate();
+        } else if (rawCreatedAt) {
+            createdAtDate = new Date(rawCreatedAt);
+        } else if (user?.metadata?.creationTime) {
+            createdAtDate = new Date(user.metadata.creationTime);
+        }
+        if (createdAtDate && !Number.isNaN(createdAtDate.getTime())) {
+            setAccountCreatedAt(createdAtDate);
+        } else {
+            setAccountCreatedAt(null);
+        }
 
         if (!profile || !profile.onboardingCompleted) {
             // New user - show onboarding
@@ -119,6 +134,7 @@ async function handleAuthStateChange(user) {
 
     } else {
         console.log('No user signed in');
+        setAccountCreatedAt(null);
         showScreen('auth');
     }
 }
@@ -134,6 +150,7 @@ setHabitsChangeCallback((newHabits) => {
 
 // Set up entry change callback
 setEntryChangeCallback((entry) => {
+    renderHabits();
     updateHabitCheckmarks();
     updateProgress();
     // Invalidate insights cache when entries change
@@ -397,8 +414,17 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Previous Day
     document.getElementById('prev-date').addEventListener('click', () => {
+        const creationDate = accountCreatedAt ? new Date(accountCreatedAt) : null;
+        const creationString = creationDate ? formatDate(creationDate) : null;
+        const currentString = formatDate(currentDate);
+        if (creationString && currentString === creationString) {
+            return;
+        }
         const newDate = new Date(currentDate);
         newDate.setDate(newDate.getDate() - 1);
+        if (creationString && formatDate(newDate) < creationString) {
+            return;
+        }
         setCurrentDate(newDate);
         updateDateDisplay();
         renderHabits();
@@ -407,17 +433,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Next Day
     document.getElementById('next-date').addEventListener('click', () => {
-        const today = new Date();
-        const isToday = formatDate(currentDate) === formatDate(today);
-
-        if (!isToday) {
-            const newDate = new Date(currentDate);
-            newDate.setDate(newDate.getDate() + 1);
-            setCurrentDate(newDate);
-            updateDateDisplay();
-            renderHabits();
-            subscribeToEntry();
-        }
+        const newDate = new Date(currentDate);
+        newDate.setDate(newDate.getDate() + 1);
+        setCurrentDate(newDate);
+        updateDateDisplay();
+        renderHabits();
+        subscribeToEntry();
     });
 
     // Calendar month navigation
@@ -435,6 +456,8 @@ document.addEventListener('DOMContentLoaded', () => {
             });
             document.getElementById('morning-habits').classList.toggle('active', currentTab === 'morning');
             document.getElementById('evening-habits').classList.toggle('active', currentTab === 'evening');
+            document.getElementById('morning-weekly-habits').classList.toggle('active', currentTab === 'morning');
+            document.getElementById('evening-weekly-habits').classList.toggle('active', currentTab === 'evening');
             renderHabits();
             updateProgress();
         });

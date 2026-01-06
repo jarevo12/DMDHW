@@ -8,6 +8,7 @@ export let auth = null;
 
 // User state
 export let currentUser = null;
+export let accountCreatedAt = null;
 
 // Habits state
 export let habits = { morning: [], evening: [] };
@@ -59,6 +60,10 @@ export function setFirebaseInstances(appInstance, dbInstance, authInstance) {
 
 export function setCurrentUser(user) {
     currentUser = user;
+}
+
+export function setAccountCreatedAt(createdAt) {
+    accountCreatedAt = createdAt;
 }
 
 export function setHabits(newHabits) {

@@ -1,10 +1,42 @@
 // ========== HABITS UI ==========
 // Functions for rendering the habits list in the main view
 
-import { habits, currentDate, currentEntry, currentTab } from '../state.js';
+import { habits, currentDate, currentEntry, currentTab, currentUser } from '../state.js';
 import { formatDate, escapeHtml } from '../utils.js';
 import { getScheduledHabitsForDate, getUnscheduledHabitsForDate, getScheduleLabel } from '../schedule.js';
 import { toggleHabit } from '../entries.js';
+import { getDb, collection, getDocs, query, where } from '../firebase-init.js';
+
+const weeklyRewardState = new Map();
+
+function getWeekRange(date) {
+    const start = new Date(date);
+    const day = start.getDay();
+    const diff = (day + 6) % 7;
+    start.setDate(start.getDate() - diff);
+    start.setHours(0, 0, 0, 0);
+    const end = new Date(start);
+    end.setDate(start.getDate() + 6);
+    return { start, end };
+}
+
+async function fetchWeekEntriesMap(startDate, endDate) {
+    const db = getDb();
+    const entriesRef = collection(db, `users/${currentUser.uid}/entries`);
+    const startString = formatDate(startDate);
+    const endString = formatDate(endDate);
+    const entriesQuery = query(
+        entriesRef,
+        where('date', '>=', startString),
+        where('date', '<=', endString)
+    );
+    const entriesSnapshot = await getDocs(entriesQuery);
+    const entriesMap = {};
+    entriesSnapshot.forEach(doc => {
+        entriesMap[doc.id] = doc.data();
+    });
+    return entriesMap;
+}
 
 /**
  * Render all habits for the current date
@@ -13,13 +45,27 @@ export function renderHabits() {
     const dateString = formatDate(currentDate);
     const scheduled = getScheduledHabitsForDate(habits, dateString);
     const unscheduled = getUnscheduledHabitsForDate(habits, dateString);
+    const dailyScheduled = {
+        morning: scheduled.morning.filter(h => h.schedule?.type !== 'weekly_goal'),
+        evening: scheduled.evening.filter(h => h.schedule?.type !== 'weekly_goal')
+    };
+    const dailyUnscheduled = {
+        morning: unscheduled.morning.filter(h => h.schedule?.type !== 'weekly_goal'),
+        evening: unscheduled.evening.filter(h => h.schedule?.type !== 'weekly_goal')
+    };
+    const weeklyGoals = {
+        morning: habits.morning.filter(h => h.schedule?.type === 'weekly_goal'),
+        evening: habits.evening.filter(h => h.schedule?.type === 'weekly_goal')
+    };
 
     // Render scheduled habits
-    renderHabitList('morning-habits', scheduled.morning, 'morning');
-    renderHabitList('evening-habits', scheduled.evening, 'evening');
+    renderHabitList('morning-habits', dailyScheduled.morning, 'morning');
+    renderHabitList('evening-habits', dailyScheduled.evening, 'evening');
+    renderWeeklyGoals('morning-weekly-habits', weeklyGoals.morning, 'morning');
+    renderWeeklyGoals('evening-weekly-habits', weeklyGoals.evening, 'evening');
 
     // Render Not Today section
-    renderNotTodaySection(unscheduled, currentTab);
+    renderNotTodaySection(dailyUnscheduled, currentTab);
 }
 
 /**
@@ -31,6 +77,7 @@ export function renderHabits() {
 function renderHabitList(containerId, habitList, type) {
     const container = document.getElementById(containerId);
     if (!container) return;
+    const isFutureDate = formatDate(currentDate) > formatDate(new Date());
 
     if (habitList.length === 0) {
         container.innerHTML = `
@@ -42,8 +89,9 @@ function renderHabitList(containerId, habitList, type) {
         return;
     }
 
+    const futureClass = isFutureDate ? ' future-locked' : '';
     container.innerHTML = habitList.map((habit, index) => `
-        <div class="habit-item opt-d ${type === 'morning' ? 'opt-d-morning' : 'opt-d-evening'}" data-id="${habit.id}" data-type="${type}">
+        <div class="habit-item opt-d ${type === 'morning' ? 'opt-d-morning' : 'opt-d-evening'}${futureClass}" data-id="${habit.id}" data-type="${type}">
             <div class="fill-layer"></div>
             <div class="habit-icon"></div>
             <div class="habit-text">
@@ -56,12 +104,113 @@ function renderHabitList(containerId, habitList, type) {
     // Add click handlers
     container.querySelectorAll('.habit-item').forEach(item => {
         item.addEventListener('click', async () => {
+            if (isFutureDate) {
+                item.classList.remove('future-denied');
+                void item.offsetWidth;
+                item.classList.add('future-denied');
+                return;
+            }
             const habitId = item.dataset.id;
             const habitType = item.dataset.type;
             item.classList.add('completing');
             await toggleHabit(habitId, habitType);
             setTimeout(() => item.classList.remove('completing'), 300);
         });
+    });
+
+    updateHabitCheckmarks();
+}
+
+async function renderWeeklyGoals(containerId, habitList, type) {
+    const container = document.getElementById(containerId);
+    if (!container) return;
+    const isFutureDate = formatDate(currentDate) > formatDate(new Date());
+
+    if (habitList.length === 0) {
+        container.innerHTML = '<div class="weekly-goal-empty">No weekly goals</div>';
+        return;
+    }
+
+    const weekRange = getWeekRange(currentDate);
+    let entriesMap = {};
+    try {
+        entriesMap = await fetchWeekEntriesMap(weekRange.start, weekRange.end);
+    } catch (error) {
+        console.error('Error fetching weekly entries:', error);
+    }
+
+    const weekKey = `${formatDate(weekRange.start)}-${formatDate(weekRange.end)}`;
+    container.innerHTML = habitList.map((habit, index) => {
+        const goalValue = habit.schedule?.timesPerWeek;
+        const goal = Number.isFinite(goalValue) ? goalValue : 3;
+        let doneCount = 0;
+        if (goal > 0) {
+            const cursor = new Date(weekRange.start);
+            while (cursor <= weekRange.end) {
+                const entry = entriesMap[formatDate(cursor)];
+                if (entry && entry[type]?.includes(habit.id)) {
+                    doneCount++;
+                }
+                cursor.setDate(cursor.getDate() + 1);
+            }
+        }
+        const cappedDone = goal > 0 ? Math.min(doneCount, goal) : 0;
+        const percentage = goal > 0 ? Math.round((cappedDone / goal) * 100) : 0;
+        const progressState = goal === 0 ? 'progress-empty' : (cappedDone >= goal ? 'progress-complete' : 'progress-partial');
+        const progressClasses = `weekly-progress progress-${type} ${progressState}`;
+
+        return `
+            <div class="weekly-goal-item" data-id="${habit.id}" data-week="${weekKey}">
+                <div class="habit-item opt-d ${type === 'morning' ? 'opt-d-morning' : 'opt-d-evening'}${isFutureDate ? ' future-locked' : ''}" data-id="${habit.id}" data-type="${type}">
+                    <div class="fill-layer"></div>
+                    <div class="habit-icon"></div>
+                    <div class="habit-text">
+                        <span class="habit-number">${index + 1}.</span>
+                        <span class="habit-label">${escapeHtml(habit.name)}</span>
+                    </div>
+                </div>
+                <div class="${progressClasses}">
+                    <div class="progress-bar" role="progressbar" aria-valuenow="${percentage}" aria-valuemin="0" aria-valuemax="100">
+                        <div class="progress-fill" style="width: ${percentage}%"></div>
+                    </div>
+                    <span class="progress-text">${cappedDone}/${goal} this week</span>
+                </div>
+            </div>
+        `;
+    }).join('');
+
+    container.querySelectorAll('.habit-item').forEach(item => {
+        item.addEventListener('click', async () => {
+            if (isFutureDate) {
+                item.classList.remove('future-denied');
+                void item.offsetWidth;
+                item.classList.add('future-denied');
+                return;
+            }
+            const habitId = item.dataset.id;
+            const habitType = item.dataset.type;
+            item.classList.add('completing');
+            await toggleHabit(habitId, habitType);
+            setTimeout(() => item.classList.remove('completing'), 300);
+        });
+    });
+
+    container.querySelectorAll('.weekly-goal-item').forEach(goalEl => {
+        const habitId = goalEl.dataset.id;
+        const key = `${habitId}-${weekKey}`;
+        const progressEl = goalEl.querySelector('.weekly-progress');
+        if (!progressEl) return;
+        const isComplete = progressEl.classList.contains('progress-complete');
+        const wasComplete = weeklyRewardState.get(key) || false;
+        if (isComplete && !wasComplete) {
+            progressEl.classList.remove('progress-reward');
+            void progressEl.offsetWidth;
+            progressEl.classList.add('progress-reward');
+            setTimeout(() => {
+                progressEl.classList.remove('progress-reward');
+            }, 700);
+        }
+        weeklyRewardState.set(key, isComplete);
     });
 
     updateHabitCheckmarks();

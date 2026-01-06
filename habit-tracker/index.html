@@ -214,33 +214,46 @@
 
             <!-- Habit Lists -->
             <main class="habit-container">
-                <div id="morning-habits" class="habit-list active">
-                    <!-- Habits will be rendered here -->
-                </div>
-                <div id="evening-habits" class="habit-list">
-                    <!-- Habits will be rendered here -->
-                </div>
-
-                <!-- Not Today Section -->
-                <div id="not-today-section" class="not-today-section collapsed hidden">
-                    <button class="not-today-header" id="toggle-not-today">
-                        <span>Not scheduled today</span>
-                        <span class="not-today-count">(0)</span>
-                        <span class="chevron">&#8250;</span>
-                    </button>
-                    <div id="not-today-habits">
-                        <!-- Unscheduled habits rendered here -->
+                <section class="habit-section daily-section">
+                    <div class="section-header">Daily Habits</div>
+                    <div id="morning-habits" class="habit-list active">
+                        <!-- Habits will be rendered here -->
                     </div>
-                </div>
-            </main>
+                    <div id="evening-habits" class="habit-list">
+                        <!-- Habits will be rendered here -->
+                    </div>
 
-            <!-- Progress Bar -->
-            <div class="progress-section">
-                <div class="progress-bar" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">
-                    <div class="progress-fill" id="progress-fill"></div>
+                    <!-- Not Today Section -->
+                    <div id="not-today-section" class="not-today-section collapsed hidden">
+                        <button class="not-today-header" id="toggle-not-today">
+                            <span>Not scheduled today</span>
+                            <span class="not-today-count">(0)</span>
+                            <span class="chevron">&#8250;</span>
+                        </button>
+                        <div id="not-today-habits">
+                            <!-- Unscheduled habits rendered here -->
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Progress Bar -->
+                <div class="progress-section">
+                    <div class="progress-bar" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">
+                        <div class="progress-fill" id="progress-fill"></div>
+                    </div>
+                    <span class="progress-text" id="progress-text">0/0 completed</span>
                 </div>
-                <span class="progress-text" id="progress-text">0/0 completed</span>
-            </div>
+
+                <section class="habit-section weekly-section">
+                    <div class="section-header">Weekly Goals</div>
+                    <div id="morning-weekly-habits" class="weekly-habit-list active">
+                        <!-- Weekly goals will be rendered here -->
+                    </div>
+                    <div id="evening-weekly-habits" class="weekly-habit-list">
+                        <!-- Weekly goals will be rendered here -->
+                    </div>
+                </section>
+            </main>
 
             <!-- Bottom Navigation -->
             <nav class="bottom-nav" role="navigation" aria-label="Main navigation">

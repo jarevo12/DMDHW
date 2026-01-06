@@ -48,6 +48,11 @@ export function subscribeToEntry() {
  * @param {string} type - 'morning' or 'evening'
  */
 export async function toggleHabit(habitId, type) {
+    const todayString = formatDate(new Date());
+    const currentString = formatDate(currentDate);
+    if (currentString > todayString) {
+        return;
+    }
     const db = getDb();
     const dateString = formatDate(currentDate);
     const entryRef = doc(db, `users/${currentUser.uid}/entries`, dateString);

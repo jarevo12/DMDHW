@@ -2,7 +2,7 @@
 // Functions for the date picker calendar
 
 import { getDb, collection, getDocs } from './firebase-init.js';
-import { habits, currentUser, currentDate, calendarState, setCalendarState, setCurrentDate } from './state.js';
+import { habits, currentUser, currentDate, calendarState, setCalendarState, setCurrentDate, accountCreatedAt } from './state.js';
 import { formatDate } from './utils.js';
 import { subscribeToEntry } from './entries.js';
 import { updateDateDisplay } from './ui/progress.js';
@@ -18,6 +18,14 @@ export async function renderTodayCalendar() {
     const startDayOfWeek = monthDate.getDay();
     const today = formatDate(new Date());
     const selectedString = formatDate(currentDate);
+    const creationDate = accountCreatedAt ? new Date(accountCreatedAt) : null;
+    const creationDateValid = creationDate && !Number.isNaN(creationDate.getTime());
+    const creationDateOnly = creationDateValid
+        ? new Date(creationDate.getFullYear(), creationDate.getMonth(), creationDate.getDate())
+        : null;
+    const earliestMonthDate = creationDateValid
+        ? new Date(creationDate.getFullYear(), creationDate.getMonth(), 1)
+        : null;
 
     // Update month label
     const monthYearEl = document.getElementById('calendar-month-year');
@@ -49,15 +57,17 @@ export async function renderTodayCalendar() {
 
     // Days of the month
     for (let day = 1; day <= lastDay.getDate(); day++) {
-        const dateString = formatDate(new Date(calendarState.currentYear, calendarState.currentMonth, day));
+        const dateObj = new Date(calendarState.currentYear, calendarState.currentMonth, day);
+        const dateString = formatDate(dateObj);
         const entry = entriesMap[dateString];
         const isToday = dateString === today;
         const isSelected = dateString === selectedString;
-        const isFuture = new Date(dateString) > new Date();
+        const isBeforeCreation = creationDateOnly ? dateObj < creationDateOnly : false;
 
         let classes = 'calendar-day-btn';
         if (isToday) classes += ' today';
         if (isSelected) classes += ' selected';
+        if (isBeforeCreation) classes += ' before-account';
 
         // Add data indicator
         if (entry && totalHabits > 0) {
@@ -80,7 +90,7 @@ export async function renderTodayCalendar() {
             <button
                 class="${classes}"
                 data-date="${dateString}"
-                ${isFuture ? 'disabled' : ''}
+                ${isBeforeCreation ? 'disabled' : ''}
                 onclick="window.selectCalendarDate('${dateString}')"
             >
                 ${day}
@@ -93,13 +103,19 @@ export async function renderTodayCalendar() {
         calendarDaysEl.innerHTML = days.join('');
     }
 
-    // Disable next month if it's in the future
-    const nextMonth = new Date(calendarState.currentYear, calendarState.currentMonth + 1, 1);
-    const todayMonth = new Date();
-    const thisMonth = new Date(todayMonth.getFullYear(), todayMonth.getMonth(), 1);
     const nextMonthBtn = document.getElementById('next-month');
     if (nextMonthBtn) {
-        nextMonthBtn.disabled = nextMonth.getTime() > thisMonth.getTime();
+        nextMonthBtn.disabled = false;
+    }
+
+    const prevMonthBtn = document.getElementById('prev-month');
+    if (prevMonthBtn) {
+        if (!earliestMonthDate) {
+            prevMonthBtn.disabled = false;
+        } else {
+            const currentMonthDate = new Date(calendarState.currentYear, calendarState.currentMonth, 1);
+            prevMonthBtn.disabled = currentMonthDate <= earliestMonthDate;
+        }
     }
 }
 
@@ -136,6 +152,16 @@ export function previousMonth() {
     if (newMonth < 0) {
         newMonth = 11;
         newYear--;
+    }
+
+    const creationDate = accountCreatedAt ? new Date(accountCreatedAt) : null;
+    const creationDateValid = creationDate && !Number.isNaN(creationDate.getTime());
+    const earliestMonthDate = creationDateValid
+        ? new Date(creationDate.getFullYear(), creationDate.getMonth(), 1)
+        : null;
+    const candidateMonthDate = new Date(newYear, newMonth, 1);
+    if (earliestMonthDate && candidateMonthDate < earliestMonthDate) {
+        return;
     }
 
     setCalendarState({

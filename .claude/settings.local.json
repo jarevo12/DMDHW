@@ -1,0 +1,17 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(apt-get update:*)",
+      "Bash(apt-get install:*)",
+      "Bash(python3:*)",
+      "Bash(pip install:*)",
+      "Bash(git add:*)",
+      "Bash(gemini:*)",
+      "Bash(node test-presentation-details.js:*)",
+      "Bash(node --check:*)"
+    ],
+    "deny": [],
+    "ask": []
+  },
+  "model": "opus"
+}
