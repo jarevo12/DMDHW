@@ -415,6 +415,31 @@ async function saveMindsetEntry() {
     }
 }
 
+async function saveMindsetRating() {
+    if (!currentUser) return;
+
+    const db = getDb();
+    const dateString = formatDate(currentDate);
+    const entryRef = doc(db, `users/${currentUser.uid}/entries`, dateString);
+    const dayInfo = getMindsetDayInfo(currentDate);
+
+    await setDoc(entryRef, {
+        date: dateString,
+        mindset: {
+            rating: currentRating,
+            quote: dayInfo.quote,
+            authorName: dayInfo.authorName,
+            authorRole: dayInfo.authorRole,
+            dayIndex: dayInfo.dayIndex,
+            updatedAt: serverTimestamp()
+        }
+    }, { merge: true });
+
+    if (elements.journalPage.classList.contains('active')) {
+        await loadJournalEntries();
+    }
+}
+
 function formatJournalDate(dateString) {
     const date = parseDateString(dateString);
     return date.toLocaleDateString('en-US', {
@@ -571,6 +596,7 @@ function setupStarInteractions() {
         star.addEventListener('click', () => {
             const value = Number.parseInt(star.dataset.value, 10);
             setRating(value);
+            saveMindsetRating();
             star.style.transform = 'scale(1.3)';
             setTimeout(() => {
                 star.style.transform = '';
