@@ -116,31 +116,50 @@ export function renderWeekdayPattern(weekdayData) {
     if (!container || !weekdayData) return;
 
     container.innerHTML = '';
+    container.dataset.type = weekdayData.type || 'morning';
 
     const rates = weekdayData.rates || [];
     if (rates.length === 0) return;
 
-    const values = rates.map(r => r.rate);
+    const values = rates.filter(r => r.possible > 0).map(r => r.rate);
     const maxVal = Math.max(...values);
 
     const dayLabels = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'];
 
+    const grid = document.createElement('div');
+    grid.className = 'weekday-grid';
+
     rates.forEach((dayData, index) => {
-        const isBest = dayData.rate === maxVal && dayData.rate > 0;
-        const barClass = isBest ? 'best' : 'normal';
+        const isUnavailable = dayData.possible === 0;
+        const isBest = !isUnavailable && dayData.rate === maxVal && dayData.rate > 0;
+        const barClass = isUnavailable ? 'na' : (isBest ? 'best' : 'normal');
+        const heightValue = isUnavailable ? 100 : dayData.rate;
+        const valueLabel = isUnavailable ? 'N/A' : `${dayData.rate}%`;
 
         const item = document.createElement('div');
         item.className = 'weekday-item';
         item.innerHTML = `
             <span class="weekday-label">${dayLabels[index]}</span>
             <div class="weekday-bar-container">
-                <div class="weekday-bar ${barClass}" style="height: ${dayData.rate}%"></div>
+                <div class="weekday-bar ${barClass}" style="height: ${heightValue}%"></div>
             </div>
-            <span class="weekday-value ${barClass}">${dayData.rate}%</span>
+            <span class="weekday-value ${barClass}">${valueLabel}</span>
             ${isBest ? '<span class="weekday-badge best">BEST</span>' : ''}
         `;
-        container.appendChild(item);
+        grid.appendChild(item);
     });
+
+    const legend = document.createElement('div');
+    legend.className = 'weekday-legend';
+    legend.innerHTML = `
+        <div class="weekday-legend-item">
+            <span class="weekday-legend-swatch na"></span>
+            <span>No scheduled habits</span>
+        </div>
+    `;
+
+    container.appendChild(grid);
+    container.appendChild(legend);
 }
 
 /**

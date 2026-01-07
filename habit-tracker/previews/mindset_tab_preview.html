@@ -1,0 +1,1569 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mindset Tab - Design Options Preview</title>
+  <style>
+    /* Reset */
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg-primary: #000000;
+      --bg-secondary: #0a0a0a;
+      --text-primary: #ffffff;
+      --text-secondary: #aaaaaa;
+      --text-muted: #666666;
+      --text-inverse: #000000;
+      --accent-primary: #6a00ff;
+      --accent-success: #ccff00;
+      --accent-danger: #ff0000;
+      --accent-warning: #ffff00;
+      --border-color: #ffffff;
+      --border-width: 4px;
+      --border-width-thin: 2px;
+      --spacing-xs: 4px;
+      --spacing-sm: 8px;
+      --spacing-md: 16px;
+      --spacing-lg: 24px;
+      --spacing-xl: 32px;
+      --font-mono: 'Courier New', Courier, monospace;
+      --font-sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    }
+
+    body {
+      font-family: var(--font-mono);
+      background: #1a1a1a;
+      color: var(--text-primary);
+      min-height: 100vh;
+      padding: 20px;
+    }
+
+    h1, h2, h3, h4 {
+      font-family: var(--font-sans);
+      font-weight: 900;
+      text-transform: uppercase;
+      letter-spacing: -1px;
+    }
+
+    /* Page Layout */
+    .page-header {
+      text-align: center;
+      padding: 40px 20px;
+      border-bottom: 4px solid var(--text-primary);
+      margin-bottom: 40px;
+    }
+
+    .page-header h1 {
+      font-size: 2.5rem;
+      margin-bottom: 10px;
+    }
+
+    .page-header h1 span {
+      background: var(--accent-success);
+      color: var(--bg-primary);
+      padding: 4px 8px;
+    }
+
+    .page-header p {
+      color: var(--text-secondary);
+      max-width: 600px;
+      margin: 0 auto;
+    }
+
+    /* Design Options Grid */
+    .options-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(380px, 1fr));
+      gap: 40px;
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+
+    .design-option {
+      background: var(--bg-primary);
+      border: var(--border-width) solid var(--border-color);
+      position: relative;
+    }
+
+    .option-label {
+      position: absolute;
+      top: -15px;
+      left: 20px;
+      background: var(--accent-primary);
+      color: var(--text-primary);
+      padding: 4px 12px;
+      font-weight: 900;
+      text-transform: uppercase;
+      font-size: 0.8rem;
+      letter-spacing: 1px;
+    }
+
+    /* Phone Frame */
+    .phone-frame {
+      width: 100%;
+      max-width: 400px;
+      margin: 0 auto;
+      background: var(--bg-primary);
+      min-height: 700px;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    /* App Header */
+    .app-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      height: 70px;
+      border-bottom: var(--border-width) solid var(--border-color);
+      padding: 0 var(--spacing-md);
+      background: var(--bg-primary);
+    }
+
+    .header-title {
+      font-family: var(--font-sans);
+      font-weight: 900;
+      font-size: 1.2rem;
+      text-transform: uppercase;
+    }
+
+    .btn-icon {
+      width: 44px;
+      height: 44px;
+      border: var(--border-width-thin) solid var(--border-color);
+      background: transparent;
+      color: var(--text-primary);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      font-size: 1.2rem;
+    }
+
+    .btn-icon:hover {
+      background: var(--text-primary);
+      color: var(--bg-primary);
+    }
+
+    .btn-icon svg {
+      width: 24px;
+      height: 24px;
+      fill: none;
+      stroke: currentColor;
+      stroke-width: 2.5;
+    }
+
+    /* Content Area */
+    .mindset-content {
+      flex: 1;
+      padding: var(--spacing-md);
+      overflow-y: auto;
+    }
+
+    /* ===== OPTION 1: Card-Based Design ===== */
+    .option-1 .section-label {
+      font-size: 0.7rem;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      margin-bottom: var(--spacing-sm);
+    }
+
+    .option-1 .pill-card {
+      border: var(--border-width) solid var(--border-color);
+      background: var(--bg-secondary);
+      margin-bottom: var(--spacing-lg);
+    }
+
+    .option-1 .pill-header {
+      background: var(--accent-success);
+      color: var(--bg-primary);
+      padding: var(--spacing-sm) var(--spacing-md);
+      display: flex;
+      align-items: center;
+      gap: var(--spacing-sm);
+    }
+
+    .option-1 .pill-header .day-badge {
+      background: var(--bg-primary);
+      color: var(--text-primary);
+      padding: 2px 8px;
+      font-weight: 900;
+      font-size: 0.75rem;
+    }
+
+    .option-1 .pill-header h3 {
+      font-size: 0.9rem;
+      font-weight: 900;
+    }
+
+    .option-1 .quote-body {
+      padding: var(--spacing-lg);
+      border-bottom: 1px solid #333;
+    }
+
+    .option-1 .quote-text {
+      font-size: 1.1rem;
+      line-height: 1.5;
+      margin-bottom: var(--spacing-md);
+      font-style: italic;
+    }
+
+    .option-1 .quote-text::before {
+      content: '"';
+      font-size: 2rem;
+      color: var(--accent-success);
+      display: block;
+      line-height: 0.5;
+      margin-bottom: var(--spacing-sm);
+    }
+
+    .option-1 .author-section {
+      display: flex;
+      align-items: center;
+      gap: var(--spacing-md);
+    }
+
+    .option-1 .author-avatar {
+      width: 48px;
+      height: 48px;
+      border: 2px solid var(--border-color);
+      background: var(--accent-primary);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 900;
+      font-size: 1.2rem;
+    }
+
+    .option-1 .author-info .author-name {
+      font-weight: 900;
+      text-transform: uppercase;
+      font-size: 0.9rem;
+    }
+
+    .option-1 .author-info .author-desc {
+      color: var(--text-secondary);
+      font-size: 0.75rem;
+      text-transform: uppercase;
+    }
+
+    .option-1 .rating-section {
+      padding: var(--spacing-md);
+      border-bottom: 1px solid #333;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .option-1 .rating-label {
+      font-size: 0.75rem;
+      color: var(--text-secondary);
+      text-transform: uppercase;
+    }
+
+    .option-1 .star-rating {
+      display: flex;
+      gap: 4px;
+    }
+
+    .option-1 .star {
+      width: 28px;
+      height: 28px;
+      border: 1px solid #444;
+      background: transparent;
+      color: #444;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1rem;
+      transition: all 0.1s;
+    }
+
+    .option-1 .star.active,
+    .option-1 .star:hover {
+      background: var(--accent-warning);
+      color: var(--bg-primary);
+      border-color: var(--accent-warning);
+    }
+
+    /* Questions Section */
+    .option-1 .questions-section {
+      padding: var(--spacing-md);
+    }
+
+    .option-1 .question-item {
+      margin-bottom: var(--spacing-md);
+    }
+
+    .option-1 .question-label {
+      font-size: 0.75rem;
+      color: var(--accent-success);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: var(--spacing-xs);
+      display: flex;
+      align-items: center;
+      gap: var(--spacing-sm);
+    }
+
+    .option-1 .question-label::before {
+      content: '?';
+      width: 18px;
+      height: 18px;
+      background: var(--accent-success);
+      color: var(--bg-primary);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 900;
+      font-size: 0.7rem;
+    }
+
+    .option-1 .question-text {
+      font-size: 0.9rem;
+      margin-bottom: var(--spacing-sm);
+    }
+
+    .option-1 .answer-input {
+      width: 100%;
+      background: var(--bg-primary);
+      border: 1px solid #333;
+      color: var(--text-primary);
+      padding: var(--spacing-sm);
+      font-family: var(--font-mono);
+      font-size: 0.85rem;
+      resize: vertical;
+      min-height: 60px;
+    }
+
+    .option-1 .answer-input:focus {
+      outline: none;
+      border-color: var(--accent-primary);
+    }
+
+    .option-1 .save-btn {
+      width: 100%;
+      padding: var(--spacing-md);
+      background: var(--text-primary);
+      color: var(--bg-primary);
+      border: var(--border-width) solid var(--border-color);
+      font-weight: 900;
+      text-transform: uppercase;
+      cursor: pointer;
+      margin-top: var(--spacing-md);
+    }
+
+    .option-1 .save-btn:hover {
+      background: var(--accent-primary);
+      color: var(--text-primary);
+    }
+
+    /* ===== OPTION 2: Full-Screen Immersive ===== */
+    .option-2 .mindset-content {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      padding: var(--spacing-lg);
+      background: linear-gradient(180deg, rgba(106, 0, 255, 0.1) 0%, transparent 50%);
+    }
+
+    .option-2 .day-indicator {
+      display: flex;
+      align-items: center;
+      gap: var(--spacing-sm);
+      margin-bottom: var(--spacing-xl);
+    }
+
+    .option-2 .day-number {
+      width: 50px;
+      height: 50px;
+      border: var(--border-width) solid var(--border-color);
+      background: var(--accent-primary);
+      color: var(--text-primary);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: var(--font-sans);
+      font-weight: 900;
+      font-size: 1.5rem;
+    }
+
+    .option-2 .day-text {
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      font-size: 0.8rem;
+      color: var(--text-secondary);
+    }
+
+    .option-2 .day-text strong {
+      display: block;
+      color: var(--text-primary);
+      font-size: 1rem;
+    }
+
+    .option-2 .quote-container {
+      margin-bottom: var(--spacing-xl);
+    }
+
+    .option-2 .big-quote {
+      font-family: var(--font-sans);
+      font-size: 1.4rem;
+      font-weight: 700;
+      line-height: 1.4;
+      margin-bottom: var(--spacing-lg);
+    }
+
+    .option-2 .big-quote .highlight {
+      background: var(--accent-success);
+      color: var(--bg-primary);
+      padding: 2px 6px;
+    }
+
+    .option-2 .author-line {
+      display: flex;
+      align-items: center;
+      gap: var(--spacing-md);
+      padding: var(--spacing-md);
+      border-left: var(--border-width) solid var(--accent-success);
+      background: rgba(255,255,255,0.02);
+    }
+
+    .option-2 .author-initial {
+      width: 40px;
+      height: 40px;
+      background: var(--text-primary);
+      color: var(--bg-primary);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 900;
+    }
+
+    .option-2 .author-details {
+      flex: 1;
+    }
+
+    .option-2 .author-details .name {
+      font-weight: 900;
+      text-transform: uppercase;
+      font-size: 0.85rem;
+    }
+
+    .option-2 .author-details .title {
+      color: var(--text-muted);
+      font-size: 0.7rem;
+      text-transform: uppercase;
+    }
+
+    .option-2 .rating-inline {
+      display: flex;
+      gap: 2px;
+    }
+
+    .option-2 .rating-inline .dot {
+      width: 12px;
+      height: 12px;
+      border: 1px solid #444;
+      cursor: pointer;
+    }
+
+    .option-2 .rating-inline .dot.active {
+      background: var(--accent-warning);
+      border-color: var(--accent-warning);
+    }
+
+    .option-2 .reflection-section {
+      border: var(--border-width-thin) solid var(--border-color);
+      margin-top: var(--spacing-lg);
+    }
+
+    .option-2 .reflection-header {
+      background: var(--text-primary);
+      color: var(--bg-primary);
+      padding: var(--spacing-sm) var(--spacing-md);
+      font-weight: 900;
+      text-transform: uppercase;
+      font-size: 0.8rem;
+      display: flex;
+      align-items: center;
+      gap: var(--spacing-sm);
+    }
+
+    .option-2 .reflection-body {
+      padding: var(--spacing-md);
+    }
+
+    .option-2 .q-item {
+      margin-bottom: var(--spacing-md);
+    }
+
+    .option-2 .q-item:last-child {
+      margin-bottom: 0;
+    }
+
+    .option-2 .q-text {
+      font-size: 0.85rem;
+      margin-bottom: var(--spacing-xs);
+      color: var(--text-secondary);
+    }
+
+    .option-2 .q-input {
+      width: 100%;
+      background: transparent;
+      border: none;
+      border-bottom: 1px solid #333;
+      color: var(--text-primary);
+      padding: var(--spacing-sm) 0;
+      font-family: var(--font-mono);
+      font-size: 0.9rem;
+    }
+
+    .option-2 .q-input:focus {
+      outline: none;
+      border-bottom-color: var(--accent-primary);
+    }
+
+    .option-2 .action-row {
+      display: flex;
+      gap: var(--spacing-sm);
+      margin-top: var(--spacing-md);
+    }
+
+    .option-2 .action-btn {
+      flex: 1;
+      padding: var(--spacing-md);
+      border: var(--border-width-thin) solid var(--border-color);
+      background: transparent;
+      color: var(--text-primary);
+      font-weight: 900;
+      text-transform: uppercase;
+      cursor: pointer;
+      font-size: 0.8rem;
+    }
+
+    .option-2 .action-btn.primary {
+      background: var(--accent-success);
+      color: var(--bg-primary);
+      border-color: var(--accent-success);
+    }
+
+    /* ===== OPTION 3: Minimalist Split ===== */
+    .option-3 .mindset-content {
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .option-3 .top-zone {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      padding: var(--spacing-xl) var(--spacing-lg);
+      border-bottom: var(--border-width) solid var(--border-color);
+      position: relative;
+    }
+
+    .option-3 .pill-tag {
+      position: absolute;
+      top: var(--spacing-md);
+      left: var(--spacing-lg);
+      background: var(--accent-success);
+      color: var(--bg-primary);
+      padding: 4px 10px;
+      font-size: 0.65rem;
+      font-weight: 900;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .option-3 .minimal-quote {
+      font-family: var(--font-sans);
+      font-size: 1.3rem;
+      font-weight: 900;
+      line-height: 1.3;
+      text-transform: uppercase;
+      margin-bottom: var(--spacing-lg);
+    }
+
+    .option-3 .minimal-author {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+    }
+
+    .option-3 .author-block {
+      border-left: var(--border-width) solid var(--accent-primary);
+      padding-left: var(--spacing-md);
+    }
+
+    .option-3 .author-block .name {
+      font-weight: 900;
+      text-transform: uppercase;
+      font-size: 0.9rem;
+    }
+
+    .option-3 .author-block .role {
+      color: var(--text-muted);
+      font-size: 0.7rem;
+      text-transform: uppercase;
+    }
+
+    .option-3 .star-row {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 4px;
+    }
+
+    .option-3 .star-row .label {
+      font-size: 0.6rem;
+      color: var(--text-muted);
+      text-transform: uppercase;
+    }
+
+    .option-3 .star-row .stars {
+      display: flex;
+      gap: 2px;
+    }
+
+    .option-3 .star-row .star-btn {
+      width: 20px;
+      height: 20px;
+      border: 1px solid #333;
+      background: transparent;
+      color: #333;
+      cursor: pointer;
+      font-size: 0.7rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .option-3 .star-row .star-btn.active {
+      background: var(--accent-warning);
+      border-color: var(--accent-warning);
+      color: var(--bg-primary);
+    }
+
+    .option-3 .bottom-zone {
+      background: var(--bg-secondary);
+      padding: var(--spacing-md);
+    }
+
+    .option-3 .zone-header {
+      display: flex;
+      align-items: center;
+      gap: var(--spacing-sm);
+      margin-bottom: var(--spacing-md);
+      padding-bottom: var(--spacing-sm);
+      border-bottom: 1px solid #333;
+    }
+
+    .option-3 .zone-header svg {
+      width: 18px;
+      height: 18px;
+      stroke: var(--accent-success);
+    }
+
+    .option-3 .zone-header span {
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: var(--text-secondary);
+    }
+
+    .option-3 .compact-q {
+      margin-bottom: var(--spacing-md);
+    }
+
+    .option-3 .compact-q .q-label {
+      font-size: 0.7rem;
+      color: var(--accent-primary);
+      text-transform: uppercase;
+      margin-bottom: var(--spacing-xs);
+    }
+
+    .option-3 .compact-q textarea {
+      width: 100%;
+      background: var(--bg-primary);
+      border: 1px solid #333;
+      color: var(--text-primary);
+      padding: var(--spacing-sm);
+      font-family: var(--font-mono);
+      font-size: 0.8rem;
+      resize: none;
+      height: 50px;
+    }
+
+    .option-3 .compact-q textarea:focus {
+      outline: none;
+      border-color: var(--accent-primary);
+    }
+
+    .option-3 .submit-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: var(--spacing-sm);
+    }
+
+    .option-3 .submit-btn {
+      padding: var(--spacing-sm);
+      border: 1px solid var(--border-color);
+      background: transparent;
+      color: var(--text-primary);
+      font-weight: 900;
+      text-transform: uppercase;
+      cursor: pointer;
+      font-size: 0.75rem;
+    }
+
+    .option-3 .submit-btn.primary {
+      background: var(--text-primary);
+      color: var(--bg-primary);
+    }
+
+    /* ===== JOURNAL PAGE ===== */
+    .journal-page {
+      display: none;
+    }
+
+    .journal-page.active {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .journal-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      height: 70px;
+      border-bottom: var(--border-width) solid var(--border-color);
+      padding: 0 var(--spacing-md);
+    }
+
+    .back-btn {
+      width: 44px;
+      height: 44px;
+      border: var(--border-width-thin) solid var(--border-color);
+      background: transparent;
+      color: var(--text-primary);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+    }
+
+    .back-btn:hover {
+      background: var(--text-primary);
+      color: var(--bg-primary);
+    }
+
+    .journal-title {
+      font-family: var(--font-sans);
+      font-weight: 900;
+      font-size: 1rem;
+      text-transform: uppercase;
+    }
+
+    .sort-btn {
+      padding: 8px 12px;
+      border: 1px solid #444;
+      background: transparent;
+      color: var(--text-secondary);
+      font-family: var(--font-mono);
+      font-size: 0.7rem;
+      text-transform: uppercase;
+      cursor: pointer;
+    }
+
+    .sort-btn:hover {
+      border-color: var(--text-primary);
+      color: var(--text-primary);
+    }
+
+    .filter-tabs {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      border-bottom: var(--border-width) solid var(--border-color);
+    }
+
+    .filter-tab {
+      padding: var(--spacing-md);
+      background: transparent;
+      border: none;
+      border-right: 1px solid #333;
+      color: var(--text-secondary);
+      font-weight: 900;
+      text-transform: uppercase;
+      cursor: pointer;
+      font-size: 0.75rem;
+    }
+
+    .filter-tab:last-child {
+      border-right: none;
+    }
+
+    .filter-tab.active {
+      background: var(--text-primary);
+      color: var(--bg-primary);
+    }
+
+    .journal-list {
+      flex: 1;
+      overflow-y: auto;
+    }
+
+    .journal-entry {
+      border-bottom: 1px solid #333;
+      padding: var(--spacing-md);
+      cursor: pointer;
+      transition: background 0.1s;
+    }
+
+    .journal-entry:hover {
+      background: var(--bg-secondary);
+    }
+
+    .entry-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: var(--spacing-sm);
+    }
+
+    .entry-date {
+      font-size: 0.7rem;
+      color: var(--text-muted);
+      text-transform: uppercase;
+    }
+
+    .entry-rating {
+      display: flex;
+      gap: 2px;
+    }
+
+    .entry-rating .star {
+      color: var(--accent-warning);
+      font-size: 0.7rem;
+    }
+
+    .entry-rating .star.empty {
+      color: #333;
+    }
+
+    .entry-quote {
+      font-size: 0.85rem;
+      line-height: 1.4;
+      margin-bottom: var(--spacing-xs);
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+
+    .entry-author {
+      font-size: 0.7rem;
+      color: var(--accent-primary);
+      text-transform: uppercase;
+    }
+
+    /* Entry Detail View */
+    .entry-detail {
+      display: none;
+      flex-direction: column;
+    }
+
+    .entry-detail.active {
+      display: flex;
+    }
+
+    .detail-content {
+      flex: 1;
+      padding: var(--spacing-lg);
+      overflow-y: auto;
+    }
+
+    .detail-meta {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: var(--spacing-lg);
+      padding-bottom: var(--spacing-md);
+      border-bottom: 1px solid #333;
+    }
+
+    .detail-meta .date {
+      font-size: 0.8rem;
+      color: var(--text-secondary);
+      text-transform: uppercase;
+    }
+
+    .detail-meta .rating {
+      display: flex;
+      gap: 4px;
+    }
+
+    .detail-meta .rating .star {
+      color: var(--accent-warning);
+    }
+
+    .detail-meta .rating .star.empty {
+      color: #333;
+    }
+
+    .detail-quote {
+      font-size: 1.1rem;
+      line-height: 1.5;
+      margin-bottom: var(--spacing-lg);
+      padding: var(--spacing-md);
+      border-left: var(--border-width) solid var(--accent-success);
+      background: rgba(204, 255, 0, 0.05);
+    }
+
+    .detail-author {
+      margin-bottom: var(--spacing-xl);
+    }
+
+    .detail-author .name {
+      font-weight: 900;
+      text-transform: uppercase;
+    }
+
+    .detail-author .role {
+      color: var(--text-muted);
+      font-size: 0.8rem;
+    }
+
+    .detail-responses {
+      border: var(--border-width-thin) solid var(--border-color);
+    }
+
+    .detail-responses .resp-header {
+      background: var(--accent-primary);
+      color: var(--text-primary);
+      padding: var(--spacing-sm) var(--spacing-md);
+      font-weight: 900;
+      text-transform: uppercase;
+      font-size: 0.8rem;
+    }
+
+    .detail-responses .resp-item {
+      padding: var(--spacing-md);
+      border-bottom: 1px solid #333;
+    }
+
+    .detail-responses .resp-item:last-child {
+      border-bottom: none;
+    }
+
+    .detail-responses .resp-q {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      margin-bottom: var(--spacing-xs);
+    }
+
+    .detail-responses .resp-a {
+      font-size: 0.9rem;
+      line-height: 1.5;
+    }
+
+    /* Navigation hint */
+    .nav-hint {
+      text-align: center;
+      padding: var(--spacing-md);
+      color: var(--text-muted);
+      font-size: 0.75rem;
+      border-top: 1px dashed #333;
+    }
+
+    /* Utility */
+    .hidden { display: none !important; }
+  </style>
+</head>
+<body>
+  <header class="page-header">
+    <h1><span>Mindset</span> Tab Preview</h1>
+    <p>Three design options for the Daily Mentality Pills feature. Click the journal icon to see the journal page. All designs are interactive.</p>
+  </header>
+
+  <div class="options-grid">
+    <!-- ===== OPTION 1: Card-Based Design ===== -->
+    <div class="design-option">
+      <div class="option-label">Option 1 - Card Based</div>
+      <div class="phone-frame option-1">
+        <!-- Main View -->
+        <div class="main-view">
+          <header class="app-header">
+            <div class="header-title">Mindset</div>
+            <button class="btn-icon journal-toggle" data-target="journal-1">
+              <svg viewBox="0 0 24 24">
+                <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
+                <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
+                <line x1="12" y1="6" x2="12" y2="10"></line>
+                <line x1="12" y1="14" x2="12" y2="14"></line>
+              </svg>
+            </button>
+          </header>
+          <div class="mindset-content">
+            <div class="section-label">Daily Mentality Pill</div>
+            <div class="pill-card">
+              <div class="pill-header">
+                <span class="day-badge">Day 1</span>
+                <h3>Possibility</h3>
+              </div>
+              <div class="quote-body">
+                <p class="quote-text">Here's the big challenge of life. You can have more than you've got because you can become more than you are.</p>
+                <div class="author-section">
+                  <div class="author-avatar">JR</div>
+                  <div class="author-info">
+                    <div class="author-name">Jim Rohn</div>
+                    <div class="author-desc">Entrepreneur and motivational speaker</div>
+                  </div>
+                </div>
+              </div>
+              <div class="rating-section">
+                <span class="rating-label">How much does this resonate?</span>
+                <div class="star-rating">
+                  <button class="star active">&#9733;</button>
+                  <button class="star active">&#9733;</button>
+                  <button class="star active">&#9733;</button>
+                  <button class="star active">&#9733;</button>
+                  <button class="star">&#9733;</button>
+                </div>
+              </div>
+              <div class="questions-section">
+                <div class="question-item">
+                  <div class="question-label">Reflect</div>
+                  <div class="question-text">What does this quote mean for you today?</div>
+                  <textarea class="answer-input" placeholder="Write your thoughts...">I realize that my current limitations are not permanent. If I focus on becoming a better version of myself, everything else will follow.</textarea>
+                </div>
+                <div class="question-item">
+                  <div class="question-label">Act</div>
+                  <div class="question-text">What will you do differently after reading this?</div>
+                  <textarea class="answer-input" placeholder="Write your commitment...">I will stop making excuses about not having enough time and instead focus on small daily improvements.</textarea>
+                </div>
+                <button class="save-btn">Save to Journal</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Journal View -->
+        <div class="journal-page" id="journal-1">
+          <header class="journal-header">
+            <button class="back-btn journal-back">
+              <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2.5">
+                <line x1="19" y1="12" x2="5" y2="12"></line>
+                <polyline points="12 19 5 12 12 5"></polyline>
+              </svg>
+            </button>
+            <div class="journal-title">My Journal</div>
+            <button class="sort-btn">Sort</button>
+          </header>
+          <div class="filter-tabs">
+            <button class="filter-tab active">By Date</button>
+            <button class="filter-tab">By Author</button>
+            <button class="filter-tab">By Rating</button>
+          </div>
+          <div class="journal-list">
+            <div class="journal-entry" data-entry="1">
+              <div class="entry-header">
+                <span class="entry-date">Day 1 - Jan 7, 2026</span>
+                <div class="entry-rating">
+                  <span class="star">&#9733;</span>
+                  <span class="star">&#9733;</span>
+                  <span class="star">&#9733;</span>
+                  <span class="star">&#9733;</span>
+                  <span class="star empty">&#9733;</span>
+                </div>
+              </div>
+              <p class="entry-quote">"Here's the big challenge of life. You can have more than you've got because you can become more than you are."</p>
+              <span class="entry-author">Jim Rohn</span>
+            </div>
+            <div class="journal-entry">
+              <div class="entry-header">
+                <span class="entry-date">Day 2 - Jan 8, 2026</span>
+                <div class="entry-rating">
+                  <span class="star">&#9733;</span>
+                  <span class="star">&#9733;</span>
+                  <span class="star">&#9733;</span>
+                  <span class="star">&#9733;</span>
+                  <span class="star">&#9733;</span>
+                </div>
+              </div>
+              <p class="entry-quote">"Nothing changes if nothing changes, man."</p>
+              <span class="entry-author">David Goggins</span>
+            </div>
+            <div class="journal-entry">
+              <div class="entry-header">
+                <span class="entry-date">Day 3 - Jan 9, 2026</span>
+                <div class="entry-rating">
+                  <span class="star">&#9733;</span>
+                  <span class="star">&#9733;</span>
+                  <span class="star">&#9733;</span>
+                  <span class="star empty">&#9733;</span>
+                  <span class="star empty">&#9733;</span>
+                </div>
+              </div>
+              <p class="entry-quote">"You're going to look back at any destination and realize that it was a 99.9% journey and only one day of celebrating."</p>
+              <span class="entry-author">Alex Hormozi</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Entry Detail View -->
+        <div class="entry-detail" id="entry-detail-1">
+          <header class="journal-header">
+            <button class="back-btn detail-back">
+              <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2.5">
+                <line x1="19" y1="12" x2="5" y2="12"></line>
+                <polyline points="12 19 5 12 12 5"></polyline>
+              </svg>
+            </button>
+            <div class="journal-title">Entry Detail</div>
+            <div style="width: 44px;"></div>
+          </header>
+          <div class="detail-content">
+            <div class="detail-meta">
+              <span class="date">Day 1 - Jan 7, 2026</span>
+              <div class="rating">
+                <span class="star">&#9733;</span>
+                <span class="star">&#9733;</span>
+                <span class="star">&#9733;</span>
+                <span class="star">&#9733;</span>
+                <span class="star empty">&#9733;</span>
+              </div>
+            </div>
+            <div class="detail-quote">"Here's the big challenge of life. You can have more than you've got because you can become more than you are."</div>
+            <div class="detail-author">
+              <div class="name">Jim Rohn</div>
+              <div class="role">Entrepreneur and motivational speaker</div>
+            </div>
+            <div class="detail-responses">
+              <div class="resp-header">Your Reflections</div>
+              <div class="resp-item">
+                <div class="resp-q">What does this quote mean for you today?</div>
+                <div class="resp-a">I realize that my current limitations are not permanent. If I focus on becoming a better version of myself, everything else will follow.</div>
+              </div>
+              <div class="resp-item">
+                <div class="resp-q">What will you do differently after reading this?</div>
+                <div class="resp-a">I will stop making excuses about not having enough time and instead focus on small daily improvements.</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== OPTION 2: Full-Screen Immersive ===== -->
+    <div class="design-option">
+      <div class="option-label">Option 2 - Immersive</div>
+      <div class="phone-frame option-2">
+        <!-- Main View -->
+        <div class="main-view">
+          <header class="app-header">
+            <div style="width: 44px;"></div>
+            <div class="header-title">Daily Pill</div>
+            <button class="btn-icon journal-toggle" data-target="journal-2">
+              <svg viewBox="0 0 24 24">
+                <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
+                <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
+              </svg>
+            </button>
+          </header>
+          <div class="mindset-content">
+            <div class="day-indicator">
+              <div class="day-number">2</div>
+              <div class="day-text">
+                <span>Your Journey</span>
+                <strong>The Reality Check</strong>
+              </div>
+            </div>
+            <div class="quote-container">
+              <p class="big-quote">"<span class="highlight">Nothing changes</span> if nothing changes, man."</p>
+              <div class="author-line">
+                <div class="author-initial">DG</div>
+                <div class="author-details">
+                  <div class="name">David Goggins</div>
+                  <div class="title">Navy Seal and World Record Holder</div>
+                </div>
+                <div class="rating-inline">
+                  <div class="dot active"></div>
+                  <div class="dot active"></div>
+                  <div class="dot active"></div>
+                  <div class="dot active"></div>
+                  <div class="dot active"></div>
+                </div>
+              </div>
+            </div>
+            <div class="reflection-section">
+              <div class="reflection-header">
+                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
+                  <circle cx="12" cy="12" r="10"></circle>
+                  <line x1="12" y1="16" x2="12" y2="12"></line>
+                  <line x1="12" y1="8" x2="12.01" y2="8"></line>
+                </svg>
+                Reflect & Commit
+              </div>
+              <div class="reflection-body">
+                <div class="q-item">
+                  <div class="q-text">What does this mean for you today?</div>
+                  <input type="text" class="q-input" value="I've been waiting for things to change but haven't changed my actions. Today that stops.">
+                </div>
+                <div class="q-item">
+                  <div class="q-text">What action will you take right now?</div>
+                  <input type="text" class="q-input" value="I will complete my morning routine without excuses, starting with making my bed.">
+                </div>
+                <div class="action-row">
+                  <button class="action-btn">Skip</button>
+                  <button class="action-btn primary">Save</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Journal View -->
+        <div class="journal-page" id="journal-2">
+          <header class="journal-header">
+            <button class="back-btn journal-back">
+              <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2.5">
+                <line x1="19" y1="12" x2="5" y2="12"></line>
+                <polyline points="12 19 5 12 12 5"></polyline>
+              </svg>
+            </button>
+            <div class="journal-title">Journal</div>
+            <button class="sort-btn">Filter</button>
+          </header>
+          <div class="filter-tabs">
+            <button class="filter-tab active">Date</button>
+            <button class="filter-tab">Author</button>
+            <button class="filter-tab">Rating</button>
+          </div>
+          <div class="journal-list">
+            <div class="journal-entry">
+              <div class="entry-header">
+                <span class="entry-date">Day 2 - Jan 8, 2026</span>
+                <div class="entry-rating">
+                  <span class="star">&#9733;</span>
+                  <span class="star">&#9733;</span>
+                  <span class="star">&#9733;</span>
+                  <span class="star">&#9733;</span>
+                  <span class="star">&#9733;</span>
+                </div>
+              </div>
+              <p class="entry-quote">"Nothing changes if nothing changes, man."</p>
+              <span class="entry-author">David Goggins</span>
+            </div>
+            <div class="journal-entry">
+              <div class="entry-header">
+                <span class="entry-date">Day 1 - Jan 7, 2026</span>
+                <div class="entry-rating">
+                  <span class="star">&#9733;</span>
+                  <span class="star">&#9733;</span>
+                  <span class="star">&#9733;</span>
+                  <span class="star">&#9733;</span>
+                  <span class="star empty">&#9733;</span>
+                </div>
+              </div>
+              <p class="entry-quote">"Here's the big challenge of life. You can have more than you've got..."</p>
+              <span class="entry-author">Jim Rohn</span>
+            </div>
+          </div>
+          <div class="nav-hint">Tap an entry to view your full reflection</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== OPTION 3: Minimalist Split ===== -->
+    <div class="design-option">
+      <div class="option-label">Option 3 - Minimalist</div>
+      <div class="phone-frame option-3">
+        <!-- Main View -->
+        <div class="main-view">
+          <header class="app-header">
+            <div style="width: 44px;"></div>
+            <div class="header-title">Mindset</div>
+            <button class="btn-icon journal-toggle" data-target="journal-3">
+              <svg viewBox="0 0 24 24">
+                <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
+                <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
+              </svg>
+            </button>
+          </header>
+          <div class="mindset-content">
+            <div class="top-zone">
+              <div class="pill-tag">Day 4 - Finding the Why</div>
+              <p class="minimal-quote">"One of the big thrusts for success is to come up with a strong enough why. If the why is powerful, the how is easy."</p>
+              <div class="minimal-author">
+                <div class="author-block">
+                  <div class="name">Jim Rohn</div>
+                  <div class="role">Entrepreneur & Speaker</div>
+                </div>
+                <div class="star-row">
+                  <span class="label">Rate</span>
+                  <div class="stars">
+                    <button class="star-btn active">&#9733;</button>
+                    <button class="star-btn active">&#9733;</button>
+                    <button class="star-btn active">&#9733;</button>
+                    <button class="star-btn">&#9733;</button>
+                    <button class="star-btn">&#9733;</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="bottom-zone">
+              <div class="zone-header">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                  <polyline points="14 2 14 8 20 8"></polyline>
+                  <line x1="16" y1="13" x2="8" y2="13"></line>
+                  <line x1="16" y1="17" x2="8" y2="17"></line>
+                </svg>
+                <span>Your Response</span>
+              </div>
+              <div class="compact-q">
+                <div class="q-label">What is your "Why"?</div>
+                <textarea placeholder="What drives you?">I want to be healthy and present for my kids. That's my why.</textarea>
+              </div>
+              <div class="compact-q">
+                <div class="q-label">One action you'll take today:</div>
+                <textarea placeholder="Be specific...">I will remind myself of my why before starting each habit today.</textarea>
+              </div>
+              <div class="submit-row">
+                <button class="submit-btn">Later</button>
+                <button class="submit-btn primary">Save</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Journal View -->
+        <div class="journal-page" id="journal-3">
+          <header class="journal-header">
+            <button class="back-btn journal-back">
+              <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2.5">
+                <line x1="19" y1="12" x2="5" y2="12"></line>
+                <polyline points="12 19 5 12 12 5"></polyline>
+              </svg>
+            </button>
+            <div class="journal-title">Journal</div>
+            <button class="sort-btn">
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
+                <line x1="4" y1="21" x2="4" y2="14"></line>
+                <line x1="4" y1="10" x2="4" y2="3"></line>
+                <line x1="12" y1="21" x2="12" y2="12"></line>
+                <line x1="12" y1="8" x2="12" y2="3"></line>
+                <line x1="20" y1="21" x2="20" y2="16"></line>
+                <line x1="20" y1="12" x2="20" y2="3"></line>
+              </svg>
+            </button>
+          </header>
+          <div class="filter-tabs">
+            <button class="filter-tab active">Date</button>
+            <button class="filter-tab">Author</button>
+            <button class="filter-tab">Top Rated</button>
+          </div>
+          <div class="journal-list">
+            <div class="journal-entry">
+              <div class="entry-header">
+                <span class="entry-date">Day 4 - Jan 10</span>
+                <div class="entry-rating">
+                  <span class="star">&#9733;</span>
+                  <span class="star">&#9733;</span>
+                  <span class="star">&#9733;</span>
+                  <span class="star empty">&#9733;</span>
+                  <span class="star empty">&#9733;</span>
+                </div>
+              </div>
+              <p class="entry-quote">"If the why is powerful, the how is easy."</p>
+              <span class="entry-author">Jim Rohn</span>
+            </div>
+            <div class="journal-entry">
+              <div class="entry-header">
+                <span class="entry-date">Day 3 - Jan 9</span>
+                <div class="entry-rating">
+                  <span class="star">&#9733;</span>
+                  <span class="star">&#9733;</span>
+                  <span class="star">&#9733;</span>
+                  <span class="star">&#9733;</span>
+                  <span class="star empty">&#9733;</span>
+                </div>
+              </div>
+              <p class="entry-quote">"It was a 99.9% journey and only one day of celebrating."</p>
+              <span class="entry-author">Alex Hormozi</span>
+            </div>
+            <div class="journal-entry">
+              <div class="entry-header">
+                <span class="entry-date">Day 2 - Jan 8</span>
+                <div class="entry-rating">
+                  <span class="star">&#9733;</span>
+                  <span class="star">&#9733;</span>
+                  <span class="star">&#9733;</span>
+                  <span class="star">&#9733;</span>
+                  <span class="star">&#9733;</span>
+                </div>
+              </div>
+              <p class="entry-quote">"Nothing changes if nothing changes, man."</p>
+              <span class="entry-author">David Goggins</span>
+            </div>
+            <div class="journal-entry">
+              <div class="entry-header">
+                <span class="entry-date">Day 1 - Jan 7</span>
+                <div class="entry-rating">
+                  <span class="star">&#9733;</span>
+                  <span class="star">&#9733;</span>
+                  <span class="star">&#9733;</span>
+                  <span class="star">&#9733;</span>
+                  <span class="star empty">&#9733;</span>
+                </div>
+              </div>
+              <p class="entry-quote">"You can have more than you've got because you can become more than you are."</p>
+              <span class="entry-author">Jim Rohn</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Questions Summary Section -->
+  <div style="max-width: 800px; margin: 60px auto; padding: 20px;">
+    <div style="border: 4px solid #fff; background: #000; padding: 30px;">
+      <h2 style="font-family: var(--font-sans); margin-bottom: 20px;">
+        <span style="background: var(--accent-primary); padding: 4px 8px;">Proposed</span> Reflection Questions
+      </h2>
+      <p style="color: var(--text-secondary); margin-bottom: 30px;">
+        Based on the quote themes (personal responsibility, vision, process, overcoming fear, identity), these 2-3 questions help users internalize the message and commit to action:
+      </p>
+      <div style="display: grid; gap: 20px;">
+        <div style="border-left: 4px solid var(--accent-success); padding-left: 16px;">
+          <h3 style="color: var(--accent-success); font-size: 0.8rem; margin-bottom: 8px;">Question 1: Reflection</h3>
+          <p style="font-size: 1.1rem;">"What does this quote mean for you today?"</p>
+          <p style="color: var(--text-muted); font-size: 0.85rem; margin-top: 8px;">
+            Purpose: Helps users personalize the message and connect it to their current situation.
+          </p>
+        </div>
+        <div style="border-left: 4px solid var(--accent-primary); padding-left: 16px;">
+          <h3 style="color: var(--accent-primary); font-size: 0.8rem; margin-bottom: 8px;">Question 2: Action</h3>
+          <p style="font-size: 1.1rem;">"What will you do differently after reading this?"</p>
+          <p style="color: var(--text-muted); font-size: 0.85rem; margin-top: 8px;">
+            Purpose: Transforms insight into commitment. Creates accountability.
+          </p>
+        </div>
+        <div style="border-left: 4px solid var(--accent-warning); padding-left: 16px;">
+          <h3 style="color: var(--accent-warning); font-size: 0.8rem; margin-bottom: 8px;">Rating System (1-5 Stars)</h3>
+          <p style="font-size: 1.1rem;">How much does this resonate with you?</p>
+          <p style="color: var(--text-muted); font-size: 0.85rem; margin-top: 8px;">
+            Purpose: Enables filtering favorites later. Also provides feedback on which quotes resonate most.
+          </p>
+        </div>
+      </div>
+      <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #333;">
+        <h3 style="font-size: 0.9rem; margin-bottom: 10px;">Alternative Questions Considered:</h3>
+        <ul style="color: var(--text-secondary); font-size: 0.85rem; list-style: none;">
+          <li style="margin-bottom: 8px;">- "What's been holding you back from embodying this mindset?"</li>
+          <li style="margin-bottom: 8px;">- "Where in your life can you apply this wisdom today?"</li>
+          <li style="margin-bottom: 8px;">- "What would change if you truly believed this?"</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Toggle Journal Views
+    document.querySelectorAll('.journal-toggle').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const targetId = btn.dataset.target;
+        const phoneFrame = btn.closest('.phone-frame');
+        const mainView = phoneFrame.querySelector('.main-view');
+        const journalPage = phoneFrame.querySelector(`#${targetId}`);
+
+        mainView.style.display = 'none';
+        journalPage.classList.add('active');
+      });
+    });
+
+    // Back Button from Journal
+    document.querySelectorAll('.journal-back').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const phoneFrame = btn.closest('.phone-frame');
+        const mainView = phoneFrame.querySelector('.main-view');
+        const journalPage = btn.closest('.journal-page');
+        const entryDetail = phoneFrame.querySelector('.entry-detail');
+
+        journalPage.classList.remove('active');
+        if (entryDetail) entryDetail.classList.remove('active');
+        mainView.style.display = 'block';
+      });
+    });
+
+    // Entry Detail View (Option 1)
+    document.querySelectorAll('.journal-entry[data-entry]').forEach(entry => {
+      entry.addEventListener('click', () => {
+        const phoneFrame = entry.closest('.phone-frame');
+        const journalPage = entry.closest('.journal-page');
+        const entryDetail = phoneFrame.querySelector('.entry-detail');
+
+        if (entryDetail) {
+          journalPage.classList.remove('active');
+          entryDetail.classList.add('active');
+        }
+      });
+    });
+
+    // Back from Entry Detail
+    document.querySelectorAll('.detail-back').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const phoneFrame = btn.closest('.phone-frame');
+        const entryDetail = btn.closest('.entry-detail');
+        const journalPage = phoneFrame.querySelector('.journal-page');
+
+        entryDetail.classList.remove('active');
+        journalPage.classList.add('active');
+      });
+    });
+
+    // Star Rating Interaction
+    document.querySelectorAll('.star-rating .star, .star-row .star-btn').forEach(star => {
+      star.addEventListener('click', (e) => {
+        const container = e.target.closest('.star-rating, .stars');
+        const stars = container.querySelectorAll('.star, .star-btn');
+        const index = Array.from(stars).indexOf(e.target);
+
+        stars.forEach((s, i) => {
+          s.classList.toggle('active', i <= index);
+        });
+      });
+    });
+
+    // Rating Dots Interaction (Option 2)
+    document.querySelectorAll('.rating-inline .dot').forEach(dot => {
+      dot.addEventListener('click', (e) => {
+        const container = e.target.closest('.rating-inline');
+        const dots = container.querySelectorAll('.dot');
+        const index = Array.from(dots).indexOf(e.target);
+
+        dots.forEach((d, i) => {
+          d.classList.toggle('active', i <= index);
+        });
+      });
+    });
+
+    // Filter Tabs
+    document.querySelectorAll('.filter-tab').forEach(tab => {
+      tab.addEventListener('click', (e) => {
+        const tabs = e.target.closest('.filter-tabs').querySelectorAll('.filter-tab');
+        tabs.forEach(t => t.classList.remove('active'));
+        e.target.classList.add('active');
+      });
+    });
+  </script>
+</body>
+</html>

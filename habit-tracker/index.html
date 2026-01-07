@@ -361,23 +361,25 @@
                     </div>
                 </div>
 
-                <!-- Daily Completion Chart -->
-                <section class="chart-section">
-                    <h2>Daily habits completion trend</h2>
-                    <div class="chart-container">
-                        <canvas id="completion-chart"></canvas>
+                <!-- Completion Trends -->
+                <section class="chart-section" id="completion-trends-section">
+                    <h2>Completion trends</h2>
+                    <div class="completion-section">
+                        <h3 class="strength-subtitle">Daily habits</h3>
+                        <div class="chart-container">
+                            <canvas id="completion-chart"></canvas>
+                        </div>
                     </div>
-                </section>
-
-                <!-- Weekly Goals Completion Trend -->
-                <section class="chart-section" id="weekly-goal-trend-section">
-                    <h2>Weekly goals completion trend</h2>
-                    <div class="weekly-goal-filter" id="weekly-goal-filter"></div>
-                    <div class="chart-container" id="weekly-goal-chart-container">
-                        <canvas id="weekly-goal-trend-chart"></canvas>
-                    </div>
-                    <div class="no-insights hidden" id="weekly-goal-trend-empty">
-                        No weekly goals to display.
+                    <div class="completion-divider"></div>
+                    <div class="completion-section" id="weekly-goal-trend-section">
+                        <h3 class="strength-subtitle">Weekly goals habits</h3>
+                        <div class="weekly-goal-filter" id="weekly-goal-filter"></div>
+                        <div class="chart-container" id="weekly-goal-chart-container">
+                            <canvas id="weekly-goal-trend-chart"></canvas>
+                        </div>
+                        <div class="no-insights hidden" id="weekly-goal-trend-empty">
+                            No weekly goals to display.
+                        </div>
                     </div>
                 </section>
 
@@ -390,6 +392,7 @@
                             <!-- Will be populated by JavaScript -->
                         </div>
                     </div>
+                    <div class="completion-divider"></div>
                     <div class="strength-section">
                         <h3 class="strength-subtitle">Weekly goals habits</h3>
                         <div id="strength-list-weekly" class="strength-list">
@@ -401,7 +404,7 @@
                 <!-- Calendar Heatmap -->
                 <section class="chart-section">
                     <h2>Calendar</h2>
-                    <div id="calendar-heatmap" class="calendar-heatmap">
+                    <div id="calendar-heatmap" class="calendar-shell">
                         <!-- Calendar will be rendered here -->
                     </div>
                 </section>
@@ -409,7 +412,7 @@
                 <!-- Weekly Patterns -->
                 <section class="chart-section">
                     <h2>Weekly Patterns</h2>
-                    <div class="weekday-grid" id="weekday-grid">
+                    <div class="weekday-patterns" id="weekday-grid">
                         <!-- Will be populated by JavaScript -->
                     </div>
                 </section>

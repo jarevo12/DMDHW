@@ -5,12 +5,17 @@ import { getDb, collection, getDocs } from './firebase-init.js';
 import { habits, currentUser, dashboardMonth, setDashboardMonth, accountCreatedAt } from './state.js';
 import { formatDate } from './utils.js';
 import { renderHabitStrength, renderWeekdayPattern } from './ui/insights-ui.js';
+import { selectCalendarDate } from './calendar-picker.js';
 import { getScheduledHabitsForDate, isHabitScheduledForDate } from './schedule.js';
 
 // Global chart instance
 let completionChartInstance = null;
 let weeklyGoalTrendChartInstance = null;
 const weeklyGoalSelections = {
+    morning: null,
+    evening: null
+};
+const weeklyGoalPendingSelections = {
     morning: new Set(),
     evening: new Set()
 };
@@ -18,6 +23,38 @@ let lastDashboardEntriesMap = null;
 let lastDashboardLastDay = null;
 let lastDashboardYear = null;
 let lastDashboardMonth = null;
+
+function getHabitStartDate(habit) {
+    if (!habit) return null;
+    const raw = habit.schedule?.intervalStartDate || habit.createdAt;
+    if (!raw) return null;
+    if (raw instanceof Date) {
+        const date = new Date(raw);
+        date.setHours(0, 0, 0, 0);
+        return date;
+    }
+    if (typeof raw === 'string' || typeof raw === 'number') {
+        const date = new Date(raw);
+        if (Number.isNaN(date.getTime())) return null;
+        date.setHours(0, 0, 0, 0);
+        return date;
+    }
+    if (typeof raw.toDate === 'function') {
+        const date = raw.toDate();
+        if (date instanceof Date && !Number.isNaN(date.getTime())) {
+            date.setHours(0, 0, 0, 0);
+            return date;
+        }
+    }
+    if (typeof raw.seconds === 'number') {
+        const date = new Date(raw.seconds * 1000);
+        if (!Number.isNaN(date.getTime())) {
+            date.setHours(0, 0, 0, 0);
+            return date;
+        }
+    }
+    return null;
+}
 
 /**
  * Render the dashboard with stats and charts
@@ -212,10 +249,10 @@ export async function updateDashboardData(year, month) {
     if (bestStreakEl) bestStreakEl.textContent = bestStreak;
 
     // Render calendar with real data
-    renderCalendar(year, month, entriesMap);
+    renderCalendar(year, month, entriesMap, currentType);
 
     // Render weekday patterns
-    renderWeekdayPatterns(entriesMap);
+    renderWeekdayPatterns(entriesMap, year, month, chartStartDay, lastDay, currentType);
 }
 
 function renderDashboardHabitStrength(currentType, dailyHabitStreaks, weeklyHabitStreaks, entriesMap, year, month, lastDay) {
@@ -499,17 +536,22 @@ function calculateHabitStrength(completions) {
     return { strength, status: 'fragile' };
 }
 
-function renderCalendar(year, month, entriesMap) {
+function renderCalendar(year, month, entriesMap, currentType) {
     const container = document.getElementById('calendar-heatmap');
     if (!container) return;
+    container.dataset.type = currentType;
 
     const firstDay = new Date(year, month, 1);
     const lastDay = new Date(year, month + 1, 0);
     const startDayOfWeek = firstDay.getDay();
-    const today = formatDate(new Date());
+    const todayDate = new Date();
+    todayDate.setHours(0, 0, 0, 0);
+    const today = formatDate(todayDate);
 
     const weekdays = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-    let html = '<div class="calendar-weekdays">';
+    let html = '<div class="calendar-layout">';
+    html += '<div class="calendar-grid">';
+    html += '<div class="calendar-weekdays">';
     weekdays.forEach(day => {
         html += `<span class="weekday-label">${day}</span>`;
     });
@@ -520,49 +562,110 @@ function renderCalendar(year, month, entriesMap) {
         html += '<div class="calendar-day empty"></div>';
     }
 
-    const allHabits = [...habits.morning, ...habits.evening];
-    const totalHabitsCount = allHabits.length;
-
     // Days of month
     for (let day = 1; day <= lastDay.getDate(); day++) {
-        const dateString = formatDate(new Date(year, month, day));
+        const date = new Date(year, month, day);
+        const dateString = formatDate(date);
         const isToday = dateString === today;
+        const isFuture = date > todayDate;
         const entry = entriesMap[dateString];
-
+        const scheduled = getScheduledHabitsForDate(habits, dateString)[currentType]
+            .filter(habit => habit.schedule?.type !== 'weekly_goal');
+        const scheduledCount = scheduled.length;
         let completedCount = 0;
-        if (entry) {
-            allHabits.forEach(habit => {
-                const type = habit.type;
-                if (entry[type] && entry[type].includes(habit.id)) {
+        if (entry && scheduledCount > 0 && !isFuture) {
+            scheduled.forEach(habit => {
+                if (entry[currentType] && entry[currentType].includes(habit.id)) {
                     completedCount++;
                 }
             });
         }
 
-        const completionRate = totalHabitsCount > 0 ? completedCount / totalHabitsCount : 0;
         let level = 0;
-        if (completionRate >= 1) level = 5;
-        else if (completionRate >= 0.8) level = 4;
-        else if (completionRate >= 0.6) level = 3;
-        else if (completionRate >= 0.4) level = 2;
-        else if (completionRate > 0) level = 1;
+        let isNoSchedule = false;
+        let isFutureDay = false;
+        if (isFuture) {
+            isFutureDay = true;
+            level = 0;
+        } else if (scheduledCount === 0) {
+            isNoSchedule = true;
+            level = 0;
+        } else if (scheduledCount > 0) {
+            const completionRate = completedCount / scheduledCount;
+            if (completionRate >= 1) level = 5;
+            else if (completionRate >= 0.8) level = 4;
+            else if (completionRate >= 0.6) level = 3;
+            else if (completionRate >= 0.4) level = 2;
+            else level = 1;
+        }
 
-        html += `<div class="calendar-day level-${level} ${isToday ? 'today' : ''}">${day}</div>`;
+        html += `<div class="calendar-day level-${level} ${isNoSchedule ? 'na' : ''} ${isFutureDay ? 'future' : ''} ${isToday ? 'today' : ''}" data-date="${dateString}">${day}</div>`;
     }
 
+    html += '</div></div>';
+    html += `
+        <div class="calendar-legend">
+            <div class="calendar-legend-item">
+                <span class="legend-swatch na"></span>
+                <span>No scheduled habits</span>
+            </div>
+            <div class="calendar-legend-item">
+                <span class="legend-swatch level-1"></span>
+                <span>0–39% complete</span>
+            </div>
+            <div class="calendar-legend-item">
+                <span class="legend-swatch level-2"></span>
+                <span>40–59% complete</span>
+            </div>
+            <div class="calendar-legend-item">
+                <span class="legend-swatch level-3"></span>
+                <span>60–79% complete</span>
+            </div>
+            <div class="calendar-legend-item">
+                <span class="legend-swatch level-4"></span>
+                <span>80–99% complete</span>
+            </div>
+            <div class="calendar-legend-item">
+                <span class="legend-swatch level-5"></span>
+                <span>100% complete</span>
+            </div>
+        </div>
+    `;
     html += '</div>';
     container.innerHTML = html;
+
+    if (!container.dataset.bound) {
+        container.addEventListener('click', (event) => {
+            const target = event.target;
+            if (!(target instanceof HTMLElement)) return;
+            const dayEl = target.closest('.calendar-day');
+            if (!dayEl || dayEl.classList.contains('empty')) return;
+            const dateString = dayEl.dataset.date;
+            if (!dateString) return;
+            const desiredTab = container.dataset.type || 'morning';
+            const tabButton = document.querySelector(`.tab-btn[data-tab="${desiredTab}"]`);
+            if (tabButton instanceof HTMLButtonElement) {
+                tabButton.click();
+            }
+            selectCalendarDate(dateString);
+            const todayNav = document.querySelector('.nav-btn[data-view="today"]');
+            if (todayNav instanceof HTMLButtonElement) {
+                todayNav.click();
+            }
+        });
+        container.dataset.bound = 'true';
+    }
 }
 
 /**
  * Calculate and render weekday patterns
  * @param {Object} entriesMap - Map of date strings to entry data
  */
-function renderWeekdayPatterns(entriesMap) {
-    const allHabits = [...habits.morning, ...habits.evening];
-    const totalHabitsCount = allHabits.length;
+function renderWeekdayPatterns(entriesMap, year, month, startDay, lastDay, currentType) {
+    const typeHabits = habits[currentType] || [];
+    const dailyHabits = typeHabits.filter(habit => habit.schedule?.type !== 'weekly_goal');
 
-    if (totalHabitsCount === 0) {
+    if (dailyHabits.length === 0) {
         renderWeekdayPattern({ rates: [] });
         return;
     }
@@ -570,24 +673,32 @@ function renderWeekdayPatterns(entriesMap) {
     // Calculate completion rate for each day of the week (0=Sun, 6=Sat)
     const weekdayStats = Array.from({ length: 7 }, () => ({ completed: 0, possible: 0 }));
 
-    Object.entries(entriesMap).forEach(([dateString, entry]) => {
-        const date = new Date(dateString);
+    for (let day = startDay; day <= lastDay; day++) {
+        const date = new Date(year, month, day);
+        const dateString = formatDate(date);
+        const entry = entriesMap[dateString];
         const dayOfWeek = date.getDay();
 
-        allHabits.forEach(habit => {
+        const scheduled = getScheduledHabitsForDate(habits, dateString)[currentType]
+            .filter(habit => habit.schedule?.type !== 'weekly_goal');
+        if (scheduled.length === 0) {
+            continue;
+        }
+
+        scheduled.forEach(habit => {
             weekdayStats[dayOfWeek].possible++;
-            const type = habit.type;
-            if (entry && entry[type] && entry[type].includes(habit.id)) {
+            if (entry && entry[currentType] && entry[currentType].includes(habit.id)) {
                 weekdayStats[dayOfWeek].completed++;
             }
         });
-    });
+    }
 
     const rates = weekdayStats.map(stat => ({
-        rate: stat.possible > 0 ? Math.round((stat.completed / stat.possible) * 100) : 0
+        rate: stat.possible > 0 ? Math.round((stat.completed / stat.possible) * 100) : 0,
+        possible: stat.possible
     }));
 
-    renderWeekdayPattern({ rates });
+    renderWeekdayPattern({ rates, type: currentType });
 }
 
 function renderCompletionChart(year, month, lastDay, startDay, entriesMap, currentType) {
@@ -675,6 +786,25 @@ function renderCompletionChart(year, month, lastDay, startDay, entriesMap, curre
     }];
 
     const noScheduleOverlayColor = 'rgba(160, 160, 160, 0.2)';
+    const buildNoSchedulePattern = () => {
+        const patternCanvas = document.createElement('canvas');
+        patternCanvas.width = 8;
+        patternCanvas.height = 8;
+        const pctx = patternCanvas.getContext('2d');
+        if (!pctx) return null;
+        pctx.fillStyle = 'rgba(10, 10, 10, 0.8)';
+        pctx.fillRect(0, 0, patternCanvas.width, patternCanvas.height);
+        pctx.strokeStyle = 'rgba(255, 255, 255, 0.15)';
+        pctx.lineWidth = 2;
+        pctx.beginPath();
+        pctx.moveTo(-2, 6);
+        pctx.lineTo(6, -2);
+        pctx.moveTo(2, 10);
+        pctx.lineTo(10, 2);
+        pctx.stroke();
+        return pctx.createPattern(patternCanvas, 'repeat');
+    };
+    const noSchedulePattern = buildNoSchedulePattern();
     const noScheduleOverlay = {
         id: 'noScheduleOverlay',
         beforeDatasetsDraw(chart, args, options) {
@@ -707,7 +837,7 @@ function renderCompletionChart(year, month, lastDay, startDay, entriesMap, curre
                 if (right <= left) return;
 
                 ctx.save();
-                ctx.fillStyle = options.color || noScheduleOverlayColor;
+                ctx.fillStyle = options.pattern || options.color || noScheduleOverlayColor;
                 ctx.fillRect(left, chartArea.top, right - left, chartArea.bottom - chartArea.top);
                 ctx.restore();
             };
@@ -742,7 +872,8 @@ function renderCompletionChart(year, month, lastDay, startDay, entriesMap, curre
             maintainAspectRatio: false,
             plugins: {
                 noScheduleOverlay: {
-                    color: noScheduleOverlayColor
+                    color: noScheduleOverlayColor,
+                    pattern: noSchedulePattern
                 },
                 legend: {
                     display: true,
@@ -771,7 +902,7 @@ function renderCompletionChart(year, month, lastDay, startDay, entriesMap, curre
                             const labels = Chart.defaults.plugins.legend.labels.generateLabels(chart);
                             labels.push({
                                 text: 'No scheduled habits',
-                                fillStyle: noScheduleOverlayColor,
+                                fillStyle: noSchedulePattern || noScheduleOverlayColor,
                                 strokeStyle: 'rgba(160, 160, 160, 0.6)',
                                 lineWidth: 1,
                                 hidden: false,
@@ -788,6 +919,8 @@ function renderCompletionChart(year, month, lastDay, startDay, entriesMap, curre
                     bodyColor: '#ffffff',
                     borderColor: '#ffffff',
                     borderWidth: 2,
+                    boxWidth: 12,
+                    boxHeight: 12,
                     padding: 12,
                     cornerRadius: 0,
                     displayColors: true,
@@ -871,7 +1004,13 @@ function renderWeeklyGoalTrend(year, month, lastDay, entriesMap, currentType) {
     const chartContainer = document.getElementById('weekly-goal-chart-container');
     if (!section || !filterEl || !canvas || !emptyEl || !chartContainer) return;
 
-    const weeklyHabits = habits[currentType].filter(habit => habit.schedule?.type === 'weekly_goal');
+    const monthEnd = new Date(year, month, lastDay, 23, 59, 59, 999);
+    const weeklyHabits = habits[currentType]
+        .filter(habit => habit.schedule?.type === 'weekly_goal')
+        .filter(habit => {
+            const startDate = getHabitStartDate(habit);
+            return !startDate || startDate <= monthEnd;
+        });
     if (weeklyHabits.length === 0) {
         if (weeklyGoalTrendChartInstance) {
             weeklyGoalTrendChartInstance.destroy();
@@ -883,16 +1022,17 @@ function renderWeeklyGoalTrend(year, month, lastDay, entriesMap, currentType) {
         return;
     }
 
-    const selection = weeklyGoalSelections[currentType] || new Set();
-    if (selection.size === 0) {
+    let selection = weeklyGoalSelections[currentType];
+    if (!selection) {
+        selection = new Set();
         weeklyHabits.forEach(habit => selection.add(habit.id));
-    } else {
-        const validIds = new Set(weeklyHabits.map(h => h.id));
-        Array.from(selection).forEach(id => {
-            if (!validIds.has(id)) selection.delete(id);
-        });
     }
+    const validIds = new Set(weeklyHabits.map(h => h.id));
+    Array.from(selection).forEach(id => {
+        if (!validIds.has(id)) selection.delete(id);
+    });
     weeklyGoalSelections[currentType] = selection;
+    weeklyGoalPendingSelections[currentType] = new Set(selection);
 
     renderWeeklyGoalFilter(filterEl, weeklyHabits, selection, currentType);
 
@@ -902,15 +1042,19 @@ function renderWeeklyGoalTrend(year, month, lastDay, entriesMap, currentType) {
 
     const datasets = weeklyHabits
         .filter(habit => selection.has(habit.id))
-        .map((habit, index) => {
+        .map((habit) => {
+            const habitStartDate = getHabitStartDate(habit);
             const goalValue = habit.schedule?.timesPerWeek;
             const goal = Number.isFinite(goalValue) && goalValue > 0 ? goalValue : 1;
             const data = weekRanges.map(range => {
                 if (!range) return null;
-                const doneCount = countHabitCompletions(entriesMap, habit, range.start, range.end);
+                if (habitStartDate && range.end < habitStartDate) return null;
+                const rangeStart = habitStartDate && habitStartDate > range.start ? habitStartDate : range.start;
+                const doneCount = countHabitCompletions(entriesMap, habit, rangeStart, range.end);
                 return Math.round((Math.min(doneCount, goal) / goal) * 100);
             });
-            const color = palette[index % palette.length];
+            const habitIndex = weeklyHabits.findIndex(item => item.id === habit.id);
+            const color = palette[Math.max(habitIndex, 0) % palette.length];
             return {
                 label: `${habit.name} (${goal}x/wk)`,
                 data,
@@ -1007,6 +1151,17 @@ function renderWeeklyGoalTrend(year, month, lastDay, entriesMap, currentType) {
                         family: 'Courier New'
                     },
                     callbacks: {
+                        labelColor: (context) => {
+                            const color = context.dataset?.borderColor || '#ffffff';
+                            return {
+                                borderColor: color,
+                                backgroundColor: color,
+                                borderWidth: 1,
+                                borderDash: [],
+                                borderDashOffset: 0,
+                                borderRadius: 0
+                            };
+                        },
                         label: (context) => {
                             const value = context.parsed?.y;
                             const percent = Number.isFinite(value) ? Math.round(value) : 0;
@@ -1043,6 +1198,7 @@ function renderWeeklyGoalFilter(container, weeklyHabits, selection, currentType)
                         </label>
                     `;
                 }).join('')}
+                <button type="button" class="dropdown-save" data-action="save">Save</button>
             </div>
         </div>
     `;
@@ -1058,13 +1214,22 @@ function renderWeeklyGoalFilter(container, weeklyHabits, selection, currentType)
             }
             if (target.dataset.action === 'all') {
                 const type = container.dataset.type || 'morning';
-                const selections = weeklyGoalSelections[type] || new Set();
+                const selections = weeklyGoalPendingSelections[type] || new Set();
                 const habitIds = Array.from(container.querySelectorAll('input[type="checkbox"]'))
                     .map(input => input.dataset.id)
                     .filter(Boolean);
                 selections.clear();
                 habitIds.forEach(id => selections.add(id));
-                weeklyGoalSelections[type] = selections;
+                weeklyGoalPendingSelections[type] = selections;
+                container.querySelectorAll('input[type="checkbox"]').forEach(input => {
+                    input.checked = true;
+                });
+                return;
+            }
+            if (target.dataset.action === 'save') {
+                const type = container.dataset.type || 'morning';
+                const selections = weeklyGoalPendingSelections[type] || new Set();
+                weeklyGoalSelections[type] = new Set(selections);
                 renderWeeklyGoalTrend(lastDashboardYear, lastDashboardMonth, lastDashboardLastDay, lastDashboardEntriesMap, type);
             }
         });
@@ -1074,14 +1239,13 @@ function renderWeeklyGoalFilter(container, weeklyHabits, selection, currentType)
             const habitId = target.dataset.id;
             if (!habitId) return;
             const type = container.dataset.type || 'morning';
-            const selections = weeklyGoalSelections[type] || new Set();
+            const selections = weeklyGoalPendingSelections[type] || new Set();
             if (target.checked) {
                 selections.add(habitId);
             } else {
                 selections.delete(habitId);
             }
-            weeklyGoalSelections[type] = selections;
-            renderWeeklyGoalTrend(lastDashboardYear, lastDashboardMonth, lastDashboardLastDay, lastDashboardEntriesMap, type);
+            weeklyGoalPendingSelections[type] = selections;
         });
         container.dataset.bound = 'true';
     }
