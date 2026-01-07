@@ -362,58 +362,66 @@
                 </div>
 
                 <!-- Completion Trends -->
-                <section class="chart-section" id="completion-trends-section">
+                <section class="chart-section collapsible" id="completion-trends-section" data-collapsible="true" data-section-id="completion-trends">
                     <h2>Completion trends</h2>
-                    <div class="completion-section">
-                        <h3 class="strength-subtitle">Daily habits</h3>
-                        <div class="chart-container">
-                            <canvas id="completion-chart"></canvas>
+                    <div class="section-body">
+                        <div class="completion-section">
+                            <h3 class="strength-subtitle">Daily habits</h3>
+                            <div class="chart-container">
+                                <canvas id="completion-chart"></canvas>
+                            </div>
                         </div>
-                    </div>
-                    <div class="completion-divider"></div>
-                    <div class="completion-section" id="weekly-goal-trend-section">
-                        <h3 class="strength-subtitle">Weekly goals habits</h3>
-                        <div class="weekly-goal-filter" id="weekly-goal-filter"></div>
-                        <div class="chart-container" id="weekly-goal-chart-container">
-                            <canvas id="weekly-goal-trend-chart"></canvas>
-                        </div>
-                        <div class="no-insights hidden" id="weekly-goal-trend-empty">
-                            No weekly goals to display.
+                        <div class="completion-divider"></div>
+                        <div class="completion-section" id="weekly-goal-trend-section">
+                            <h3 class="strength-subtitle">Weekly goals habits</h3>
+                            <div class="weekly-goal-filter" id="weekly-goal-filter"></div>
+                            <div class="chart-container" id="weekly-goal-chart-container">
+                                <canvas id="weekly-goal-trend-chart"></canvas>
+                            </div>
+                            <div class="no-insights hidden" id="weekly-goal-trend-empty">
+                                No weekly goals to display.
+                            </div>
                         </div>
                     </div>
                 </section>
 
                 <!-- Habit Strength Score -->
-                <section class="chart-section">
+                <section class="chart-section collapsible" id="habit-strength-section" data-collapsible="true" data-section-id="habit-strength">
                     <h2>Habit Strength Score</h2>
-                    <div class="strength-section">
-                        <h3 class="strength-subtitle">Daily habits</h3>
-                        <div id="strength-list-daily" class="strength-list">
-                            <!-- Will be populated by JavaScript -->
+                    <div class="section-body">
+                        <div class="strength-section">
+                            <h3 class="strength-subtitle">Daily habits</h3>
+                            <div id="strength-list-daily" class="strength-list">
+                                <!-- Will be populated by JavaScript -->
+                            </div>
                         </div>
-                    </div>
-                    <div class="completion-divider"></div>
-                    <div class="strength-section">
-                        <h3 class="strength-subtitle">Weekly goals habits</h3>
-                        <div id="strength-list-weekly" class="strength-list">
-                            <!-- Will be populated by JavaScript -->
+                        <div class="completion-divider"></div>
+                        <div class="strength-section">
+                            <h3 class="strength-subtitle">Weekly goals habits</h3>
+                            <div id="strength-list-weekly" class="strength-list">
+                                <!-- Will be populated by JavaScript -->
+                            </div>
                         </div>
                     </div>
                 </section>
 
                 <!-- Calendar Heatmap -->
-                <section class="chart-section">
+                <section class="chart-section collapsible" id="calendar-section" data-collapsible="true" data-section-id="calendar">
                     <h2>Calendar</h2>
-                    <div id="calendar-heatmap" class="calendar-shell">
-                        <!-- Calendar will be rendered here -->
+                    <div class="section-body">
+                        <div id="calendar-heatmap" class="calendar-shell">
+                            <!-- Calendar will be rendered here -->
+                        </div>
                     </div>
                 </section>
 
                 <!-- Weekly Patterns -->
-                <section class="chart-section">
+                <section class="chart-section collapsible" id="weekly-patterns-section" data-collapsible="true" data-section-id="weekly-patterns">
                     <h2>Weekly Patterns</h2>
-                    <div class="weekday-patterns" id="weekday-grid">
-                        <!-- Will be populated by JavaScript -->
+                    <div class="section-body">
+                        <div class="weekday-patterns" id="weekday-grid">
+                            <!-- Will be populated by JavaScript -->
+                        </div>
                     </div>
                 </section>
             </main>

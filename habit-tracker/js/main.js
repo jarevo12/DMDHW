@@ -511,6 +511,8 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
+    initDashboardSectionToggles();
+
     // Dashboard tabs
     document.querySelectorAll('.dash-tab').forEach(btn => {
         btn.addEventListener('click', () => {
@@ -632,6 +634,47 @@ document.addEventListener('DOMContentLoaded', () => {
     // Start the app
     init();
 });
+
+function initDashboardSectionToggles() {
+    const storageKey = 'dashboardSectionState';
+    let savedState = {};
+    try {
+        savedState = JSON.parse(localStorage.getItem(storageKey) || '{}');
+    } catch (error) {
+        savedState = {};
+    }
+
+    const setSectionState = (section, isExpanded) => {
+        section.classList.toggle('expanded', isExpanded);
+        section.classList.toggle('collapsed', !isExpanded);
+        const header = section.querySelector('h2');
+        if (header) header.setAttribute('aria-expanded', isExpanded ? 'true' : 'false');
+        if (isExpanded) {
+            requestAnimationFrame(() => {
+                window.dispatchEvent(new Event('resize'));
+            });
+        }
+    };
+
+    document.querySelectorAll('.chart-section[data-collapsible="true"]').forEach(section => {
+        const sectionId = section.dataset.sectionId;
+        if (!sectionId || section.dataset.bound) return;
+        const isExpanded = savedState[sectionId] === true;
+        setSectionState(section, isExpanded);
+
+        const header = section.querySelector('h2');
+        if (header) {
+            header.addEventListener('click', () => {
+                const nextExpanded = !section.classList.contains('expanded');
+                setSectionState(section, nextExpanded);
+                savedState[sectionId] = nextExpanded;
+                localStorage.setItem(storageKey, JSON.stringify(savedState));
+            });
+        }
+
+        section.dataset.bound = 'true';
+    });
+}
 
 // Register Service Worker
 if ('serviceWorker' in navigator) {

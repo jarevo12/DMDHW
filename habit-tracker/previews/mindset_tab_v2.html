@@ -1,0 +1,1131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mindset Tab - Option 1 Refined</title>
+  <style>
+    /* Reset */
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg-primary: #000000;
+      --bg-secondary: #0a0a0a;
+      --text-primary: #ffffff;
+      --text-secondary: #aaaaaa;
+      --text-muted: #666666;
+      --text-inverse: #000000;
+      --accent-primary: #6a00ff;
+      --accent-success: #ccff00;
+      --accent-danger: #ff0000;
+      --accent-warning: #ffff00;
+      --border-color: #ffffff;
+      --border-width: 4px;
+      --border-width-thin: 2px;
+      --spacing-xs: 4px;
+      --spacing-sm: 8px;
+      --spacing-md: 16px;
+      --spacing-lg: 24px;
+      --spacing-xl: 32px;
+      --font-mono: 'SF Mono', 'Consolas', 'Monaco', 'Courier New', monospace;
+      --font-sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    }
+
+    body {
+      font-family: var(--font-mono);
+      background: #1a1a1a;
+      color: var(--text-primary);
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+    }
+
+    h1, h2, h3, h4 {
+      font-family: var(--font-sans);
+      font-weight: 900;
+      text-transform: uppercase;
+      letter-spacing: -1px;
+    }
+
+    /* Phone Frame */
+    .phone-frame {
+      width: 100%;
+      max-width: 400px;
+      background: var(--bg-primary);
+      border: var(--border-width) solid var(--border-color);
+      min-height: 750px;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      position: relative;
+    }
+
+    /* App Header */
+    .app-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      height: 70px;
+      border-bottom: var(--border-width) solid var(--border-color);
+      padding: 0 var(--spacing-md);
+      background: var(--bg-primary);
+      flex-shrink: 0;
+    }
+
+    .header-title {
+      font-family: var(--font-sans);
+      font-weight: 900;
+      font-size: 1.2rem;
+      text-transform: uppercase;
+    }
+
+    .btn-icon {
+      width: 44px;
+      height: 44px;
+      border: var(--border-width-thin) solid var(--border-color);
+      background: transparent;
+      color: var(--text-primary);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      font-size: 1.2rem;
+      transition: background 0.15s, color 0.15s;
+    }
+
+    .btn-icon:hover {
+      background: var(--text-primary);
+      color: var(--bg-primary);
+    }
+
+    .btn-icon svg {
+      width: 24px;
+      height: 24px;
+      fill: none;
+      stroke: currentColor;
+      stroke-width: 2.5;
+    }
+
+    /* Content Area - with Insights-style scrollbar */
+    .mindset-content {
+      flex: 1;
+      overflow-y: auto;
+      overflow-x: hidden;
+    }
+
+    .mindset-content::-webkit-scrollbar {
+      width: 6px;
+    }
+
+    .mindset-content::-webkit-scrollbar-track {
+      background: #111;
+    }
+
+    .mindset-content::-webkit-scrollbar-thumb {
+      background: #333;
+      border-radius: 0;
+    }
+
+    .mindset-content::-webkit-scrollbar-thumb:hover {
+      background: #444;
+    }
+
+    /* Section Headers - Dashboard Style */
+    .section-block {
+      border-bottom: var(--border-width) solid var(--border-color);
+    }
+
+    .section-header {
+      padding: var(--spacing-md);
+      border-bottom: 1px solid #333;
+    }
+
+    .section-header h2 {
+      font-size: 1rem;
+      display: flex;
+      align-items: center;
+    }
+
+    .section-header h2::before {
+      content: '// ';
+      color: var(--accent-primary);
+      margin-right: var(--spacing-sm);
+    }
+
+    .section-content {
+      padding: var(--spacing-lg);
+    }
+
+    /* Quote Section */
+    .quote-block {
+      margin-bottom: var(--spacing-lg);
+    }
+
+    .quote-mark {
+      font-size: 3rem;
+      color: var(--accent-success);
+      line-height: 0.5;
+      margin-bottom: var(--spacing-sm);
+    }
+
+    /* Quote text styled like habit names */
+    .quote-text {
+      font-family: var(--font-mono);
+      font-weight: 900;
+      font-size: 14px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      line-height: 1.6;
+      margin-bottom: var(--spacing-lg);
+    }
+
+    /* Author Section */
+    .author-section {
+      display: flex;
+      align-items: center;
+      gap: var(--spacing-md);
+      padding: var(--spacing-md);
+      background: var(--bg-secondary);
+      border-left: var(--border-width) solid var(--accent-primary);
+    }
+
+    .author-avatar {
+      width: 48px;
+      height: 48px;
+      border: 2px solid var(--border-color);
+      background: var(--accent-primary);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 900;
+      font-size: 1.1rem;
+      flex-shrink: 0;
+    }
+
+    .author-info .author-name {
+      font-weight: 900;
+      text-transform: uppercase;
+      font-size: 0.85rem;
+    }
+
+    .author-info .author-desc {
+      color: var(--text-secondary);
+      font-size: 0.7rem;
+      text-transform: uppercase;
+      margin-top: 2px;
+    }
+
+    /* Rating Section - Now inside Reflection */
+    .rating-block {
+      margin-bottom: var(--spacing-lg);
+      padding-bottom: var(--spacing-lg);
+      border-bottom: 1px solid #333;
+    }
+
+    .rating-label {
+      font-size: 0.75rem;
+      color: var(--text-secondary);
+      text-transform: uppercase;
+      margin-bottom: var(--spacing-sm);
+      letter-spacing: 0.5px;
+    }
+
+    .star-rating {
+      display: flex;
+      gap: 6px;
+    }
+
+    .star {
+      width: 36px;
+      height: 36px;
+      border: 2px solid #333;
+      background: transparent;
+      color: #333;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.3rem;
+      transition: all 0.15s ease;
+      position: relative;
+    }
+
+    .star:hover {
+      border-color: var(--accent-warning);
+      color: var(--accent-warning);
+      transform: scale(1.1);
+    }
+
+    .star.active {
+      background: var(--accent-warning);
+      color: var(--bg-primary);
+      border-color: var(--accent-warning);
+    }
+
+    .star.active:hover {
+      transform: scale(1.1);
+    }
+
+    /* Hover preview effect */
+    .star.preview {
+      border-color: var(--accent-warning);
+      color: var(--accent-warning);
+    }
+
+    /* Questions Section */
+    .question-item {
+      margin-bottom: var(--spacing-lg);
+    }
+
+    .question-label {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      margin-bottom: var(--spacing-sm);
+    }
+
+    .question-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 4px 10px;
+      font-size: 0.7rem;
+      font-weight: 900;
+      text-transform: uppercase;
+      background: var(--text-secondary);
+      color: var(--bg-primary);
+      transition: background 0.3s ease, transform 0.2s ease;
+    }
+
+    .question-badge.answered {
+      background: var(--accent-success);
+      color: var(--bg-primary);
+    }
+
+    .question-badge .icon {
+      width: 14px;
+      height: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .question-badge .icon svg {
+      width: 14px;
+      height: 14px;
+      fill: none;
+      stroke: currentColor;
+      stroke-width: 2.5;
+    }
+
+    .question-text {
+      font-size: 0.9rem;
+      margin-bottom: var(--spacing-sm);
+      color: var(--text-primary);
+    }
+
+    .answer-input {
+      width: 100%;
+      background: var(--bg-primary);
+      border: 1px solid #333;
+      color: var(--text-primary);
+      padding: var(--spacing-sm);
+      font-family: var(--font-mono);
+      font-size: 0.85rem;
+      resize: vertical;
+      min-height: 70px;
+      transition: border-color 0.2s;
+    }
+
+    .answer-input:focus {
+      outline: none;
+      border-color: var(--accent-primary);
+    }
+
+    .answer-input.has-content {
+      border-color: var(--accent-success);
+    }
+
+    /* Save Button */
+    .save-btn {
+      width: 100%;
+      padding: var(--spacing-md);
+      background: var(--text-primary);
+      color: var(--bg-primary);
+      border: var(--border-width) solid var(--border-color);
+      font-weight: 900;
+      text-transform: uppercase;
+      cursor: pointer;
+      font-family: var(--font-mono);
+      font-size: 0.9rem;
+      transition: all 0.15s;
+    }
+
+    .save-btn:hover {
+      background: var(--accent-primary);
+      color: var(--text-primary);
+    }
+
+    .save-btn:active {
+      transform: translate(2px, 2px);
+    }
+
+    /* Success Message */
+    .success-message {
+      display: none;
+      padding: var(--spacing-md);
+      background: var(--accent-success);
+      color: var(--bg-primary);
+      text-align: center;
+      font-weight: 900;
+      text-transform: uppercase;
+      font-size: 0.85rem;
+      margin-top: var(--spacing-md);
+      animation: slideIn 0.3s ease;
+    }
+
+    .success-message.visible {
+      display: block;
+    }
+
+    @keyframes slideIn {
+      from {
+        opacity: 0;
+        transform: translateY(-10px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    /* ===== JOURNAL PAGE ===== */
+    .journal-page {
+      display: none;
+      flex-direction: column;
+      position: absolute;
+      inset: 0;
+      background: var(--bg-primary);
+      z-index: 10;
+    }
+
+    .journal-page.active {
+      display: flex;
+    }
+
+    .journal-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      height: 70px;
+      border-bottom: var(--border-width) solid var(--border-color);
+      padding: 0 var(--spacing-md);
+      flex-shrink: 0;
+    }
+
+    .back-btn {
+      width: 44px;
+      height: 44px;
+      border: var(--border-width-thin) solid var(--border-color);
+      background: transparent;
+      color: var(--text-primary);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: background 0.15s, color 0.15s;
+    }
+
+    .back-btn:hover {
+      background: var(--text-primary);
+      color: var(--bg-primary);
+    }
+
+    .journal-title {
+      font-family: var(--font-sans);
+      font-weight: 900;
+      font-size: 1rem;
+      text-transform: uppercase;
+    }
+
+    .sort-btn {
+      padding: 8px 12px;
+      border: 1px solid #444;
+      background: transparent;
+      color: var(--text-secondary);
+      font-family: var(--font-mono);
+      font-size: 0.7rem;
+      text-transform: uppercase;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+
+    .sort-btn:hover {
+      border-color: var(--text-primary);
+      color: var(--text-primary);
+    }
+
+    .filter-tabs {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      border-bottom: var(--border-width) solid var(--border-color);
+      flex-shrink: 0;
+    }
+
+    .filter-tab {
+      padding: var(--spacing-md);
+      background: transparent;
+      border: none;
+      border-right: 1px solid #333;
+      color: var(--text-secondary);
+      font-weight: 900;
+      text-transform: uppercase;
+      cursor: pointer;
+      font-size: 0.75rem;
+      transition: all 0.15s;
+    }
+
+    .filter-tab:last-child {
+      border-right: none;
+    }
+
+    .filter-tab.active {
+      background: var(--text-primary);
+      color: var(--bg-primary);
+    }
+
+    .filter-tab:hover:not(.active) {
+      background: var(--bg-secondary);
+    }
+
+    .journal-list {
+      flex: 1;
+      overflow-y: auto;
+    }
+
+    .journal-list::-webkit-scrollbar {
+      width: 6px;
+    }
+
+    .journal-list::-webkit-scrollbar-track {
+      background: #111;
+    }
+
+    .journal-list::-webkit-scrollbar-thumb {
+      background: #333;
+    }
+
+    .journal-list::-webkit-scrollbar-thumb:hover {
+      background: #444;
+    }
+
+    .journal-entry {
+      border-bottom: 1px solid #333;
+      padding: var(--spacing-md);
+      cursor: pointer;
+      transition: background 0.1s;
+    }
+
+    .journal-entry:hover {
+      background: var(--bg-secondary);
+    }
+
+    .entry-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: var(--spacing-sm);
+    }
+
+    .entry-date {
+      font-size: 0.7rem;
+      color: var(--text-muted);
+      text-transform: uppercase;
+    }
+
+    .entry-rating {
+      display: flex;
+      gap: 2px;
+    }
+
+    .entry-rating .star-icon {
+      color: var(--accent-warning);
+      font-size: 0.7rem;
+    }
+
+    .entry-rating .star-icon.empty {
+      color: #333;
+    }
+
+    .entry-quote {
+      font-size: 0.85rem;
+      line-height: 1.4;
+      margin-bottom: var(--spacing-xs);
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+
+    .entry-author {
+      font-size: 0.7rem;
+      color: var(--accent-primary);
+      text-transform: uppercase;
+    }
+
+    /* Entry Detail View */
+    .entry-detail {
+      display: none;
+      flex-direction: column;
+      position: absolute;
+      inset: 0;
+      background: var(--bg-primary);
+      z-index: 20;
+    }
+
+    .entry-detail.active {
+      display: flex;
+    }
+
+    .detail-content {
+      flex: 1;
+      padding: var(--spacing-lg);
+      overflow-y: auto;
+    }
+
+    .detail-content::-webkit-scrollbar {
+      width: 6px;
+    }
+
+    .detail-content::-webkit-scrollbar-track {
+      background: #111;
+    }
+
+    .detail-content::-webkit-scrollbar-thumb {
+      background: #333;
+    }
+
+    .detail-content::-webkit-scrollbar-thumb:hover {
+      background: #444;
+    }
+
+    .detail-meta {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: var(--spacing-lg);
+      padding-bottom: var(--spacing-md);
+      border-bottom: 1px solid #333;
+    }
+
+    .detail-meta .date {
+      font-size: 0.8rem;
+      color: var(--text-secondary);
+      text-transform: uppercase;
+    }
+
+    .detail-meta .rating {
+      display: flex;
+      gap: 4px;
+    }
+
+    .detail-meta .rating .star-icon {
+      color: var(--accent-warning);
+    }
+
+    .detail-meta .rating .star-icon.empty {
+      color: #333;
+    }
+
+    .detail-quote {
+      font-family: var(--font-mono);
+      font-weight: 900;
+      font-size: 14px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      line-height: 1.6;
+      margin-bottom: var(--spacing-lg);
+      padding: var(--spacing-md);
+      border-left: var(--border-width) solid var(--accent-success);
+      background: rgba(204, 255, 0, 0.05);
+    }
+
+    .detail-author {
+      margin-bottom: var(--spacing-xl);
+    }
+
+    .detail-author .name {
+      font-weight: 900;
+      text-transform: uppercase;
+    }
+
+    .detail-author .role {
+      color: var(--text-muted);
+      font-size: 0.8rem;
+    }
+
+    .detail-responses {
+      border: var(--border-width-thin) solid var(--border-color);
+    }
+
+    .detail-responses .resp-header {
+      background: var(--accent-primary);
+      color: var(--text-primary);
+      padding: var(--spacing-sm) var(--spacing-md);
+      font-weight: 900;
+      text-transform: uppercase;
+      font-size: 0.8rem;
+    }
+
+    .detail-responses .resp-item {
+      padding: var(--spacing-md);
+      border-bottom: 1px solid #333;
+    }
+
+    .detail-responses .resp-item:last-child {
+      border-bottom: none;
+    }
+
+    .detail-responses .resp-q {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      margin-bottom: var(--spacing-xs);
+      display: flex;
+      align-items: center;
+      gap: var(--spacing-sm);
+    }
+
+    .detail-responses .resp-q svg {
+      width: 14px;
+      height: 14px;
+      stroke: var(--accent-success);
+    }
+
+    .detail-responses .resp-a {
+      font-size: 0.9rem;
+      line-height: 1.5;
+    }
+
+    /* Utility */
+    .hidden { display: none !important; }
+  </style>
+</head>
+<body>
+  <div class="phone-frame">
+    <!-- Main View -->
+    <div class="main-view">
+      <header class="app-header">
+        <div style="width: 44px;"></div>
+        <div class="header-title">Mindset</div>
+        <button class="btn-icon" id="journal-toggle">
+          <svg viewBox="0 0 24 24">
+            <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
+            <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
+          </svg>
+        </button>
+      </header>
+
+      <div class="mindset-content">
+        <!-- Daily Mentality Pill Section -->
+        <div class="section-block">
+          <div class="section-header">
+            <h2>Daily Mentality Pill</h2>
+          </div>
+          <div class="section-content">
+            <div class="quote-block">
+              <div class="quote-mark">"</div>
+              <p class="quote-text">Here's the big challenge of life. You can have more than you've got because you can become more than you are.</p>
+            </div>
+            <div class="author-section">
+              <div class="author-avatar">JR</div>
+              <div class="author-info">
+                <div class="author-name">Jim Rohn</div>
+                <div class="author-desc">Entrepreneur and motivational speaker</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Reflection Section -->
+        <div class="section-block">
+          <div class="section-header">
+            <h2>Reflection</h2>
+          </div>
+          <div class="section-content">
+            <!-- Rating Block - Now First -->
+            <div class="rating-block">
+              <div class="rating-label">How much does this resonate with you?</div>
+              <div class="star-rating" id="star-rating">
+                <button class="star" data-value="1">&#9733;</button>
+                <button class="star" data-value="2">&#9733;</button>
+                <button class="star" data-value="3">&#9733;</button>
+                <button class="star" data-value="4">&#9733;</button>
+                <button class="star" data-value="5">&#9733;</button>
+              </div>
+            </div>
+
+            <!-- Reflect Question -->
+            <div class="question-item">
+              <div class="question-label">
+                <span class="question-badge" id="reflect-badge">
+                  <span class="icon">
+                    <!-- Lightbulb icon - represents insight/idea -->
+                    <svg viewBox="0 0 24 24">
+                      <path d="M9 18h6"></path>
+                      <path d="M10 22h4"></path>
+                      <path d="M12 2a7 7 0 0 0-4 12.7V17a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1v-2.3A7 7 0 0 0 12 2z"></path>
+                    </svg>
+                  </span>
+                  <span>Reflect</span>
+                </span>
+              </div>
+              <div class="question-text">What does this quote mean for you today?</div>
+              <textarea class="answer-input" id="reflect-input" placeholder="Write your thoughts..."></textarea>
+            </div>
+
+            <!-- Act Question -->
+            <div class="question-item">
+              <div class="question-label">
+                <span class="question-badge" id="act-badge">
+                  <span class="icon">
+                    <!-- Lightning bolt icon - represents action/energy -->
+                    <svg viewBox="0 0 24 24">
+                      <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
+                    </svg>
+                  </span>
+                  <span>Act</span>
+                </span>
+              </div>
+              <div class="question-text">What will you do differently after reading this?</div>
+              <textarea class="answer-input" id="act-input" placeholder="Write your commitment..."></textarea>
+            </div>
+
+            <button class="save-btn" id="save-btn">Save to Journal</button>
+            <div class="success-message" id="success-message">Good work! Your reflections have been saved</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Journal Page -->
+    <div class="journal-page" id="journal-page">
+      <header class="journal-header">
+        <button class="back-btn" id="journal-back">
+          <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <line x1="19" y1="12" x2="5" y2="12"></line>
+            <polyline points="12 19 5 12 12 5"></polyline>
+          </svg>
+        </button>
+        <div class="journal-title">My Journal</div>
+        <button class="sort-btn">Sort</button>
+      </header>
+      <div class="filter-tabs">
+        <button class="filter-tab active" data-filter="date">By Date</button>
+        <button class="filter-tab" data-filter="author">By Author</button>
+        <button class="filter-tab" data-filter="rating">By Rating</button>
+      </div>
+      <div class="journal-list">
+        <div class="journal-entry" data-entry="1">
+          <div class="entry-header">
+            <span class="entry-date">Jan 7, 2026</span>
+            <div class="entry-rating">
+              <span class="star-icon">&#9733;</span>
+              <span class="star-icon">&#9733;</span>
+              <span class="star-icon">&#9733;</span>
+              <span class="star-icon">&#9733;</span>
+              <span class="star-icon empty">&#9733;</span>
+            </div>
+          </div>
+          <p class="entry-quote">"Here's the big challenge of life. You can have more than you've got because you can become more than you are."</p>
+          <span class="entry-author">Jim Rohn</span>
+        </div>
+        <div class="journal-entry" data-entry="2">
+          <div class="entry-header">
+            <span class="entry-date">Jan 8, 2026</span>
+            <div class="entry-rating">
+              <span class="star-icon">&#9733;</span>
+              <span class="star-icon">&#9733;</span>
+              <span class="star-icon">&#9733;</span>
+              <span class="star-icon">&#9733;</span>
+              <span class="star-icon">&#9733;</span>
+            </div>
+          </div>
+          <p class="entry-quote">"Nothing changes if nothing changes, man."</p>
+          <span class="entry-author">David Goggins</span>
+        </div>
+        <div class="journal-entry" data-entry="3">
+          <div class="entry-header">
+            <span class="entry-date">Jan 9, 2026</span>
+            <div class="entry-rating">
+              <span class="star-icon">&#9733;</span>
+              <span class="star-icon">&#9733;</span>
+              <span class="star-icon">&#9733;</span>
+              <span class="star-icon empty">&#9733;</span>
+              <span class="star-icon empty">&#9733;</span>
+            </div>
+          </div>
+          <p class="entry-quote">"You're going to look back at any destination and realize that it was a 99.9% journey and only one day of celebrating."</p>
+          <span class="entry-author">Alex Hormozi</span>
+        </div>
+        <div class="journal-entry" data-entry="4">
+          <div class="entry-header">
+            <span class="entry-date">Jan 10, 2026</span>
+            <div class="entry-rating">
+              <span class="star-icon">&#9733;</span>
+              <span class="star-icon">&#9733;</span>
+              <span class="star-icon">&#9733;</span>
+              <span class="star-icon">&#9733;</span>
+              <span class="star-icon empty">&#9733;</span>
+            </div>
+          </div>
+          <p class="entry-quote">"One of the big thrusts for success is to come up with a strong enough why. If the why is powerful, the how is easy."</p>
+          <span class="entry-author">Jim Rohn</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Entry Detail View -->
+    <div class="entry-detail" id="entry-detail">
+      <header class="journal-header">
+        <button class="back-btn" id="detail-back">
+          <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <line x1="19" y1="12" x2="5" y2="12"></line>
+            <polyline points="12 19 5 12 12 5"></polyline>
+          </svg>
+        </button>
+        <div class="journal-title">Entry</div>
+        <div style="width: 44px;"></div>
+      </header>
+      <div class="detail-content">
+        <div class="detail-meta">
+          <span class="date" id="detail-date">Jan 7, 2026</span>
+          <div class="rating" id="detail-rating">
+            <span class="star-icon">&#9733;</span>
+            <span class="star-icon">&#9733;</span>
+            <span class="star-icon">&#9733;</span>
+            <span class="star-icon">&#9733;</span>
+            <span class="star-icon empty">&#9733;</span>
+          </div>
+        </div>
+        <div class="detail-quote" id="detail-quote">"Here's the big challenge of life. You can have more than you've got because you can become more than you are."</div>
+        <div class="detail-author">
+          <div class="name" id="detail-author-name">Jim Rohn</div>
+          <div class="role" id="detail-author-role">Entrepreneur and motivational speaker</div>
+        </div>
+        <div class="detail-responses">
+          <div class="resp-header">Your Reflections</div>
+          <div class="resp-item">
+            <div class="resp-q">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M9 18h6"></path>
+                <path d="M10 22h4"></path>
+                <path d="M12 2a7 7 0 0 0-4 12.7V17a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1v-2.3A7 7 0 0 0 12 2z"></path>
+              </svg>
+              Reflect
+            </div>
+            <div class="resp-a" id="detail-reflect">I realize that my current limitations are not permanent. If I focus on becoming a better version of myself, everything else will follow.</div>
+          </div>
+          <div class="resp-item">
+            <div class="resp-q">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
+              </svg>
+              Act
+            </div>
+            <div class="resp-a" id="detail-act">I will stop making excuses about not having enough time and instead focus on small daily improvements.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Entry data for journal detail view
+    const entriesData = {
+      1: {
+        date: 'Jan 7, 2026',
+        rating: 4,
+        quote: '"Here\'s the big challenge of life. You can have more than you\'ve got because you can become more than you are."',
+        authorName: 'Jim Rohn',
+        authorRole: 'Entrepreneur and motivational speaker',
+        reflect: 'I realize that my current limitations are not permanent. If I focus on becoming a better version of myself, everything else will follow.',
+        act: 'I will stop making excuses about not having enough time and instead focus on small daily improvements.'
+      },
+      2: {
+        date: 'Jan 8, 2026',
+        rating: 5,
+        quote: '"Nothing changes if nothing changes, man."',
+        authorName: 'David Goggins',
+        authorRole: 'Navy Seal and World Record Holder',
+        reflect: 'I\'ve been waiting for things to change but haven\'t changed my actions. Today that stops.',
+        act: 'I will complete my morning routine without excuses, starting with making my bed.'
+      },
+      3: {
+        date: 'Jan 9, 2026',
+        rating: 3,
+        quote: '"You\'re going to look back at any destination and realize that it was a 99.9% journey and only one day of celebrating."',
+        authorName: 'Alex Hormozi',
+        authorRole: 'Entrepreneur and investor',
+        reflect: 'The daily grind IS the point. I need to find joy in the process, not just the destination.',
+        act: 'I will celebrate small wins today and appreciate the journey I\'m on.'
+      },
+      4: {
+        date: 'Jan 10, 2026',
+        rating: 4,
+        quote: '"One of the big thrusts for success is to come up with a strong enough why. If the why is powerful, the how is easy."',
+        authorName: 'Jim Rohn',
+        authorRole: 'Entrepreneur and motivational speaker',
+        reflect: 'My why is my family. I want to be healthy and present for my kids.',
+        act: 'I will remind myself of my why before starting each habit today.'
+      }
+    };
+
+    // Star Rating with proper hover and selection
+    const starRating = document.getElementById('star-rating');
+    const stars = starRating.querySelectorAll('.star');
+    let currentRating = 0;
+
+    // Mouse enter on star - preview
+    stars.forEach((star, index) => {
+      star.addEventListener('mouseenter', () => {
+        // Preview: highlight all stars up to hovered one
+        stars.forEach((s, i) => {
+          if (i <= index) {
+            s.classList.add('preview');
+          } else {
+            s.classList.remove('preview');
+          }
+        });
+      });
+
+      star.addEventListener('mouseleave', () => {
+        // Remove preview, show actual rating
+        stars.forEach(s => s.classList.remove('preview'));
+      });
+
+      star.addEventListener('click', () => {
+        const value = parseInt(star.dataset.value);
+        currentRating = value;
+
+        // Update active state
+        stars.forEach((s, i) => {
+          if (i < value) {
+            s.classList.add('active');
+          } else {
+            s.classList.remove('active');
+          }
+        });
+
+        // Add a little bounce animation
+        star.style.transform = 'scale(1.3)';
+        setTimeout(() => {
+          star.style.transform = '';
+        }, 150);
+      });
+    });
+
+    // Reset preview on container leave
+    starRating.addEventListener('mouseleave', () => {
+      stars.forEach(s => s.classList.remove('preview'));
+    });
+
+    // Input monitoring for answered state
+    const reflectInput = document.getElementById('reflect-input');
+    const actInput = document.getElementById('act-input');
+    const reflectBadge = document.getElementById('reflect-badge');
+    const actBadge = document.getElementById('act-badge');
+
+    function checkInputState(input, badge) {
+      if (input.value.trim().length > 0) {
+        badge.classList.add('answered');
+        input.classList.add('has-content');
+      } else {
+        badge.classList.remove('answered');
+        input.classList.remove('has-content');
+      }
+    }
+
+    reflectInput.addEventListener('input', () => checkInputState(reflectInput, reflectBadge));
+    actInput.addEventListener('input', () => checkInputState(actInput, actBadge));
+
+    // Save button
+    const saveBtn = document.getElementById('save-btn');
+    const successMessage = document.getElementById('success-message');
+
+    saveBtn.addEventListener('click', () => {
+      successMessage.classList.add('visible');
+      saveBtn.textContent = 'Saved!';
+      saveBtn.style.background = 'var(--accent-success)';
+      saveBtn.style.color = 'var(--bg-primary)';
+
+      setTimeout(() => {
+        successMessage.classList.remove('visible');
+        saveBtn.textContent = 'Save to Journal';
+        saveBtn.style.background = '';
+        saveBtn.style.color = '';
+      }, 3000);
+    });
+
+    // Journal Toggle
+    const journalToggle = document.getElementById('journal-toggle');
+    const journalPage = document.getElementById('journal-page');
+    const journalBack = document.getElementById('journal-back');
+
+    journalToggle.addEventListener('click', () => {
+      journalPage.classList.add('active');
+    });
+
+    journalBack.addEventListener('click', () => {
+      journalPage.classList.remove('active');
+    });
+
+    // Filter Tabs
+    document.querySelectorAll('.filter-tab').forEach(tab => {
+      tab.addEventListener('click', (e) => {
+        document.querySelectorAll('.filter-tab').forEach(t => t.classList.remove('active'));
+        e.target.classList.add('active');
+      });
+    });
+
+    // Entry Detail
+    const entryDetail = document.getElementById('entry-detail');
+    const detailBack = document.getElementById('detail-back');
+
+    document.querySelectorAll('.journal-entry').forEach(entry => {
+      entry.addEventListener('click', () => {
+        const entryId = entry.dataset.entry;
+        const data = entriesData[entryId];
+
+        if (data) {
+          document.getElementById('detail-date').textContent = data.date;
+          document.getElementById('detail-quote').textContent = data.quote;
+          document.getElementById('detail-author-name').textContent = data.authorName;
+          document.getElementById('detail-author-role').textContent = data.authorRole;
+          document.getElementById('detail-reflect').textContent = data.reflect;
+          document.getElementById('detail-act').textContent = data.act;
+
+          // Update rating stars
+          const ratingContainer = document.getElementById('detail-rating');
+          ratingContainer.innerHTML = '';
+          for (let i = 1; i <= 5; i++) {
+            const starSpan = document.createElement('span');
+            starSpan.className = 'star-icon' + (i > data.rating ? ' empty' : '');
+            starSpan.innerHTML = '&#9733;';
+            ratingContainer.appendChild(starSpan);
+          }
+        }
+
+        entryDetail.classList.add('active');
+      });
+    });
+
+    detailBack.addEventListener('click', () => {
+      entryDetail.classList.remove('active');
+    });
+  </script>
+</body>
+</html>
