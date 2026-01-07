@@ -47,6 +47,7 @@ import {
 import { renderDashboard, updateDashboardData } from './dashboard.js';
 import { setDashboardMonth } from './state.js';
 import { renderTodayCalendar, selectCalendarDate, previousMonth, nextMonth, toggleCalendar } from './calendar-picker.js';
+import { initMindset, refreshMindsetView, updateMindsetFromEntry } from './mindset.js';
 
 // Insights
 import { initInsightsWorker, runInsightsAnalysis, setInsightsUpdateCallback, setInsightsPeriod, setInsightsType, invalidateInsightsCache } from './insights.js';
@@ -153,6 +154,7 @@ setEntryChangeCallback((entry) => {
     renderWeeklyGoalsSection();
     updateHabitCheckmarks();
     updateProgress();
+    updateMindsetFromEntry(entry);
     // Invalidate insights cache when entries change
     invalidateInsightsCache();
 });
@@ -204,6 +206,8 @@ setConfirmDeleteCallback(async (habitId) => {
 document.addEventListener('DOMContentLoaded', () => {
     // Toggle between magic link and password authentication
     let usePassword = true;
+
+    initMindset();
 
     document.getElementById('toggle-auth-method').addEventListener('click', () => {
         usePassword = !usePassword;
@@ -490,6 +494,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
             else if (view === 'mindset') {
                 showScreen('mindset');
+                refreshMindsetView();
             }
             else if (view === 'insights') {
                 showScreen('insights');
