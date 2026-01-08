@@ -4,6 +4,17 @@ This document summarizes the key improvements, features, and architectural decis
 
 ---
 
+## January 07, 2026 - Mindset Tab + Weekly Goals Dashboard
+
+**Session Focus:** Add a Mindset tab experience and expand goal tracking for weekly/daily/interval habits.
+
+### Updates
+*   **Mindset Tab:** Added a new Mindset screen with daily quotes, author details, star rating, reflection/action prompts, and a save-to-journal flow.
+*   **Mindset Journal:** Added journal list/detail views with date/author/rating filters and calendar navigation.
+*   **Dashboard Weekly Goals:** Introduced weekly goal graphs and expanded the dashboard layout to surface weekly progress.
+*   **Goal Calculations:** Refined daily/interval/weekly goal math and weekly-habit completion logic across Today/Dashboard views.
+*   **Previews:** Added mindset tab previews and weekly-goal preview explorations.
+
 ## January 03, 2026 - Today + Dashboard UI & Analytics Refinements
 
 **Session Focus:** Align Today/Dashboard visuals, refine habit interactions, and correct analytics logic across tabs/months.

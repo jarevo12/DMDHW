@@ -41,7 +41,7 @@
     --nav-height: 80px;
 
     /* Typography */
-    --font-mono: 'Courier New', Courier, monospace;
+    --font-mono: 'Inter', sans-serif;
     --font-sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
 }
 
@@ -1178,7 +1178,7 @@ button, input, select {
 
 .mindset-rating-label {
     font-size: 0.75rem;
-    color: var(--text-secondary);
+    color: var(--text-primary);
     text-transform: uppercase;
     margin-bottom: var(--spacing-sm);
     letter-spacing: 0.5px;
@@ -1273,9 +1273,10 @@ button, input, select {
 }
 
 .mindset-question-text {
-    font-size: 0.9rem;
+    font-size: 0.75rem;
     margin-bottom: var(--spacing-sm);
     color: var(--text-primary);
+    text-transform: uppercase;
 }
 
 .mindset-answer-input {
