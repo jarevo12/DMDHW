@@ -50,9 +50,9 @@ import { renderTodayCalendar, selectCalendarDate, previousMonth, nextMonth, togg
 import { initMindset, refreshMindsetView, updateMindsetFromEntry } from './mindset.js';
 
 // Insights
-import { initInsightsWorker, runInsightsAnalysis, setInsightsUpdateCallback, setInsightsPeriod, setInsightsType, invalidateInsightsCache } from './insights.js';
+import { initInsightsWorker, runInsightsAnalysis, setInsightsUpdateCallback, setInsightsPeriod, setInsightsType, invalidateInsightsCache, getInsightsState } from './insights.js';
 import { insightsCache } from './insights-cache.js';
-import { renderAllInsights, showLoading, setupInsightsUIHandlers } from './ui/insights-ui.js';
+import { renderAllInsights, showLoading, setupInsightsUIHandlers, setInsightsToggleState } from './ui/insights-ui.js';
 
 // Utils
 import { formatDate } from './utils.js';
@@ -499,7 +499,9 @@ document.addEventListener('DOMContentLoaded', () => {
             else if (view === 'insights') {
                 showScreen('insights');
                 showLoading();
-                runInsightsAnalysis(30, 'all'); // Default: 30 days, all types
+                const { period, type } = getInsightsState();
+                setInsightsToggleState(period, type);
+                runInsightsAnalysis(period, type);
             }
             else if (view === 'settings') showScreen('settings');
 
@@ -519,9 +521,11 @@ document.addEventListener('DOMContentLoaded', () => {
     initDashboardSectionToggles();
 
     // Dashboard tabs
-    document.querySelectorAll('.dash-tab').forEach(btn => {
+    document.querySelectorAll('#dashboard-screen .dashboard-tabs .dash-tab').forEach(btn => {
         btn.addEventListener('click', () => {
-            document.querySelectorAll('.dash-tab').forEach(b => {
+            const container = btn.closest('.dashboard-tabs');
+            if (!container) return;
+            container.querySelectorAll('.dash-tab').forEach(b => {
                 const isActive = b === btn;
                 b.classList.toggle('active', isActive);
                 b.classList.toggle('inactive', !isActive);

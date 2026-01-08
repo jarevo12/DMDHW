@@ -2,12 +2,17 @@
 // Handles all statistical computations off the main thread
 // Part of the Smart Insights feature
 
+// Version for debugging - MUST appear in console when worker loads
+const WORKER_VERSION = '2.5';
+console.log(`[Worker] Analytics Worker loaded, version ${WORKER_VERSION}`);
+
 // Message handler
 self.onmessage = function(e) {
     const { type, payload } = e.data;
 
     switch(type) {
         case 'ANALYZE':
+            console.log(`[Worker] Received ANALYZE request, version ${WORKER_VERSION}`);
             console.time('Full Analysis');
             const results = runFullAnalysis(payload);
             console.timeEnd('Full Analysis');
@@ -26,7 +31,17 @@ self.onmessage = function(e) {
  * @returns {object} Complete analysis results
  */
 function runFullAnalysis(data) {
-    const { habitMap, habitIds, dates, matrix, metadata, type } = data;
+    const { habitMap, habitIds, dates, matrix, metadata, type, entries, periodStart, periodEnd, requestKey } = data;
+
+    console.log(`[Worker] Starting analysis: type=${type}, period=${metadata.totalDays}, totalHabits=${habitIds.length}, requestKey=${requestKey}`);
+
+    // Log habit types before filtering
+    const habitTypesBefore = habitIds.reduce((acc, id) => {
+        const t = habitMap[id]?.type || 'unknown';
+        acc[t] = (acc[t] || 0) + 1;
+        return acc;
+    }, {});
+    console.log(`[Worker] Habits before filtering: ${JSON.stringify(habitTypesBefore)}`);
 
     // Check minimum data requirements
     if (metadata.totalDays < 7) {
@@ -34,7 +49,8 @@ function runFullAnalysis(data) {
             insufficientData: true,
             daysCollected: metadata.totalDays,
             daysNeeded: 7,
-            message: 'Need at least 7 days of data for insights'
+            message: 'Need at least 7 days of data for insights',
+            requestKey
         };
     }
 
@@ -43,13 +59,32 @@ function runFullAnalysis(data) {
     let filteredMatrix = matrix;
 
     if (type && type !== 'all') {
+        console.log(`[Worker] Filtering for type: ${type}`);
         const typeIndices = habitIds
             .map((id, idx) => ({ id, idx }))
-            .filter(item => habitMap[item.id]?.type === type)
+            .filter(item => {
+                const habitType = habitMap[item.id]?.type;
+                const matches = habitType === type;
+                if (!matches) {
+                    console.log(`[Worker] Excluding habit ${item.id}: type=${habitType}, wanted=${type}`);
+                }
+                return matches;
+            })
             .map(item => item.idx);
 
         filteredHabitIds = typeIndices.map(idx => habitIds[idx]);
         filteredMatrix = matrix.map(row => typeIndices.map(idx => row[idx]));
+
+        console.log(`[Worker] After filtering: ${filteredHabitIds.length} habits of type ${type}`);
+
+        // Sanity check: verify all filtered habits match the expected type
+        const wrongTypeHabits = filteredHabitIds.filter(id => habitMap[id]?.type !== type);
+        if (wrongTypeHabits.length > 0) {
+            console.error(`[Worker] BUG: ${wrongTypeHabits.length} habits don't match type ${type} after filtering!`);
+            console.error(`[Worker] Wrong habits: ${wrongTypeHabits.map(id => `${id}(${habitMap[id]?.type})`).join(', ')}`);
+        }
+    } else {
+        console.log(`[Worker] No filtering applied (type=${type})`);
     }
 
     // Calculate daily completion rates
@@ -72,11 +107,30 @@ function runFullAnalysis(data) {
     const eveningRates = calculateDailyRates(eveningMatrix);
 
     // Run all analyses
+    const strengthDebugSample = (calculateAllHabitStrengths(
+        entries || {},
+        filteredHabitIds,
+        habitMap,
+        periodStart,
+        periodEnd
+    ) || []).slice(0, 4).map(item => {
+        const typeLabel = habitMap[item.habitId]?.type || 'unknown';
+        return `${item.name}(${typeLabel})`;
+    });
+
     const results = {
+        requestKey,
         metadata: {
             ...metadata,
             analyzedHabits: filteredHabitIds.length,
             type: type || 'all'
+        },
+        debug: {
+            strengthSample: strengthDebugSample,
+            filteredHabitsSample: filteredHabitIds.slice(0, 4).map(id => {
+                const habit = habitMap[id];
+                return `${habit?.name || id}(${habit?.type || 'unknown'})`;
+            })
         },
 
         // Overall metrics
@@ -106,11 +160,17 @@ function runFullAnalysis(data) {
         anomalies: detectAnomalies(dailyRates, dates),
 
         // Habit strength for each habit
-        habitStrength: calculateAllHabitStrengths(matrix, habitIds, habitMap),
+        habitStrength: calculateAllHabitStrengths(
+            entries || {},
+            filteredHabitIds,
+            habitMap,
+            periodStart,
+            periodEnd
+        ),
 
-        // Sequence analysis (need 21+ days)
+        // Sequence analysis (need 21+ days) - use filtered data
         sequences: metadata.totalDays >= 21
-            ? analyzeSequences(matrix, habitIds, habitMap)
+            ? analyzeSequences(filteredMatrix, filteredHabitIds, habitMap)
             : [],
 
         // Pass through for UI
@@ -446,50 +506,191 @@ function detectAnomalies(values, dates) {
     return anomalies;
 }
 
+function formatDateISO(date) {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+}
+
+function getDateRange(startDateString, endDateString) {
+    if (!startDateString || !endDateString) return [];
+    const start = new Date(startDateString + 'T00:00:00');
+    const end = new Date(endDateString + 'T00:00:00');
+    if (Number.isNaN(start.getTime()) || Number.isNaN(end.getTime())) return [];
+
+    const dates = [];
+    const cursor = new Date(start);
+    while (cursor <= end) {
+        dates.push(formatDateISO(cursor));
+        cursor.setDate(cursor.getDate() + 1);
+    }
+    return dates;
+}
+
+function isHabitScheduledForDate(habit, dateString) {
+    const schedule = habit.schedule || { type: 'daily' };
+    const date = new Date(dateString + 'T00:00:00');
+    const dayOfWeek = date.getDay();
+
+    switch (schedule.type) {
+        case 'daily':
+            return true;
+
+        case 'specific_days':
+            return (schedule.days || [0, 1, 2, 3, 4, 5, 6]).includes(dayOfWeek);
+
+        case 'weekly_goal':
+            return true;
+
+        case 'interval': {
+            const interval = schedule.intervalDays || 1;
+            const skipDays = schedule.intervalSkipDays || [];
+            if (skipDays.length >= 7) return false;
+
+            const startDateValue = schedule.intervalStartDate || dateString;
+            const startDate = new Date(startDateValue + 'T00:00:00');
+            if (Number.isNaN(startDate.getTime())) return false;
+
+            const effectiveStart = new Date(startDate);
+            while (skipDays.includes(effectiveStart.getDay())) {
+                effectiveStart.setDate(effectiveStart.getDate() + 1);
+            }
+
+            if (date < effectiveStart) return false;
+            if (skipDays.includes(dayOfWeek)) return false;
+
+            let eligibleDays = 0;
+            const cursor = new Date(effectiveStart);
+            while (cursor <= date) {
+                if (!skipDays.includes(cursor.getDay())) {
+                    eligibleDays++;
+                }
+                cursor.setDate(cursor.getDate() + 1);
+            }
+
+            if (eligibleDays === 0) return false;
+            return (eligibleDays - 1) % interval === 0;
+        }
+
+        default:
+            return true;
+    }
+}
+
+function getWeekStart(date) {
+    const start = new Date(date);
+    const day = start.getDay();
+    const diff = (day + 6) % 7;
+    start.setDate(start.getDate() - diff);
+    start.setHours(0, 0, 0, 0);
+    return start;
+}
+
+function getWeekRangesForPeriod(startDate, endDate, options = {}) {
+    const { includePartialWeek = false } = options;
+    const ranges = [];
+    const cursor = getWeekStart(startDate);
+
+    while (cursor <= endDate) {
+        const weekStart = new Date(cursor);
+        const weekEnd = new Date(weekStart);
+        weekEnd.setDate(weekEnd.getDate() + 6);
+        weekEnd.setHours(23, 59, 59, 999);
+
+        if (weekEnd <= endDate || includePartialWeek) {
+            ranges.push({ start: weekStart, end: weekEnd });
+        }
+
+        cursor.setDate(cursor.getDate() + 7);
+    }
+
+    return ranges;
+}
+
+function countHabitCompletions(entries, habit, startDate, endDate) {
+    let doneCount = 0;
+    const cursor = new Date(startDate);
+    while (cursor <= endDate) {
+        const entry = entries[formatDateISO(cursor)];
+        if (entry && entry[habit.type]?.includes(habit.id)) {
+            doneCount++;
+        }
+        cursor.setDate(cursor.getDate() + 1);
+    }
+    return doneCount;
+}
+
+function isSameDay(a, b) {
+    return formatDateISO(a) === formatDateISO(b);
+}
+
 /**
- * Calculate habit strength using decay model
+ * Calculate habit strength using percent-complete model
  */
 function calculateHabitStrength(completions) {
-    const DECAY_RATE = 0.1;    // Lose 10% per missed day
-    const GROWTH_RATE = 0.05;  // Gain 5% per completed day
-    const MAX_STRENGTH = 100;
+    if (!completions || completions.length === 0) {
+        return { strength: 0, status: 'fragile' };
+    }
 
-    let strength = 0;
+    const completedCount = completions.reduce((sum, value) => sum + (value === 1 ? 1 : 0), 0);
+    const strength = Math.round((completedCount / completions.length) * 100);
 
-    completions.forEach(completed => {
-        if (completed === 1) {
-            // Growth: asymptotic approach to max
-            strength = Math.min(MAX_STRENGTH, strength + (MAX_STRENGTH - strength) * GROWTH_RATE);
-        } else {
-            // Decay: percentage of current strength
-            strength = Math.max(0, strength - strength * DECAY_RATE);
-        }
-    });
-
-    // Round to whole number
-    strength = Math.round(strength);
-
-    // Determine status
-    let status;
-    if (strength >= 81) status = 'mastered';
-    else if (strength >= 51) status = 'strong';
-    else if (strength >= 21) status = 'building';
-    else status = 'fragile';
-
-    return { strength, status };
+    if (strength >= 81) return { strength, status: 'mastered' };
+    if (strength >= 51) return { strength, status: 'strong' };
+    if (strength >= 21) return { strength, status: 'building' };
+    return { strength, status: 'fragile' };
 }
 
 /**
  * Calculate strength for all habits
  */
-function calculateAllHabitStrengths(matrix, habitIds, habitMap) {
-    return habitIds.map((habitId, idx) => {
-        const completions = matrix.map(row => row[idx]);
+function calculateAllHabitStrengths(entries, habitIds, habitMap, periodStart, periodEnd) {
+    const dateRange = getDateRange(periodStart, periodEnd);
+    const today = new Date();
+    const periodEndDate = periodEnd ? new Date(periodEnd + 'T00:00:00') : today;
+    const includePartialWeek = isSameDay(periodEndDate, today);
+
+    return habitIds.map((habitId) => {
+        const habit = habitMap[habitId];
+        if (!habit) {
+            return { habitId, name: habitId, strength: 0, status: 'fragile' };
+        }
+
+        let completions = [];
+
+        if (habit.schedule?.type === 'weekly_goal') {
+            const periodStartDate = periodStart
+                ? new Date(periodStart + 'T00:00:00')
+                : new Date(periodEndDate);
+            const periodEndBound = new Date(periodEndDate);
+            periodEndBound.setHours(23, 59, 59, 999);
+
+            const weekRanges = getWeekRangesForPeriod(periodStartDate, periodEndBound, {
+                includePartialWeek
+            });
+            const goalValue = habit.schedule?.timesPerWeek;
+            const goal = Number.isFinite(goalValue) && goalValue > 0 ? goalValue : 3;
+
+            completions = weekRanges.map(weekRange => {
+                const doneCount = countHabitCompletions(entries, habit, weekRange.start, weekRange.end);
+                return doneCount >= goal ? 1 : 0;
+            });
+        } else {
+            dateRange.forEach(dateString => {
+                if (!isHabitScheduledForDate(habit, dateString)) {
+                    return;
+                }
+                const entry = entries[dateString];
+                completions.push(entry && entry[habit.type]?.includes(habit.id) ? 1 : 0);
+            });
+        }
+
         const { strength, status } = calculateHabitStrength(completions);
 
         return {
             habitId,
-            name: habitMap[habitId]?.name || habitId,
+            name: habit.name || habitId,
             strength,
             status
         };
@@ -707,13 +908,18 @@ function generateInsights(stats, habitMap) {
 
     // Strength alerts
     if (stats.habitStrength) {
-        stats.habitStrength.forEach(hs => {
+        const strengthList = stats.metadata?.type && stats.metadata.type !== 'all'
+            ? stats.habitStrength.filter(hs => habitMap[hs.habitId]?.type === stats.metadata.type)
+            : stats.habitStrength;
+
+        strengthList.forEach(hs => {
+            const habitName = habitMap[hs.habitId]?.name || hs.name || hs.habitId;
             if (hs.status === 'fragile') {
                 insights.push({
                     type: 'strength',
                     icon: 'anomaly',
                     title: 'HABIT AT RISK',
-                    text: `<strong>${hs.name}</strong> is losing strength. It needs attention!`,
+                    text: `<strong>${habitName}</strong> is losing strength. It needs attention!`,
                     tip: 'Focus on just this habit for the next week',
                     priority: 85
                 });
@@ -722,7 +928,7 @@ function generateInsights(stats, habitMap) {
                     type: 'strength',
                     icon: 'trend',
                     title: 'HABIT MASTERED',
-                    text: `<strong>${hs.name}</strong> is now automatic with ${hs.strength}% strength!`,
+                    text: `<strong>${habitName}</strong> is now automatic with ${hs.strength}% strength!`,
                     tip: 'This habit is locked in. Consider it a foundation.',
                     priority: 40
                 });
@@ -733,8 +939,7 @@ function generateInsights(stats, habitMap) {
     // Sort by priority and return top insights
     return insights
         .filter(i => i !== null)
-        .sort((a, b) => b.priority - a.priority)
-        .slice(0, 8);
+        .sort((a, b) => b.priority - a.priority);
 }
 
 /**

@@ -504,13 +504,9 @@
                         <button class="toggle-btn active" data-period="30">30D</button>
                         <button class="toggle-btn" data-period="90">90D</button>
                     </div>
-                    <div class="toggle-group" id="type-toggle">
-                        <button class="toggle-btn active" data-type="all">ALL</button>
-                        <button class="toggle-btn" data-type="morning">AM</button>
-                        <button class="toggle-btn" data-type="evening">PM</button>
-                    </div>
                 </div>
             </header>
+            <div id="insights-debug" class="insights-debug"></div>
 
             <main class="insights-content">
                 <!-- Loading State -->
@@ -534,42 +530,28 @@
 
                 <!-- Main Insights Content -->
                 <div id="insights-main" class="insights-main">
-                    <!-- Key Metrics -->
-                    <div class="metrics-grid" id="metrics-grid">
-                        <div class="metric-card">
-                            <div class="metric-label">TREND</div>
-                            <div class="metric-value" id="metric-trend">--</div>
-                            <div class="metric-subtext">vs last period</div>
-                        </div>
-                        <div class="metric-card">
-                            <div class="metric-label">BEST DAY</div>
-                            <div class="metric-value" id="metric-best-day">--</div>
-                            <div class="metric-subtext" id="metric-best-rate">-- completion</div>
-                        </div>
-                        <div class="metric-card">
-                            <div class="metric-label">AVG RATE</div>
-                            <div class="metric-value" id="metric-avg-rate">--</div>
-                            <div class="metric-subtext">completion rate</div>
-                        </div>
-                        <div class="metric-card">
-                            <div class="metric-label">DAYS ANALYZED</div>
-                            <div class="metric-value" id="metric-days">--</div>
-                            <div class="metric-subtext">insights ready</div>
-                        </div>
+                    <div class="dashboard-tabs insights-tabs" id="insights-type-tabs">
+                        <button class="dash-tab morning active" data-type="morning">
+                            <svg class="tab-icon" viewBox="0 0 24 24" aria-hidden="true">
+                                <line x1="2" y1="15" x2="22" y2="15" />
+                                <g class="sun-parts">
+                                    <line class="sun-ray" x1="12" y1="15" x2="12" y2="9" stroke-dasharray="2 2" />
+                                    <path class="sun-arc" d="M6 15 A6 6 0 0 1 18 15" />
+                                </g>
+                            </svg>
+                            <span>Morning</span>
+                        </button>
+                        <button class="dash-tab evening inactive" data-type="evening">
+                            <svg class="tab-icon" viewBox="0 0 24 24" aria-hidden="true">
+                                <line x1="2" y1="9" x2="22" y2="9" />
+                                <path class="moon-arc" d="M6 9 A6 6 0 0 0 18 9" />
+                            </svg>
+                            <span>Evening</span>
+                        </button>
                     </div>
-
-                    <!-- Smart Insights -->
-                    <section class="insights-section">
-                        <h2 class="section-header">Smart Insights</h2>
-                        <div class="section-content">
-                            <div class="insights-scroll" id="insights-container">
-                                <!-- Insights will be populated by JavaScript -->
-                            </div>
-                        </div>
-                    </section>
-
-
-
+                    <div class="insights-scroll insights-full" id="insights-container">
+                        <!-- Insights will be populated by JavaScript -->
+                    </div>
                 </div>
 
                 <div style="height: 80px;"></div> <!-- Spacer for nav -->

@@ -13,6 +13,17 @@ const ICONS = {
     strength: `<svg viewBox="0 0 24 24"><path d="M12 2L14.5 9.5L22 12L14.5 14.5L12 22L9.5 14.5L2 12L9.5 9.5L12 2Z"></path></svg>`
 };
 
+const INSIGHT_CATEGORIES = [
+    { key: 'correlation', label: 'Correlation insights' },
+    { key: 'pattern', label: 'Weekly pattern insights' },
+    { key: 'trend', label: 'Trend insights' },
+    { key: 'anomaly', label: 'Anomaly insights' },
+    { key: 'sequence', label: 'Sequence insights' },
+    { key: 'strength', label: 'Strength alerts' }
+];
+
+const INSIGHTS_SECTION_STORAGE_KEY = 'insightsSectionState';
+
 // Chart instance
 let trendChartInstance = null;
 
@@ -56,6 +67,91 @@ export function renderMetrics(data) {
     }
 }
 
+function buildInsightCard(insight, options = {}) {
+    const { showHeader = true } = options;
+    const card = document.createElement('div');
+    card.className = 'insight-card';
+
+    const iconSvg = ICONS[insight.icon] || ICONS.trend;
+
+    const headerMarkup = showHeader
+        ? `
+        <div class="insight-header">
+            <span class="insight-icon">${iconSvg}</span>
+            <span class="insight-type">${escapeHtml(insight.title)}</span>
+        </div>
+        `
+        : '';
+
+    card.innerHTML = `
+        ${headerMarkup}
+        <div class="insight-body">
+            <p class="insight-text">${insight.text}</p>
+            <p class="insight-tip">${escapeHtml(insight.tip)}</p>
+        </div>
+        <div class="insight-expand">
+            <p>This insight is based on your habit data over the selected time period.</p>
+        </div>
+        <button class="expand-btn">+ EXPAND FOR DETAILS</button>
+    `;
+
+    const expandBtn = card.querySelector('.expand-btn');
+    if (expandBtn) {
+        expandBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            card.classList.toggle('expanded');
+        });
+    }
+
+    card.addEventListener('click', () => {
+        card.classList.toggle('expanded');
+    });
+
+    return card;
+}
+
+function bindInsightsSectionToggles(container) {
+    if (!container) return;
+    let savedState = {};
+    try {
+        savedState = JSON.parse(localStorage.getItem(INSIGHTS_SECTION_STORAGE_KEY) || '{}');
+    } catch (error) {
+        savedState = {};
+    }
+
+    const setSectionState = (section, isExpanded) => {
+        section.classList.toggle('expanded', isExpanded);
+        section.classList.toggle('collapsed', !isExpanded);
+        const header = section.querySelector('h2');
+        if (header) header.setAttribute('aria-expanded', isExpanded ? 'true' : 'false');
+        if (isExpanded) {
+            requestAnimationFrame(() => {
+                window.dispatchEvent(new Event('resize'));
+            });
+        }
+    };
+
+    container.querySelectorAll('.chart-section[data-collapsible="true"]').forEach(section => {
+        const sectionId = section.dataset.sectionId;
+        if (!sectionId || section.dataset.bound) return;
+        const stored = savedState[sectionId];
+        const isExpanded = typeof stored === 'boolean' ? stored : true;
+        setSectionState(section, isExpanded);
+
+        const header = section.querySelector('h2');
+        if (header) {
+            header.addEventListener('click', () => {
+                const nextExpanded = !section.classList.contains('expanded');
+                setSectionState(section, nextExpanded);
+                savedState[sectionId] = nextExpanded;
+                localStorage.setItem(INSIGHTS_SECTION_STORAGE_KEY, JSON.stringify(savedState));
+            });
+        }
+
+        section.dataset.bound = 'true';
+    });
+}
+
 /**
  * Render the insight cards
  */
@@ -70,42 +166,65 @@ export function renderInsightCards(insights, habitMap) {
 
     container.innerHTML = '';
 
+    const groupedByCategory = INSIGHT_CATEGORIES.reduce((acc, category) => {
+        acc[category.key] = [];
+        return acc;
+    }, {});
+
     insights.forEach((insight) => {
-        const card = document.createElement('div');
-        card.className = 'insight-card';
+        if (groupedByCategory[insight.type]) {
+            groupedByCategory[insight.type].push(insight);
+        }
+    });
 
-        const iconSvg = ICONS[insight.icon] || ICONS.trend;
+    INSIGHT_CATEGORIES.forEach((category) => {
+        const items = groupedByCategory[category.key];
+        if (!items || items.length === 0) return;
 
-        card.innerHTML = `
-            <div class="insight-header">
-                <span class="insight-icon">${iconSvg}</span>
-                <span class="insight-type">${escapeHtml(insight.title)}</span>
-            </div>
-            <div class="insight-body">
-                <p class="insight-text">${insight.text}</p>
-                <p class="insight-tip">${escapeHtml(insight.tip)}</p>
-            </div>
-            <div class="insight-expand">
-                <p>This insight is based on your habit data over the selected time period.</p>
-            </div>
-            <button class="expand-btn">+ EXPAND FOR DETAILS</button>
+        const section = document.createElement('section');
+        section.className = 'chart-section collapsible expanded insights-group';
+        section.dataset.collapsible = 'true';
+        section.dataset.sectionId = `insights-${category.key}`;
+        section.innerHTML = `
+            <h2>${category.label}</h2>
+            <div class="section-body"></div>
         `;
 
-        // Add click handlers for expand
-        const expandBtn = card.querySelector('.expand-btn');
-        if (expandBtn) {
-            expandBtn.addEventListener('click', (e) => {
-                e.stopPropagation();
-                card.classList.toggle('expanded');
-            });
-        }
+        const sectionBody = section.querySelector('.section-body');
+        const groupedByTitle = items.reduce((acc, item) => {
+            const title = item.title || 'Insight';
+            if (!acc[title]) acc[title] = [];
+            acc[title].push(item);
+            return acc;
+        }, {});
 
-        card.addEventListener('click', () => {
-            card.classList.toggle('expanded');
+        Object.entries(groupedByTitle).forEach(([title, list]) => {
+            const subsection = document.createElement('div');
+            subsection.className = 'insights-subsection';
+
+            const header = document.createElement('div');
+            header.className = 'insights-subsection-header insight-header';
+            const headerIcon = ICONS[list[0]?.icon] || ICONS.trend;
+            header.innerHTML = `
+                <span class="insight-icon">${headerIcon}</span>
+                <span class="insight-type">${escapeHtml(title)}</span>
+            `;
+
+            const cards = document.createElement('div');
+            cards.className = 'insights-subsection-list';
+            list.forEach(insight => {
+                cards.appendChild(buildInsightCard(insight, { showHeader: false }));
+            });
+
+            subsection.appendChild(header);
+            subsection.appendChild(cards);
+            sectionBody.appendChild(subsection);
         });
 
-        container.appendChild(card);
+        container.appendChild(section);
     });
+
+    bindInsightsSectionToggles(container);
 }
 
 /**
@@ -561,19 +680,43 @@ export function setupInsightsUIHandlers(onPeriodChange, onTypeChange) {
         });
     }
 
-    // Type toggle (ALL / AM / PM)
-    const typeToggle = document.getElementById('type-toggle');
-    if (typeToggle) {
-        typeToggle.addEventListener('click', (e) => {
-            if (e.target.classList.contains('toggle-btn')) {
-                typeToggle.querySelectorAll('.toggle-btn').forEach(btn => {
-                    btn.classList.remove('active');
-                });
-                e.target.classList.add('active');
+    // Type toggle (Morning / Evening)
+    const typeTabs = document.getElementById('insights-type-tabs');
+    if (typeTabs) {
+        typeTabs.querySelectorAll('.dash-tab').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const type = btn.dataset.type;
+                console.log(`[Insights UI] Type tab clicked: ${type}, button text: ${btn.textContent.trim()}`);
 
-                const type = e.target.dataset.type;
+                typeTabs.querySelectorAll('.dash-tab').forEach(tab => {
+                    const isActive = tab === btn;
+                    tab.classList.toggle('active', isActive);
+                    tab.classList.toggle('inactive', !isActive);
+                });
+
+                console.log(`[Insights UI] Calling onTypeChange with: ${type}`);
                 if (onTypeChange) onTypeChange(type);
-            }
+            });
+        });
+    }
+}
+
+export function setInsightsToggleState(period, type) {
+    const periodToggle = document.getElementById('period-toggle');
+    if (periodToggle) {
+        periodToggle.querySelectorAll('.toggle-btn').forEach(btn => {
+            const isActive = Number(btn.dataset.period) === Number(period);
+            btn.classList.toggle('active', isActive);
+        });
+    }
+
+    const normalizedType = type === 'evening' ? 'evening' : 'morning';
+    const typeTabs = document.getElementById('insights-type-tabs');
+    if (typeTabs) {
+        typeTabs.querySelectorAll('.dash-tab').forEach(btn => {
+            const isActive = btn.dataset.type === normalizedType;
+            btn.classList.toggle('active', isActive);
+            btn.classList.toggle('inactive', !isActive);
         });
     }
 }
@@ -584,6 +727,36 @@ export function setupInsightsUIHandlers(onPeriodChange, onTypeChange) {
 export function renderAllInsights(results) {
     hideLoading();
 
+    // Validate that results match the currently selected type in UI
+    const selectedType = document.querySelector('#insights-type-tabs .dash-tab.active')?.dataset.type;
+    const resultType = results.metadata?.type;
+
+    console.log(`[Insights UI] renderAllInsights called: resultType=${resultType}, selectedType=${selectedType}`);
+
+    // Log the actual habits being returned
+    const habitIds = results.habitIds || [];
+    const habitMap = results.habitMap || {};
+    const habitTypesInResults = habitIds.reduce((acc, id) => {
+        const t = habitMap[id]?.type || 'unknown';
+        acc[t] = (acc[t] || 0) + 1;
+        return acc;
+    }, {});
+    console.log(`[Insights UI] Habits in results: count=${habitIds.length}, types=${JSON.stringify(habitTypesInResults)}`);
+
+    if (selectedType && resultType && resultType !== 'all' && resultType !== selectedType) {
+        console.log(`[Insights UI] BLOCKING RENDER: result type (${resultType}) doesn't match selected (${selectedType})`);
+        return;
+    }
+
+    // Additional check: verify the habits in results match the expected type
+    if (selectedType && habitIds.length > 0) {
+        const wrongTypeHabits = habitIds.filter(id => habitMap[id]?.type !== selectedType);
+        if (wrongTypeHabits.length > 0) {
+            console.log(`[Insights UI] WARNING: ${wrongTypeHabits.length} habits don't match selected type ${selectedType}`);
+            console.log(`[Insights UI] Wrong habits: ${wrongTypeHabits.map(id => `${habitMap[id]?.name}(${habitMap[id]?.type})`).join(', ')}`);
+        }
+    }
+
     if (results.insufficientData) {
         renderDataNotice(results.daysCollected, results.daysNeeded);
         return;
@@ -591,8 +764,47 @@ export function renderAllInsights(results) {
 
     hideDataNotice();
 
+    console.log(`[Insights UI] Proceeding with render for type=${resultType}`);
     renderMetrics(results);
     renderInsightCards(results.insights, results.habitMap);
+
+    const debug = document.getElementById('insights-debug');
+    if (debug) {
+        const debugSelectedType = document.querySelector('#insights-type-tabs .dash-tab.active')?.dataset.type || 'unknown';
+        const habitIds = results.habitIds || [];
+        const habitMap = results.habitMap || {};
+        const typeCounts = habitIds.reduce((acc, id) => {
+            const habitType = habitMap[id]?.type || 'unknown';
+            acc[habitType] = (acc[habitType] || 0) + 1;
+            return acc;
+        }, {});
+        const sample = habitIds.slice(0, 4).map(id => {
+            const habit = habitMap[id];
+            const label = habit?.name || id;
+            const habitType = habit?.type || 'unknown';
+            return `${label}(${habitType})`;
+        }).join(', ');
+        const insightTypeCounts = (results.insights || []).reduce((acc, item) => {
+            const insightType = item.type || 'unknown';
+            acc[insightType] = (acc[insightType] || 0) + 1;
+            return acc;
+        }, {});
+        const insightSamples = (results.insights || []).slice(0, 3).map(item => {
+            const text = item.text || '';
+            const clean = text.replace(/<[^>]+>/g, '');
+            return clean.length > 80 ? `${clean.slice(0, 80)}...` : clean;
+        });
+        const strengthSample = results.debug?.strengthSample || [];
+        const filteredSample = results.debug?.filteredHabitsSample || [];
+        debug.textContent = [
+            `DEBUG: results.type=${results.metadata?.type || 'n/a'} | selected=${debugSelectedType} | period=${results.metadata?.daysAnalyzed || results.metadata?.totalDays || 'n/a'}`,
+            `DEBUG: habitIds=${habitIds.length} | types=${JSON.stringify(typeCounts)} | sample=${sample || 'n/a'}`,
+            `DEBUG: insights=${(results.insights || []).length} | insightTypes=${JSON.stringify(insightTypeCounts)}`,
+            `DEBUG: samples=${insightSamples.join(' || ')}`,
+            `DEBUG: strengthSample=${strengthSample.join(' || ') || 'n/a'}`,
+            `DEBUG: filteredSample=${filteredSample.join(' || ') || 'n/a'}`
+        ].join('\n');
+    }
 }
 
 /**

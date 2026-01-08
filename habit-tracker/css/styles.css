@@ -2821,8 +2821,21 @@ button, input, select {
     overflow-y: auto;
 }
 
+.insights-debug {
+    font-size: 0.7rem;
+    color: var(--text-muted);
+    padding: 0 var(--spacing-md) var(--spacing-sm);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    white-space: pre-line;
+}
+
 .insights-main {
     display: block;
+}
+
+.insights-tabs {
+    border-bottom: var(--border-width) solid var(--border-color);
 }
 
 .insights-loading {
@@ -2913,8 +2926,10 @@ button, input, select {
     display: flex;
     flex-direction: column;
     gap: var(--spacing-md);
-    max-height: 400px;
-    overflow-y: auto;
+    max-height: none;
+    overflow: visible;
+    width: 100%;
+    padding: 0;
 }
 
 .insight-card {
@@ -2923,19 +2938,44 @@ button, input, select {
     cursor: pointer;
 }
 
-.insight-header {
+.insights-subsection {
+    margin-bottom: var(--spacing-lg);
+}
+
+.insights-subsection:last-child {
+    margin-bottom: 0;
+}
+
+.insights-subsection-header {
+    margin: 0 0 var(--spacing-sm);
+}
+
+.insights-subsection-list {
     display: flex;
+    flex-direction: column;
+    gap: var(--spacing-md);
+}
+
+.insights-subsection-list .insight-card {
+    margin-left: var(--spacing-md);
+    width: calc(100% - var(--spacing-md));
+}
+
+.insight-header {
+    display: inline-flex;
     align-items: center;
-    gap: var(--spacing-sm);
-    padding: var(--spacing-md);
-    border-bottom: 1px solid #333;
+    gap: 5px;
+    padding: 4px 10px;
+    margin: var(--spacing-md);
+    background: var(--accent-success);
+    color: var(--bg-primary);
 }
 
 .insight-icon {
     font-size: 1rem;
     display: flex;
     align-items: center;
-    color: var(--accent-success);
+    color: currentColor;
 }
 
 .insight-icon svg {
@@ -2953,7 +2993,7 @@ button, input, select {
     font-weight: 900;
     text-transform: uppercase;
     letter-spacing: 0.5px;
-    color: var(--accent-success);
+    color: currentColor;
 }
 
 .insight-body {
