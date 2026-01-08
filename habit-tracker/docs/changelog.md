@@ -4,6 +4,53 @@ This document summarizes the key improvements, features, and architectural decis
 
 ---
 
+## January 08, 2026 - Insights Tab Type Filtering Bug Fix
+
+**Session Focus:** Fix critical bug where switching between Morning/Evening filters in the Insights tab would show incorrect habits.
+
+### Problem
+When users selected the 7D period and switched from Morning to Evening (or vice versa), the insights would continue displaying habits from the previous type selection. This issue was particularly pronounced with the 7D period but could affect all periods.
+
+### Root Cause
+Two issues were identified:
+
+1. **Unfiltered Data in Sequence Analysis:** The `analyzeSequences()` function in `analytics-worker.js` was being called with unfiltered `matrix` and `habitIds` instead of the type-filtered `filteredMatrix` and `filteredHabitIds`. This caused sequence insights to include habits of the wrong type.
+
+2. **Worker File Caching:** The browser aggressively cached the Web Worker file (`analytics-worker.js`), preventing updated code from being loaded even after hard refreshes.
+
+### Solution
+
+1. **Fixed Sequence Analysis Filtering:**
+   ```javascript
+   // Before (bug)
+   sequences: analyzeSequences(matrix, habitIds, habitMap)
+
+   // After (fixed)
+   sequences: analyzeSequences(filteredMatrix, filteredHabitIds, habitMap)
+   ```
+
+2. **Implemented Cache-Busting for Worker:**
+   Added a version parameter to the worker URL to force browsers to fetch fresh code:
+   ```javascript
+   insightsWorker = new Worker(`./js/analytics-worker.js?v=${CACHE_VERSION}`);
+   ```
+
+3. **Added Race Condition Protection:**
+   - Implemented unique request IDs and request keys to track in-flight requests
+   - Added validation to reject stale results that don't match the current filter state
+   - Clear pending callbacks when a new request starts to prevent old results from being processed
+
+4. **Immediate UI Feedback:**
+   - Container is now cleared immediately when switching type/period to prevent showing stale data
+   - Shows "Loading..." placeholder while new data is being fetched
+
+### Files Modified
+- `js/insights.js` - Request tracking, cache-busting, validation logic
+- `js/analytics-worker.js` - Fixed sequence analysis to use filtered data
+- `js/ui/insights-ui.js` - Added result type validation before rendering
+
+---
+
 ## January 07, 2026 - Mindset Tab + Weekly Goals Dashboard
 
 **Session Focus:** Add a Mindset tab experience and expand goal tracking for weekly/daily/interval habits.

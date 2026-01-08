@@ -9,25 +9,15 @@ import { insightsCache, CACHE_TTL } from './insights-cache.js';
 
 // ========== STATE ==========
 
-// Version for debugging - update this when making changes
-const INSIGHTS_VERSION = '2.5';
-const CACHE_CLEAR_VERSION = 'v2.5'; // Increment to force cache clear on next load
-console.log(`[Insights] Module loaded, version ${INSIGHTS_VERSION}`);
+// Version for cache-busting worker and clearing stale IndexedDB data
+const CACHE_VERSION = 'v3.0';
 
 // One-time cache cleanup for corrupted data from previous versions
 (function checkCacheVersion() {
     const storedVersion = localStorage.getItem('insights_cache_version');
-    if (storedVersion !== CACHE_CLEAR_VERSION) {
-        console.log(`[Insights] Cache version mismatch (${storedVersion} !== ${CACHE_CLEAR_VERSION}), clearing IndexedDB`);
-        // Clear IndexedDB insights database
-        const deleteRequest = indexedDB.deleteDatabase('habit-tracker-insights');
-        deleteRequest.onsuccess = () => {
-            console.log('[Insights] IndexedDB cache cleared successfully');
-            localStorage.setItem('insights_cache_version', CACHE_CLEAR_VERSION);
-        };
-        deleteRequest.onerror = () => {
-            console.warn('[Insights] Failed to clear IndexedDB cache');
-        };
+    if (storedVersion !== CACHE_VERSION) {
+        indexedDB.deleteDatabase('habit-tracker-insights');
+        localStorage.setItem('insights_cache_version', CACHE_VERSION);
     }
 })();
 
@@ -83,10 +73,7 @@ export function initInsightsWorker() {
     }
 
     // Cache-busting: add version to URL to force browser to load fresh worker
-    const workerVersion = '2.5';
-    insightsWorker = new Worker(`./js/analytics-worker.js?v=${workerVersion}`);
-    console.log(`[Insights] Creating worker with version ${workerVersion}`);
-
+    insightsWorker = new Worker(`./js/analytics-worker.js?v=${CACHE_VERSION}`);
     insightsWorker.onmessage = handleWorkerMessage;
 
     insightsWorker.onerror = (error) => {
@@ -97,8 +84,6 @@ export function initInsightsWorker() {
             message: 'Failed to analyze data'
         });
     };
-
-    console.log('Insights Worker initialized');
 }
 
 /**
@@ -110,29 +95,16 @@ function handleWorkerMessage(e) {
     switch(type) {
         case 'RESULTS':
             const resultType = payload.metadata?.type;
-            const resultHabitCount = payload.habitIds?.length || 0;
-            const resultHabitTypes = (payload.habitIds || []).reduce((acc, id) => {
-                const t = payload.habitMap?.[id]?.type || 'unknown';
-                acc[t] = (acc[t] || 0) + 1;
-                return acc;
-            }, {});
-
-            console.log(`[Insights] Worker returned: type=${resultType}, habits=${resultHabitCount}, habitTypes=${JSON.stringify(resultHabitTypes)}, requestKey=${payload.requestKey}`);
-            console.log(`[Insights] Current state: type=${insightsState.type}, period=${insightsState.period}, requestKey=${insightsState.requestKey}`);
 
             // Validate request key - ignore stale results
             if (payload.requestKey && payload.requestKey !== insightsState.requestKey) {
-                console.log(`[Insights] REJECTED: stale requestKey (${payload.requestKey} !== ${insightsState.requestKey})`);
                 return;
             }
 
             // Additional validation: verify the result type matches current state
             if (resultType && resultType !== 'all' && resultType !== insightsState.type) {
-                console.log(`[Insights] REJECTED: type mismatch (result=${resultType}, expected=${insightsState.type})`);
                 return;
             }
-
-            console.log(`[Insights] ACCEPTED: rendering results for type=${resultType}`);
 
             insightsState.isLoading = false;
             insightsState.pendingRequestId = null;
@@ -143,7 +115,7 @@ function handleWorkerMessage(e) {
                 insightsCache.set(
                     currentUser.uid,
                     insightsState.period,
-                    resultType,  // Use result type, not state type
+                    resultType,
                     payload,
                     CACHE_TTL.default
                 );
@@ -295,7 +267,6 @@ function clearPendingCallbacks() {
 export async function runInsightsAnalysis(period = 30, type = 'all', options = {}) {
     const { forceRefresh = false } = options;
     if (!currentUser?.uid) {
-        console.warn('No user logged in');
         return null;
     }
 
@@ -304,8 +275,6 @@ export async function runInsightsAnalysis(period = 30, type = 'all', options = {
     const requestId = requestCounter;
     const normalizedType = type === 'evening' ? 'evening' : 'morning';
     const requestKey = `${period}_${normalizedType}_${requestId}_${Date.now()}`;
-
-    console.log(`[Insights] Starting analysis: period=${period}, type=${normalizedType}, requestId=${requestId}`);
 
     // Clear any pending callbacks from previous requests to prevent race conditions
     clearPendingCallbacks();
@@ -323,12 +292,10 @@ export async function runInsightsAnalysis(period = 30, type = 'all', options = {
 
         // Verify this request is still the current one after async cache check
         if (insightsState.pendingRequestId !== requestId) {
-            console.log(`[Insights] Request ${requestId} superseded, skipping cache result`);
             return null;
         }
 
         if (cached) {
-            console.log(`[Insights] Cache hit for period=${period}, type=${normalizedType}`);
             insightsState.isLoading = false;
             insightsState.pendingRequestId = null;
             insightsState.lastResults = cached;
@@ -363,7 +330,6 @@ export async function runInsightsAnalysis(period = 30, type = 'all', options = {
 
         // Verify this request is still the current one after async fetch
         if (insightsState.pendingRequestId !== requestId) {
-            console.log(`[Insights] Request ${requestId} superseded after fetch, aborting`);
             return null;
         }
 
@@ -374,15 +340,6 @@ export async function runInsightsAnalysis(period = 30, type = 'all', options = {
         workerData.periodStart = periodStart;
         workerData.periodEnd = periodEnd;
         workerData.requestKey = requestKey;
-
-        // Log detailed info about what's being sent
-        const habitTypesInData = workerData.habitIds.reduce((acc, id) => {
-            const t = workerData.habitMap[id]?.type || 'unknown';
-            acc[t] = (acc[t] || 0) + 1;
-            return acc;
-        }, {});
-        console.log(`[Insights] Sending to worker: requestKey=${requestKey}, type=${normalizedType}, period=${period}`);
-        console.log(`[Insights] Worker data: habitIds=${workerData.habitIds.length}, types=${JSON.stringify(habitTypesInData)}, days=${workerData.dates?.length}`);
 
         // Send to worker
         insightsWorker.postMessage({
@@ -409,8 +366,6 @@ export async function runInsightsAnalysis(period = 30, type = 'all', options = {
  * @param {number} period - New period (7, 30, 90)
  */
 export function setInsightsPeriod(period) {
-    console.log(`[Insights] Period changed to ${period}, currentType=${insightsState.type}`);
-
     // Clear the insights container immediately to prevent showing stale data
     const container = document.getElementById('insights-container');
     if (container) {
@@ -418,7 +373,6 @@ export function setInsightsPeriod(period) {
     }
 
     // Invalidate cache in background, but start analysis immediately
-    // The request tracking ensures only the latest results are used
     invalidateInsightsCache();
     runInsightsAnalysis(period, insightsState.type, { forceRefresh: true });
 }
@@ -429,7 +383,6 @@ export function setInsightsPeriod(period) {
  */
 export function setInsightsType(type) {
     const normalizedType = type === 'evening' ? 'evening' : 'morning';
-    console.log(`[Insights] setInsightsType called: input=${type}, normalized=${normalizedType}, currentState.type=${insightsState.type}, currentState.period=${insightsState.period}`);
 
     // Clear the insights container immediately to prevent showing stale data
     const container = document.getElementById('insights-container');
@@ -438,7 +391,6 @@ export function setInsightsType(type) {
     }
 
     // Invalidate cache in background, but start analysis immediately
-    // The request tracking ensures only the latest results are used
     invalidateInsightsCache();
     runInsightsAnalysis(insightsState.period, normalizedType, { forceRefresh: true });
 }
@@ -470,6 +422,5 @@ export function getInsightsState() {
 export async function invalidateInsightsCache() {
     if (currentUser?.uid) {
         await insightsCache.invalidate(currentUser.uid);
-        console.log('Insights cache invalidated');
     }
 }

@@ -2,20 +2,13 @@
 // Handles all statistical computations off the main thread
 // Part of the Smart Insights feature
 
-// Version for debugging - MUST appear in console when worker loads
-const WORKER_VERSION = '2.5';
-console.log(`[Worker] Analytics Worker loaded, version ${WORKER_VERSION}`);
-
 // Message handler
 self.onmessage = function(e) {
     const { type, payload } = e.data;
 
     switch(type) {
         case 'ANALYZE':
-            console.log(`[Worker] Received ANALYZE request, version ${WORKER_VERSION}`);
-            console.time('Full Analysis');
             const results = runFullAnalysis(payload);
-            console.timeEnd('Full Analysis');
             self.postMessage({ type: 'RESULTS', payload: results });
             break;
         default:
@@ -33,16 +26,6 @@ self.onmessage = function(e) {
 function runFullAnalysis(data) {
     const { habitMap, habitIds, dates, matrix, metadata, type, entries, periodStart, periodEnd, requestKey } = data;
 
-    console.log(`[Worker] Starting analysis: type=${type}, period=${metadata.totalDays}, totalHabits=${habitIds.length}, requestKey=${requestKey}`);
-
-    // Log habit types before filtering
-    const habitTypesBefore = habitIds.reduce((acc, id) => {
-        const t = habitMap[id]?.type || 'unknown';
-        acc[t] = (acc[t] || 0) + 1;
-        return acc;
-    }, {});
-    console.log(`[Worker] Habits before filtering: ${JSON.stringify(habitTypesBefore)}`);
-
     // Check minimum data requirements
     if (metadata.totalDays < 7) {
         return {
@@ -59,32 +42,13 @@ function runFullAnalysis(data) {
     let filteredMatrix = matrix;
 
     if (type && type !== 'all') {
-        console.log(`[Worker] Filtering for type: ${type}`);
         const typeIndices = habitIds
             .map((id, idx) => ({ id, idx }))
-            .filter(item => {
-                const habitType = habitMap[item.id]?.type;
-                const matches = habitType === type;
-                if (!matches) {
-                    console.log(`[Worker] Excluding habit ${item.id}: type=${habitType}, wanted=${type}`);
-                }
-                return matches;
-            })
+            .filter(item => habitMap[item.id]?.type === type)
             .map(item => item.idx);
 
         filteredHabitIds = typeIndices.map(idx => habitIds[idx]);
         filteredMatrix = matrix.map(row => typeIndices.map(idx => row[idx]));
-
-        console.log(`[Worker] After filtering: ${filteredHabitIds.length} habits of type ${type}`);
-
-        // Sanity check: verify all filtered habits match the expected type
-        const wrongTypeHabits = filteredHabitIds.filter(id => habitMap[id]?.type !== type);
-        if (wrongTypeHabits.length > 0) {
-            console.error(`[Worker] BUG: ${wrongTypeHabits.length} habits don't match type ${type} after filtering!`);
-            console.error(`[Worker] Wrong habits: ${wrongTypeHabits.map(id => `${id}(${habitMap[id]?.type})`).join(', ')}`);
-        }
-    } else {
-        console.log(`[Worker] No filtering applied (type=${type})`);
     }
 
     // Calculate daily completion rates

@@ -686,7 +686,6 @@ export function setupInsightsUIHandlers(onPeriodChange, onTypeChange) {
         typeTabs.querySelectorAll('.dash-tab').forEach(btn => {
             btn.addEventListener('click', () => {
                 const type = btn.dataset.type;
-                console.log(`[Insights UI] Type tab clicked: ${type}, button text: ${btn.textContent.trim()}`);
 
                 typeTabs.querySelectorAll('.dash-tab').forEach(tab => {
                     const isActive = tab === btn;
@@ -694,7 +693,6 @@ export function setupInsightsUIHandlers(onPeriodChange, onTypeChange) {
                     tab.classList.toggle('inactive', !isActive);
                 });
 
-                console.log(`[Insights UI] Calling onTypeChange with: ${type}`);
                 if (onTypeChange) onTypeChange(type);
             });
         });
@@ -731,30 +729,8 @@ export function renderAllInsights(results) {
     const selectedType = document.querySelector('#insights-type-tabs .dash-tab.active')?.dataset.type;
     const resultType = results.metadata?.type;
 
-    console.log(`[Insights UI] renderAllInsights called: resultType=${resultType}, selectedType=${selectedType}`);
-
-    // Log the actual habits being returned
-    const habitIds = results.habitIds || [];
-    const habitMap = results.habitMap || {};
-    const habitTypesInResults = habitIds.reduce((acc, id) => {
-        const t = habitMap[id]?.type || 'unknown';
-        acc[t] = (acc[t] || 0) + 1;
-        return acc;
-    }, {});
-    console.log(`[Insights UI] Habits in results: count=${habitIds.length}, types=${JSON.stringify(habitTypesInResults)}`);
-
     if (selectedType && resultType && resultType !== 'all' && resultType !== selectedType) {
-        console.log(`[Insights UI] BLOCKING RENDER: result type (${resultType}) doesn't match selected (${selectedType})`);
         return;
-    }
-
-    // Additional check: verify the habits in results match the expected type
-    if (selectedType && habitIds.length > 0) {
-        const wrongTypeHabits = habitIds.filter(id => habitMap[id]?.type !== selectedType);
-        if (wrongTypeHabits.length > 0) {
-            console.log(`[Insights UI] WARNING: ${wrongTypeHabits.length} habits don't match selected type ${selectedType}`);
-            console.log(`[Insights UI] Wrong habits: ${wrongTypeHabits.map(id => `${habitMap[id]?.name}(${habitMap[id]?.type})`).join(', ')}`);
-        }
     }
 
     if (results.insufficientData) {
@@ -764,47 +740,8 @@ export function renderAllInsights(results) {
 
     hideDataNotice();
 
-    console.log(`[Insights UI] Proceeding with render for type=${resultType}`);
     renderMetrics(results);
     renderInsightCards(results.insights, results.habitMap);
-
-    const debug = document.getElementById('insights-debug');
-    if (debug) {
-        const debugSelectedType = document.querySelector('#insights-type-tabs .dash-tab.active')?.dataset.type || 'unknown';
-        const habitIds = results.habitIds || [];
-        const habitMap = results.habitMap || {};
-        const typeCounts = habitIds.reduce((acc, id) => {
-            const habitType = habitMap[id]?.type || 'unknown';
-            acc[habitType] = (acc[habitType] || 0) + 1;
-            return acc;
-        }, {});
-        const sample = habitIds.slice(0, 4).map(id => {
-            const habit = habitMap[id];
-            const label = habit?.name || id;
-            const habitType = habit?.type || 'unknown';
-            return `${label}(${habitType})`;
-        }).join(', ');
-        const insightTypeCounts = (results.insights || []).reduce((acc, item) => {
-            const insightType = item.type || 'unknown';
-            acc[insightType] = (acc[insightType] || 0) + 1;
-            return acc;
-        }, {});
-        const insightSamples = (results.insights || []).slice(0, 3).map(item => {
-            const text = item.text || '';
-            const clean = text.replace(/<[^>]+>/g, '');
-            return clean.length > 80 ? `${clean.slice(0, 80)}...` : clean;
-        });
-        const strengthSample = results.debug?.strengthSample || [];
-        const filteredSample = results.debug?.filteredHabitsSample || [];
-        debug.textContent = [
-            `DEBUG: results.type=${results.metadata?.type || 'n/a'} | selected=${debugSelectedType} | period=${results.metadata?.daysAnalyzed || results.metadata?.totalDays || 'n/a'}`,
-            `DEBUG: habitIds=${habitIds.length} | types=${JSON.stringify(typeCounts)} | sample=${sample || 'n/a'}`,
-            `DEBUG: insights=${(results.insights || []).length} | insightTypes=${JSON.stringify(insightTypeCounts)}`,
-            `DEBUG: samples=${insightSamples.join(' || ')}`,
-            `DEBUG: strengthSample=${strengthSample.join(' || ') || 'n/a'}`,
-            `DEBUG: filteredSample=${filteredSample.join(' || ') || 'n/a'}`
-        ].join('\n');
-    }
 }
 
 /**
