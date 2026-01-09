@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Power Cells V2 - Swiss Brutalism</title>
+    <link rel="stylesheet" href="../css/styles.css">
+    <style>
+        /* =========================================
+           PREVIEW SPECIFIC STYLES
+           ========================================= */
+        body {
+            padding: 20px;
+            max-width: 800px;
+            margin: 0 auto;
+            background-color: #000;
+            color: #fff;
+            font-family: var(--font-mono);
+        }
+
+        .preview-controls {
+            position: sticky;
+            top: 20px;
+            z-index: 1000;
+            background: #000;
+            border: 4px solid #fff;
+            padding: 20px;
+            margin-bottom: 40px;
+            display: grid;
+            gap: 20px;
+            box-shadow: 10px 10px 0 rgba(204, 255, 0, 0.3);
+        }
+
+        .control-row {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+
+        .control-label {
+            font-weight: 900;
+            text-transform: uppercase;
+            min-width: 150px;
+            color: #ccff00;
+        }
+
+        input[type="range"] {
+            flex: 1;
+            height: 30px;
+            -webkit-appearance: none;
+            background: transparent;
+        }
+
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            height: 30px;
+            width: 15px;
+            background: #ccff00;
+            border: 2px solid #fff;
+            cursor: pointer;
+            margin-top: -10px;
+        }
+
+        input[type="range"]::-webkit-slider-runnable-track {
+            width: 100%;
+            height: 10px;
+            cursor: pointer;
+            background: #333;
+            border: 1px solid #666;
+        }
+
+        .period-selector {
+            display: flex;
+            border: 2px solid #fff;
+        }
+
+        .period-btn {
+            background: #000;
+            color: #fff;
+            border: none;
+            border-right: 2px solid #fff;
+            padding: 10px 20px;
+            font-family: var(--font-mono);
+            font-weight: 900;
+            cursor: pointer;
+            text-transform: uppercase;
+        }
+
+        .period-btn:last-child {
+            border-right: none;
+        }
+
+        .period-btn.active {
+            background: var(--accent-primary);
+            color: #fff;
+        }
+
+        .display-value {
+            font-family: var(--font-sans);
+            font-size: 2rem;
+            font-weight: 900;
+            min-width: 120px;
+            text-align: right;
+        }
+
+        /* =========================================
+           POWER CELLS VISUALIZATION
+           ========================================= */
+        .vis-card {
+            border: 4px solid #fff;
+            background: #000;
+            padding: 30px;
+            position: relative;
+            min-height: 600px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .vis-header {
+            font-size: 0.8rem;
+            color: #666;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 20px;
+            border-bottom: 1px solid #333;
+            padding-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .vis-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px 0;
+            width: 100%;
+        }
+
+        /* The container for the 7 bars */
+        .power-grid {
+            width: 100%;
+            max-width: 320px;
+            height: 400px;
+            display: flex;
+            flex-direction: column-reverse; /* Build from bottom up */
+            gap: 15px; /* Spacing between the 7 main bars */
+        }
+
+        /* Each of the 7 bars */
+        .power-row {
+            flex: 1; /* Distribute height evenly */
+            display: flex;
+            gap: 2px; /* Small gap between internal units */
+            transform: skewX(-15deg); /* Retain the dynamic angle */
+            border: 1px solid #333; /* Container border */
+            padding: 2px;
+            background: #0a0a0a;
+        }
+
+        /* The internal units/cells within a bar */
+        .power-unit {
+            flex: 1;
+            height: 100%;
+            background: #1a1a1a;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        /* Completed State - ACID GREEN */
+        .power-unit.filled {
+            background-color: #ccff00 !important;
+            box-shadow: 0 0 8px rgba(204, 255, 0, 0.5);
+            z-index: 1;
+        }
+
+        /* Current Day - Pulsing White */
+        .power-unit.current {
+            background: #fff;
+            animation: pulse-unit 1.5s infinite;
+            z-index: 2;
+        }
+
+        @keyframes pulse-unit {
+            0% { opacity: 0.8; box-shadow: 0 0 5px #fff; }
+            50% { opacity: 0.4; box-shadow: 0 0 10px #fff; }
+            100% { opacity: 0.8; box-shadow: 0 0 5px #fff; }
+        }
+
+        .vis-promo-header {
+            font-family: var(--font-sans);
+            font-weight: 900;
+            text-transform: uppercase;
+            font-size: 1.2rem;
+            line-height: 1.2;
+            margin-bottom: 30px;
+            color: #fff;
+            letter-spacing: 0.5px;
+            text-align: center;
+        }
+
+        .copy-container {
+            margin-top: 40px;
+        }
+
+        .motivational-copy {
+            font-family: var(--font-sans);
+            font-weight: 900;
+            text-transform: uppercase;
+            font-size: 1.5rem;
+            text-align: center;
+            margin-top: 20px;
+            line-height: 1.1;
+            min-height: 2.4em;
+        }
+
+        .copy-sub {
+            font-size: 0.8rem;
+            color: #ccff00;
+            margin-top: 10px;
+            text-align: center;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="preview-controls">
+        <div class="control-row">
+            <span class="control-label">Cycle Length:</span>
+            <div class="period-selector">
+                <button class="period-btn" onclick="setPeriod(7)">7 Days</button>
+                <button class="period-btn active" onclick="setPeriod(14)">14 Days</button>
+                <button class="period-btn" onclick="setPeriod(28)">28 Days</button>
+            </div>
+        </div>
+        <div class="control-row">
+            <span class="control-label">Days Complete:</span>
+            <input type="range" id="daysSlider" min="0" max="14" value="5" oninput="updateProgress(this.value)">
+            <span class="display-value" id="daysDisplay">5</span>
+        </div>
+    </div>
+
+    <div class="vis-card">
+        <div class="vis-promo-header">
+            Complete the tracking cycle to unlock your smart insights
+        </div>
+        
+        <div class="vis-content">
+            <div class="power-grid" id="powerVis">
+                <!-- Rows generated by JS -->
+            </div>
+        </div>
+
+        <div class="copy-container">
+            <div class="motivational-copy" id="mainCopy">SYSTEM CHARGING...</div>
+            <div class="copy-sub" id="subCopy">ENERGY LEVELS RISING</div>
+        </div>
+    </div>
+
+    <script>
+        // State
+        let currentTarget = 14;
+        let currentDays = 5;
+
+        const motivationalQuotes = {
+            start: [
+                "INITIATING SEQUENCE...",
+                "STARTING NEW PROTOCOL",
+                "FIRST CELLS CHARGING",
+                "SYSTEM AWAKENING"
+            ],
+            early: [
+                "GATHERING MOMENTUM...",
+                "POWER LEVELS RISING",
+                "STABILITY INCREASING",
+                "GOOD START, KEEP GOING"
+            ],
+            mid: [
+                "CORE CHARGE AT 50%",
+                "OPTIMIZATION IN PROGRESS",
+                "SUSTAINED OUTPUT DETECTED",
+                "CONSISTENCY IS POWER"
+            ],
+            late: [
+                "MAXIMUM POWER APPROACHING",
+                "FINALIZING CHARGE CYCLE",
+                "CRITICAL MASS IMMINENT",
+                "ALMOST AT FULL CAPACITY"
+            ],
+            done: [
+                "CYCLE COMPLETE",
+                "POWER OVERWHELMING",
+                "FULL SYNCHRONIZATION",
+                "SYSTEM OPTIMIZED"
+            ]
+        };
+
+        // DOM Elements
+        const slider = document.getElementById('daysSlider');
+        const display = document.getElementById('daysDisplay');
+        const powerVis = document.getElementById('powerVis');
+        const mainCopy = document.getElementById('mainCopy');
+        const subCopy = document.getElementById('subCopy');
+
+        function setPeriod(days) {
+            currentTarget = days;
+            
+            // Update UI buttons
+            document.querySelectorAll('.period-btn').forEach(btn => {
+                btn.classList.toggle('active', parseInt(btn.innerText) === days);
+            });
+
+            // Update Slider constraints
+            slider.max = days;
+            if (currentDays > days) {
+                currentDays = days;
+                slider.value = days;
+            }
+            
+            renderAll();
+        }
+
+        function updateProgress(val) {
+            currentDays = parseInt(val);
+            renderAll();
+        }
+
+        function getCopy(percentage) {
+            let category = 'start';
+            if (percentage >= 100) category = 'done';
+            else if (percentage > 80) category = 'late';
+            else if (percentage > 50) category = 'mid';
+            else if (percentage > 20) category = 'early';
+
+            const quotes = motivationalQuotes[category];
+            const index = Math.floor(percentage) % quotes.length;
+            return quotes[index];
+        }
+
+        function updateText(percentage) {
+            const copyText = getCopy(percentage);
+            const subText = `${currentDays} / ${currentTarget} DAYS TRACKED`;
+
+            mainCopy.innerText = copyText;
+            subCopy.innerText = subText;
+        }
+
+        function renderPowerGrid() {
+            powerVis.innerHTML = '';
+            
+            // Fixed layout: Always 7 main visual rows
+            const totalRows = 7;
+            
+            // Calculate units per row based on current target
+            // 7 days -> 1 unit/row
+            // 14 days -> 2 units/row
+            // 28 days -> 4 units/row
+            const unitsPerRow = currentTarget / totalRows;
+            
+            // Loop through ROWS (1 to 7)
+            // Flex column-reverse builds from bottom up
+            for (let r = 1; r <= totalRows; r++) {
+                const row = document.createElement('div');
+                row.className = 'power-row';
+                
+                // Loop through UNITS in this row
+                for (let u = 1; u <= unitsPerRow; u++) {
+                    const unit = document.createElement('div');
+                    unit.className = 'power-unit';
+                    
+                    // Calculate global day index
+                    // Row 1 (bottom): Days 1..N
+                    const globalDayIndex = ((r - 1) * unitsPerRow) + u;
+                    
+                    // State logic
+                    if (globalDayIndex <= currentDays) {
+                        unit.classList.add('filled');
+                    } else if (globalDayIndex === currentDays + 1) {
+                        unit.classList.add('current');
+                    }
+                    
+                    row.appendChild(unit);
+                }
+                
+                powerVis.appendChild(row);
+            }
+        }
+
+        function renderAll() {
+            display.innerText = currentDays;
+            
+            // Calculate percentage
+            const pct = (currentDays / currentTarget) * 100;
+
+            renderPowerGrid();
+            updateText(pct);
+        }
+
+        // Initialize
+        renderAll();
+
+    </script>
+</body>
+</html>
