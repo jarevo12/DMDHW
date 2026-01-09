@@ -10,7 +10,7 @@ import { insightsCache, CACHE_TTL } from './insights-cache.js';
 // ========== STATE ==========
 
 // Version for cache-busting worker and clearing stale IndexedDB data
-const CACHE_VERSION = 'v3.0';
+const CACHE_VERSION = 'v3.2';
 
 // One-time cache cleanup for corrupted data from previous versions
 (function checkCacheVersion() {

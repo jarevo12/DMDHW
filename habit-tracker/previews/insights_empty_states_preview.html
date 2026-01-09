@@ -1,0 +1,691 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Insights Empty States - Swiss Brutalism</title>
+    <link rel="stylesheet" href="../css/styles.css">
+    <style>
+        /* =========================================
+           PREVIEW SPECIFIC STYLES
+           ========================================= */
+        body {
+            padding: 20px;
+            max-width: 1200px;
+            margin: 0 auto;
+            background-color: #000;
+            color: #fff;
+        }
+
+        .preview-controls {
+            position: sticky;
+            top: 20px;
+            z-index: 1000;
+            background: #000;
+            border: 4px solid #fff;
+            padding: 20px;
+            margin-bottom: 40px;
+            display: grid;
+            gap: 20px;
+            box-shadow: 10px 10px 0 rgba(106, 0, 255, 0.3);
+        }
+
+        .control-row {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+
+        .control-label {
+            font-family: var(--font-mono);
+            font-weight: 900;
+            text-transform: uppercase;
+            min-width: 150px;
+            color: var(--accent-success);
+        }
+
+        input[type="range"] {
+            flex: 1;
+            height: 30px;
+            -webkit-appearance: none;
+            background: transparent;
+        }
+
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            height: 30px;
+            width: 15px;
+            background: var(--accent-success);
+            border: 2px solid #fff;
+            cursor: pointer;
+            margin-top: -10px;
+        }
+
+        input[type="range"]::-webkit-slider-runnable-track {
+            width: 100%;
+            height: 10px;
+            cursor: pointer;
+            background: #333;
+            border: 1px solid #666;
+        }
+
+        .period-selector {
+            display: flex;
+            border: 2px solid #fff;
+        }
+
+        .period-btn {
+            background: #000;
+            color: #fff;
+            border: none;
+            border-right: 2px solid #fff;
+            padding: 10px 20px;
+            font-family: var(--font-mono);
+            font-weight: 900;
+            cursor: pointer;
+            text-transform: uppercase;
+        }
+
+        .period-btn:last-child {
+            border-right: none;
+        }
+
+        .period-btn.active {
+            background: var(--accent-primary);
+            color: #fff;
+        }
+
+        .display-value {
+            font-family: var(--font-sans);
+            font-size: 2rem;
+            font-weight: 900;
+            min-width: 120px;
+            text-align: right;
+        }
+
+        .grid-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 40px;
+        }
+
+        /* =========================================
+           COMMON VISUALIZATION STYLES
+           ========================================= */
+        .vis-card {
+            border: 4px solid #fff;
+            background: #000;
+            padding: 30px;
+            position: relative;
+            min-height: 400px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .vis-header {
+            font-family: var(--font-mono);
+            font-size: 0.8rem;
+            color: #666;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 20px;
+            border-bottom: 1px solid #333;
+            padding-bottom: 10px;
+        }
+
+        .vis-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px 0;
+        }
+
+        .motivational-copy {
+            font-family: var(--font-sans);
+            font-weight: 900;
+            text-transform: uppercase;
+            font-size: 1.2rem;
+            text-align: center;
+            margin-top: 20px;
+            line-height: 1.1;
+            min-height: 2.4em;
+        }
+
+        .copy-sub {
+            font-family: var(--font-mono);
+            font-size: 0.7rem;
+            color: var(--accent-success);
+            margin-top: 10px;
+            text-align: center;
+            text-transform: uppercase;
+        }
+
+        /* =========================================
+           OPTION 1: DATA GRID (The "Matrix")
+           ========================================= */
+        .grid-vis-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 4px;
+            width: 100%;
+            justify-content: center;
+            max-width: 280px;
+        }
+
+        .grid-cell {
+            width: 20px;
+            height: 20px;
+            border: 1px solid #333;
+            background: #0a0a0a;
+            transition: all 0.3s ease;
+        }
+
+        .grid-cell.active {
+            background: var(--accent-success);
+            border-color: var(--accent-success);
+            box-shadow: 0 0 10px rgba(204, 255, 0, 0.4);
+        }
+
+        .grid-cell.pulse {
+            animation: cellPulse 1.5s infinite;
+            background: #222;
+        }
+
+        @keyframes cellPulse {
+            0% { opacity: 0.3; }
+            50% { opacity: 1; border-color: #555; }
+            100% { opacity: 0.3; }
+        }
+
+        /* =========================================
+           OPTION 2: RADIAL SCANNER (The "Target")
+           ========================================= */
+        .radial-container {
+            position: relative;
+            width: 200px;
+            height: 200px;
+        }
+
+        .radial-svg {
+            transform: rotate(-90deg);
+            width: 100%;
+            height: 100%;
+        }
+
+        .radial-bg {
+            fill: none;
+            stroke: #1a1a1a;
+            stroke-width: 15;
+        }
+
+        .radial-progress {
+            fill: none;
+            stroke: var(--accent-primary);
+            stroke-width: 15;
+            stroke-dasharray: 630; /* 2 * PI * 100 (approx) */
+            stroke-dashoffset: 630;
+            transition: stroke-dashoffset 0.5s ease;
+            filter: drop-shadow(0 0 5px var(--accent-primary));
+        }
+
+        .radial-text {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-family: var(--font-mono);
+            font-size: 2rem;
+            font-weight: 900;
+        }
+
+        .scan-line {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 50%;
+            height: 2px;
+            background: var(--accent-success);
+            transform-origin: left center;
+            animation: radarSpin 4s linear infinite;
+            opacity: 0.5;
+        }
+
+        @keyframes radarSpin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* =========================================
+           OPTION 3: SEGMENTED BAR (The "Battery")
+           ========================================= */
+        .battery-container {
+            width: 100%;
+            max-width: 280px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .battery-segment {
+            height: 12px;
+            width: 100%;
+            background: #111;
+            border: 1px solid #333;
+            transform: skewX(-15deg);
+            transition: all 0.3s ease;
+        }
+
+        .battery-segment.filled {
+            background: var(--accent-success);
+            border-color: var(--accent-success);
+            box-shadow: 0 0 8px rgba(204, 255, 0, 0.3);
+        }
+
+        .battery-segment.current {
+            background: #fff;
+            animation: blink 1s infinite;
+        }
+
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.3; }
+        }
+
+        /* =========================================
+           OPTION 4: DATA STACK (The "Tower")
+           ========================================= */
+        .stack-container {
+            width: 120px;
+            height: 240px;
+            display: flex;
+            flex-direction: column-reverse; /* Build from bottom */
+            gap: 2px;
+            border-bottom: 4px solid #fff;
+            padding-bottom: 4px;
+        }
+
+        .stack-block {
+            width: 100%;
+            background: #1a1a1a;
+            border: 1px solid #333;
+            flex: 1; /* Distribute height */
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            transform-origin: bottom;
+            transform: scaleY(0);
+        }
+
+        .stack-block.visible {
+            transform: scaleY(1);
+        }
+
+        .stack-block.filled {
+            background: linear-gradient(90deg, var(--accent-primary) 0%, #a040ff 100%);
+            border-color: var(--accent-primary);
+        }
+
+        /* =========================================
+           OPTION 5: TERMINAL LOADER (The "Code")
+           ========================================= */
+        .terminal-container {
+            width: 100%;
+            font-family: var(--font-mono);
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+        }
+
+        .terminal-line {
+            margin-bottom: 5px;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .terminal-progress-wrap {
+            border: 2px solid #fff;
+            padding: 4px;
+            margin: 15px 0;
+            background: #000;
+        }
+
+        .terminal-bar {
+            height: 20px;
+            background: repeating-linear-gradient(
+                45deg,
+                var(--accent-success),
+                var(--accent-success) 10px,
+                #000 10px,
+                #000 20px
+            );
+            width: 0%;
+            transition: width 0.2s ease;
+        }
+
+        .terminal-status {
+            color: var(--accent-success);
+            font-weight: bold;
+        }
+
+        .glitch-text {
+            position: relative;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="preview-controls">
+        <div class="control-row">
+            <span class="control-label">Time Period:</span>
+            <div class="period-selector">
+                <button class="period-btn" onclick="setPeriod(7)">7 Days</button>
+                <button class="period-btn active" onclick="setPeriod(30)">30 Days</button>
+                <button class="period-btn" onclick="setPeriod(90)">90 Days</button>
+            </div>
+        </div>
+        <div class="control-row">
+            <span class="control-label">Days Collected:</span>
+            <input type="range" id="daysSlider" min="0" max="30" value="12" oninput="updateProgress(this.value)">
+            <span class="display-value" id="daysDisplay">12</span>
+        </div>
+    </div>
+
+    <div class="grid-container">
+        
+        <!-- OPTION 1: DATA GRID -->
+        <div class="vis-card">
+            <div class="vis-header">01 // DATA MATRIX</div>
+            <div class="vis-content">
+                <div class="grid-vis-container" id="gridVis">
+                    <!-- Grid items generated by JS -->
+                </div>
+            </div>
+            <div class="copy-container">
+                <div class="motivational-copy" id="copy1">GATHERING INITIAL DATA...</div>
+                <div class="copy-sub" id="sub1">12 / 30 DATA POINTS ACQUIRED</div>
+            </div>
+        </div>
+
+        <!-- OPTION 2: RADIAL -->
+        <div class="vis-card">
+            <div class="vis-header">02 // RADIAL SCANNER</div>
+            <div class="vis-content">
+                <div class="radial-container">
+                    <svg class="radial-svg" viewBox="0 0 220 220">
+                        <circle class="radial-bg" cx="110" cy="110" r="100"></circle>
+                        <circle class="radial-progress" id="radialCircle" cx="110" cy="110" r="100"></circle>
+                    </svg>
+                    <div class="scan-line"></div>
+                    <div class="radial-text" id="radialText">40%</div>
+                </div>
+            </div>
+            <div class="copy-container">
+                <div class="motivational-copy" id="copy2">CALIBRATING INSIGHTS...</div>
+                <div class="copy-sub" id="sub2">NEED MORE SIGNALS</div>
+            </div>
+        </div>
+
+        <!-- OPTION 3: BATTERY -->
+        <div class="vis-card">
+            <div class="vis-header">03 // POWER CELLS</div>
+            <div class="vis-content">
+                <div class="battery-container" id="batteryVis">
+                    <!-- Segments generated by JS -->
+                </div>
+            </div>
+            <div class="copy-container">
+                <div class="motivational-copy" id="copy3">SYSTEM CHARGING...</div>
+                <div class="copy-sub" id="sub3">ENERGY LEVELS RISING</div>
+            </div>
+        </div>
+
+        <!-- OPTION 4: STACK -->
+        <div class="vis-card">
+            <div class="vis-header">04 // FOUNDATION STACK</div>
+            <div class="vis-content">
+                <div class="stack-container" id="stackVis">
+                    <!-- Blocks generated by JS -->
+                </div>
+            </div>
+            <div class="copy-container">
+                <div class="motivational-copy" id="copy4">LAYING FOUNDATION...</div>
+                <div class="copy-sub" id="sub4">BUILDING HABIT LAYERS</div>
+            </div>
+        </div>
+
+        <!-- OPTION 5: TERMINAL -->
+        <div class="vis-card">
+            <div class="vis-header">05 // TERMINAL LOG</div>
+            <div class="vis-content" style="align-items: flex-start; width: 100%; padding: 0 20px;">
+                <div class="terminal-container">
+                    <div class="terminal-line">> INITIATING ANALYSIS PROTOCOL...</div>
+                    <div class="terminal-line">> SCANNING DAILY LOGS... <span style="color:var(--accent-success)">OK</span></div>
+                    <div class="terminal-line">> CHECKING CONSISTENCY... <span id="termStatus">WAITING</span></div>
+                    
+                    <div class="terminal-progress-wrap">
+                        <div class="terminal-bar" id="termBar"></div>
+                    </div>
+                    
+                    <div class="terminal-line" style="justify-content: flex-end">
+                        <span class="terminal-status" id="termPercent">40% COMPLETE</span>
+                    </div>
+                </div>
+            </div>
+            <div class="copy-container">
+                <div class="motivational-copy" id="copy5">PROCESSING DATA STREAMS...</div>
+                <div class="copy-sub" id="sub5">UNLOCKING INTELLIGENCE</div>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        // State
+        let currentTarget = 30;
+        let currentDays = 12;
+
+        const motivationalQuotes = {
+            start: [
+                "INITIATING SEQUENCE...",
+                "STARTING NEW ROUTINE",
+                "FIRST STEPS DETECTED",
+                "SYSTEM AWAKENING"
+            ],
+            early: [
+                "GATHERING MOMENTUM...",
+                "BUILDING DATABASE",
+                "PATTERNS FORMING",
+                "GOOD START, KEEP GOING"
+            ],
+            mid: [
+                "HALFWAY THERE...",
+                "INSIGHTS EMERGING",
+                "STRENGTHENING SIGNALS",
+                "CONSISTENCY DETECTED"
+            ],
+            late: [
+                "ALMOST COMPLETE...",
+                "FINALIZING ANALYSIS",
+                "JUST A FEW MORE DAYS",
+                "UNLOCKING MASTER TIER"
+            ],
+            done: [
+                "ANALYSIS COMPLETE",
+                "INSIGHTS UNLOCKED",
+                "FULL DATASET READY",
+                "SYSTEM OPTIMIZED"
+            ]
+        };
+
+        // DOM Elements
+        const slider = document.getElementById('daysSlider');
+        const display = document.getElementById('daysDisplay');
+        const gridVis = document.getElementById('gridVis');
+        const batteryVis = document.getElementById('batteryVis');
+        const stackVis = document.getElementById('stackVis');
+        const radialCircle = document.getElementById('radialCircle');
+        const radialText = document.getElementById('radialText');
+        const termBar = document.getElementById('termBar');
+        const termPercent = document.getElementById('termPercent');
+
+        function setPeriod(days) {
+            currentTarget = days;
+            
+            // Update UI buttons
+            document.querySelectorAll('.period-btn').forEach(btn => {
+                btn.classList.toggle('active', parseInt(btn.innerText) === days);
+            });
+
+            // Update Slider constraints
+            slider.max = days;
+            if (currentDays > days) {
+                currentDays = days;
+                slider.value = days;
+            }
+            
+            renderAll();
+        }
+
+        function updateProgress(val) {
+            currentDays = parseInt(val);
+            renderAll();
+        }
+
+        function getCopy(percentage) {
+            let category = 'start';
+            if (percentage >= 100) category = 'done';
+            else if (percentage > 80) category = 'late';
+            else if (percentage > 50) category = 'mid';
+            else if (percentage > 20) category = 'early';
+
+            const quotes = motivationalQuotes[category];
+            // Deterministic selection based on percentage to avoid flickering
+            const index = Math.floor(percentage) % quotes.length;
+            return quotes[index];
+        }
+
+        function updateText(percentage) {
+            const copyText = getCopy(percentage);
+            const subText = `${currentDays} / ${currentTarget} DAYS TRACKED`;
+
+            for (let i = 1; i <= 5; i++) {
+                const copyEl = document.getElementById(`copy${i}`);
+                const subEl = document.getElementById(`sub${i}`);
+                
+                // Add simple fade effect
+                // copyEl.style.opacity = 0.5;
+                // setTimeout(() => copyEl.style.opacity = 1, 50);
+
+                copyEl.innerText = copyText;
+                subEl.innerText = subText;
+            }
+        }
+
+        function renderGrid() {
+            gridVis.innerHTML = '';
+            // For 7 days, big blocks. For 90 days, small dots.
+            let size = '30px';
+            if (currentTarget === 90) size = '15px';
+            if (currentTarget === 7) size = '50px';
+
+            for (let i = 0; i < currentTarget; i++) {
+                const cell = document.createElement('div');
+                cell.className = 'grid-cell';
+                cell.style.width = size;
+                cell.style.height = size;
+                
+                if (i < currentDays) {
+                    cell.classList.add('active');
+                } else if (i === currentDays) {
+                    cell.classList.add('pulse');
+                }
+                gridVis.appendChild(cell);
+            }
+        }
+
+        function renderRadial() {
+            // Circumference is approx 628 (2 * PI * 100)
+            const circumference = 2 * Math.PI * 100;
+            const percentage = currentDays / currentTarget;
+            const offset = circumference - (percentage * circumference);
+            
+            radialCircle.style.strokeDasharray = circumference;
+            radialCircle.style.strokeDashoffset = offset;
+            
+            radialText.innerText = Math.round(percentage * 100) + '%';
+        }
+
+        function renderBattery() {
+            batteryVis.innerHTML = '';
+            // Fixed number of segments for visual consistency? 
+            // Or 1 segment per day? Let's do proportional segments.
+            // Let's stick to 10 visual segments for the "battery" look regardless of days
+            const totalSegments = 10; 
+            const fillRatio = currentDays / currentTarget;
+            const filledSegments = Math.floor(fillRatio * totalSegments);
+
+            for (let i = 0; i < totalSegments; i++) {
+                const seg = document.createElement('div');
+                seg.className = 'battery-segment';
+                if (i < filledSegments) seg.classList.add('filled');
+                else if (i === filledSegments && fillRatio < 1) seg.classList.add('current');
+                batteryVis.appendChild(seg);
+            }
+        }
+
+        function renderStack() {
+            stackVis.innerHTML = '';
+            // For stack, maybe we show actual blocks up to a limit
+            // If 90 days, maybe 1 block = 2 days?
+            // Let's map to fixed visual height steps
+            const totalBlocks = 20; // Visual height resolution
+            const fillRatio = currentDays / currentTarget;
+            const filledBlocks = Math.floor(fillRatio * totalBlocks);
+
+            for (let i = 0; i < totalBlocks; i++) {
+                const block = document.createElement('div');
+                block.className = 'stack-block';
+                if (i < filledBlocks) block.classList.add('filled');
+                
+                // Staggered animation for initial load
+                setTimeout(() => block.classList.add('visible'), i * 20);
+                
+                stackVis.appendChild(block);
+            }
+        }
+
+        function renderTerminal() {
+            const percentage = Math.round((currentDays / currentTarget) * 100);
+            termBar.style.width = percentage + '%';
+            termPercent.innerText = percentage + '% COMPLETE';
+            
+            const status = document.getElementById('termStatus');
+            if (percentage === 100) {
+                status.innerText = "DONE";
+                status.style.color = "var(--accent-success)";
+            } else {
+                status.innerText = "PROCESSING...";
+                status.style.color = "#fff";
+            }
+        }
+
+        function renderAll() {
+            display.innerText = currentDays;
+            
+            // Calculate percentage
+            const pct = (currentDays / currentTarget) * 100;
+
+            renderGrid();
+            renderRadial();
+            renderBattery();
+            renderStack();
+            renderTerminal();
+            updateText(pct);
+        }
+
+        // Initialize
+        renderAll();
+
+    </script>
+</body>
+</html>

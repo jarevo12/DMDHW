@@ -120,8 +120,8 @@ function runFullAnalysis(data) {
             evening: calculateMovingAverage(eveningRates.slice(-30), 3)
         },
 
-        // Anomaly detection
-        anomalies: detectAnomalies(dailyRates, dates),
+    // Anomaly detection
+    anomalies: detectAnomalies(dailyRates, dates, filteredHabitIds, habitMap, entries || {}),
 
         // Habit strength for each habit
         habitStrength: calculateAllHabitStrengths(
@@ -442,26 +442,52 @@ function calculateMovingAverage(values, window = 7) {
 /**
  * Detect anomalous days using Z-score
  */
-function detectAnomalies(values, dates) {
-    if (values.length < 14) return [];
+function detectAnomalies(values, dates, habitIds, habitMap, entries) {
+    const anomalies = [];
+
+    dates.forEach((date, i) => {
+        let scheduledCount = 0;
+        let completedCount = 0;
+
+        habitIds.forEach(habitId => {
+            const habit = habitMap[habitId];
+            if (!habit || habit.schedule?.type === 'weekly_goal') return;
+            if (!isHabitScheduledForDate(habit, date)) return;
+            scheduledCount++;
+            const entry = entries[date];
+            if (entry && entry[habit.type]?.includes(habitId)) {
+                completedCount++;
+            }
+        });
+
+        if (scheduledCount > 0 && completedCount === scheduledCount) {
+            anomalies.push({
+                date,
+                value: 100,
+                zScore: null,
+                type: 'super_day',
+                deviation: null
+            });
+        }
+    });
+
+    if (values.length < 14) return anomalies;
 
     const mean = values.reduce((a, b) => a + b, 0) / values.length;
     const variance = values.reduce((sum, v) => sum + Math.pow(v - mean, 2), 0) / values.length;
     const stdDev = Math.sqrt(variance);
 
-    if (stdDev === 0) return [];
-
-    const anomalies = [];
+    if (stdDev === 0) return anomalies;
 
     values.forEach((value, i) => {
         const zScore = (value - mean) / stdDev;
 
-        if (Math.abs(zScore) >= 2) {
+        if (zScore <= -2) {
             anomalies.push({
                 date: dates[i],
                 value,
                 zScore: Math.round(zScore * 100) / 100,
-                type: zScore > 0 ? 'super_day' : 'rough_day',
+                type: 'rough_day',
                 deviation: Math.round(Math.abs(value - mean))
             });
         }
@@ -828,28 +854,37 @@ function generateInsights(stats, habitMap) {
         });
     }
 
-    // Anomaly insights (only most recent)
+    // Anomaly insights
     if (stats.anomalies?.length > 0) {
-        const recent = stats.anomalies[stats.anomalies.length - 1];
-        if (recent.type === 'super_day') {
+        const superDays = stats.anomalies
+            .filter(item => item.type === 'super_day')
+            .sort((a, b) => (a.date || '').localeCompare(b.date || ''));
+        const roughDays = stats.anomalies
+            .filter(item => item.type === 'rough_day')
+            .sort((a, b) => (a.date || '').localeCompare(b.date || ''));
+
+        superDays.forEach((item) => {
             insights.push({
                 type: 'anomaly',
                 icon: 'anomaly',
                 title: 'SUPER DAY!',
-                text: `You hit <strong>${recent.value}% completion</strong> - significantly above your average!`,
+                text: `On <strong>${formatDateForDisplayLong(item.date)}</strong>, you hit <strong>100% completion</strong> - significantly above your average!`,
                 tip: 'Celebrate this win and note what made this day different',
                 priority: 90,
-                date: recent.date
+                date: item.date
             });
-        } else {
+        });
+
+        const recentRoughDay = roughDays[roughDays.length - 1];
+        if (recentRoughDay) {
             insights.push({
                 type: 'anomaly',
                 icon: 'anomaly',
                 title: 'ROUGH DAY DETECTED',
-                text: `${formatDateForDisplay(recent.date)} was an unusually difficult day (${recent.value}% completion).`,
+                text: `${formatDateForDisplay(recentRoughDay.date)} was an unusually difficult day (${recentRoughDay.value}% completion).`,
                 tip: 'Everyone has off days. Focus on bouncing back tomorrow.',
                 priority: 55,
-                date: recent.date
+                date: recentRoughDay.date
             });
         }
     }
@@ -912,5 +947,12 @@ function generateInsights(stats, habitMap) {
 function formatDateForDisplay(dateStr) {
     const date = new Date(dateStr + 'T12:00:00');
     const options = { month: 'short', day: 'numeric' };
+    return date.toLocaleDateString('en-US', options);
+}
+
+function formatDateForDisplayLong(dateStr) {
+    if (!dateStr) return 'Unknown date';
+    const date = new Date(dateStr + 'T12:00:00');
+    const options = { weekday: 'short', month: '2-digit', day: '2-digit', year: 'numeric' };
     return date.toLocaleDateString('en-US', options);
 }

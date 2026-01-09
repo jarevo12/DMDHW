@@ -15,7 +15,7 @@ import { subscribeToEntry } from './entries.js';
 import { updateDateDisplay } from './ui/progress.js';
 import { renderHabits } from './ui/habits-ui.js';
 
-const MINDSET_DAYS = [
+const DEFAULT_MINDSET_DAYS = [
     {
         quote: "Here's the big challenge of life. You can have more than you've got because you can become more than you are.",
         authorName: 'Jim Rohn',
@@ -68,6 +68,10 @@ const MINDSET_DAYS = [
     }
 ];
 
+const MINDSET_SENTENCES_URL = './motivational-sentences/onboarding_sentences.md';
+const MINDSET_SENTENCES_LIMIT = 45;
+let mindsetDays = DEFAULT_MINDSET_DAYS;
+
 const mindsetCalendarState = {
     isOpen: false,
     currentMonth: new Date().getMonth(),
@@ -105,15 +109,15 @@ function getMindsetDayInfo(date) {
     const diffMs = targetDate.getTime() - startDate.getTime();
     const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
     const dayIndex = diffDays + 1;
-    const normalizedIndex = ((dayIndex - 1) % MINDSET_DAYS.length + MINDSET_DAYS.length) % MINDSET_DAYS.length + 1;
-    const isBeyondInitialSet = dayIndex > MINDSET_DAYS.length;
+    const normalizedIndex = ((dayIndex - 1) % mindsetDays.length + mindsetDays.length) % mindsetDays.length + 1;
+    const isBeyondInitialSet = dayIndex > mindsetDays.length;
     const dayInfo = isBeyondInitialSet
         ? {
             quote: 'New quotes coming.',
             authorName: 'Stay tuned',
             authorRole: 'More mindset drops soon'
         }
-        : MINDSET_DAYS[normalizedIndex - 1];
+        : mindsetDays[normalizedIndex - 1];
 
     return {
         ...dayInfo,
@@ -141,6 +145,91 @@ function updateMindsetQuote() {
     elements.authorName.textContent = dayInfo.authorName || '';
     elements.authorRole.textContent = dayInfo.authorRole || '';
     elements.authorAvatar.textContent = getInitials(dayInfo.authorName);
+}
+
+function normalizeSentenceText(text) {
+    return text.replace(/\s*\n\s*/g, ' ').trim();
+}
+
+function stripWrappingQuotes(value) {
+    return value.replace(/^["']|["']$/g, '').trim();
+}
+
+function parseMindsetAttribution(attribution) {
+    const cleaned = stripWrappingQuotes(attribution);
+    if (!cleaned) return { authorName: '', authorRole: '' };
+
+    const emDash = '\u2014';
+    if (cleaned.includes(` ${emDash} `)) {
+        const [name, role] = cleaned.split(` ${emDash} `);
+        return {
+            authorName: stripWrappingQuotes(name || ''),
+            authorRole: stripWrappingQuotes(role || '')
+        };
+    }
+
+    const commaIndex = cleaned.indexOf(',');
+    if (commaIndex === -1) {
+        return { authorName: cleaned, authorRole: '' };
+    }
+
+    return {
+        authorName: stripWrappingQuotes(cleaned.slice(0, commaIndex)),
+        authorRole: stripWrappingQuotes(cleaned.slice(commaIndex + 1))
+    };
+}
+
+function parseMindsetSentences(sourceText) {
+    if (!sourceText) return [];
+
+    const lines = sourceText.split(/\r?\n/);
+    const entries = [];
+    let current = '';
+
+    lines.forEach(line => {
+        const trimmed = line.trim();
+        if (/^Day\s+\d+\s*:/i.test(trimmed)) {
+            if (current) entries.push(current.trim());
+            current = trimmed;
+        } else if (trimmed) {
+            current = current ? `${current} ${trimmed}` : trimmed;
+        }
+    });
+
+    if (current) entries.push(current.trim());
+
+    return entries.map(entry => {
+        const content = entry.replace(/^Day\s+\d+\s*:/i, '').trim();
+        if (!content) return null;
+
+        const separatorIndex = content.lastIndexOf(' -');
+        if (separatorIndex === -1) return null;
+
+        const quotePart = normalizeSentenceText(content.slice(0, separatorIndex));
+        const attributionPart = content.slice(separatorIndex + 2).trim();
+        const attribution = parseMindsetAttribution(attributionPart);
+
+        return {
+            quote: stripWrappingQuotes(quotePart),
+            authorName: attribution.authorName || 'Unknown',
+            authorRole: attribution.authorRole || ''
+        };
+    }).filter(Boolean);
+}
+
+async function loadMindsetSentences() {
+    try {
+        const response = await fetch(MINDSET_SENTENCES_URL, { cache: 'no-store' });
+        if (!response.ok) return;
+        const text = await response.text();
+        const parsed = parseMindsetSentences(text).slice(0, MINDSET_SENTENCES_LIMIT);
+        if (parsed.length > 0) {
+            mindsetDays = parsed;
+            updateMindsetQuote();
+        }
+    } catch (error) {
+        console.warn('Failed to load mindset sentences:', error);
+    }
 }
 
 function setRating(value) {
@@ -738,4 +827,5 @@ export function initMindset() {
 
     updateMindsetFromEntry(null);
     renderMindsetCalendar();
+    loadMindsetSentences();
 }

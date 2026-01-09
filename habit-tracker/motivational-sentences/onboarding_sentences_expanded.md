@@ -1,18 +1,14 @@
-Day 1: Here's the big challenge of life. You can have more than you've got because you can become more than you are. And of course the other side of the coin reads, unless you change how you are, you'll always have what you got. -Jim Rohn, Entrepreneur and motivational speaker
-Day 2: Here's how to get older without getting better. Keep relearning the same lesson. If you keep making the same mistake over and over, the mistake isn't the problem. You are. -Alex Hormozi, Investor and Entrepreneur
+Day 1: Here's the big challenge of life. You can have more than you've got because you can become more than you are. -Jim Rohn, Entrepreneur and motivational speaker
+Day 2: Nothing changes if nothing changes, man. -David Goggins, Navy Seal and World Record Holder
 Day 3: You're going to look back at any destination and realize that it was a 99.9% journey and only one day of celebrating achieving the thing. -Alex Hormozi, Entrepreneur and investor
 Day 4: One of the big thrusts for success is to come up with a strong enough why. If the why is powerful, the how is easy. -Jim Rohn, Entrepreneur and motivational speaker
-Day 5: Fear is a mile wide and an inch deep. If you actually take the step and realize that it's not that deep... you can keep walking through it. -Alex Hormozi, Entrepreneur and investor
+Day 5: Playing out the fear... that fear is a mile wide and an inch deep... If you actually take the step and realize that it's not that deep... you can keep walking through it. -Alex Hormozi, Entrepreneur and investor
 Day 6: Yeah, it's crazy to sometimes think like, what can happen if we decide that that I am qualified. What happens when I decide for myself that I'm going to do something different? -Alex Hormozi, Entrepreneur and investor
-Day 7: "It's not about the shoes. It's about knowing where you're going. Not forgetting where you started. It's about having the courage to fail.
-Not breaking when you're broken." - "Michael Jordan, Basketball legend and businessman"
+Day 7: But if you do something repeatedly over and over, you develop a habit. So most people are in the habit of looking for easy ways to get the things they want. -Brian Tracy, motivational public speaker and self-development author
 Day 8: If you don't change what you're doing and how you do it, nothing else will change. -Jim Rohn, Entrepreneur and motivational speaker
-Day 9: I've made huge, huge, huge developments while I was staying up until four in the morning,
-five in the morning running a nightlife business.
-You can make huge developments in your personal growth journey while you're doing a nine to five -Chris Williamson, Podcaster and club promoter
+Day 9: I've made huge developments while I was staying up until four in the morning... You can make huge developments... while you're doing a nine to five. -Chris Williamson, Podcaster and club promoter
 Day 10: People don't understand it is you against you. The only person that gets in your way is you. Nobody else, YOU!. -David Goggins, Navy Seal and World Record Holder
-Day 11: You have this moment where you go, well, what if? What if this is the time? What if I go to therapy and I actually do change the way that I think? What if I could get out of debt?
-If that person did, maybe I could do it. And without either hope or that kind of rock bottom moment,I don't think you're going to change. -Mel Robins — American motivational speaker, author, and inspirational coach
+Day 11: I don't stop when I'm tired, I stop when I'm done. -David Goggins, Navy Seal and World Record Holder
 Day 12: A goal without a plan is only a dream. -Brian Tracy, motivational public speaker and self-development author
 Day 13: Your life only gets better when you get better. -Brian Tracy, motivational public speaker and self-development author
 Day 14: The magic you're looking for is in the work you're avoiding. -Chris Williamson, Podcaster and club promoter
