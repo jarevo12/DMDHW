@@ -6,10 +6,7 @@ import {
     onAuthStateChanged,
     signInWithEmailAndPassword,
     createUserWithEmailAndPassword,
-    signOut,
-    sendSignInLinkToEmail,
-    isSignInWithEmailLink,
-    signInWithEmailLink
+    signOut
 } from './firebase-init.js';
 import { setCurrentUser, unsubscribeHabits, unsubscribeEntry } from './state.js';
 
@@ -38,65 +35,6 @@ export function initAuth() {
             await authStateCallback(user);
         }
     });
-}
-
-/**
- * Check if the current URL is an email sign-in link
- * @returns {boolean} True if URL is an email sign-in link
- */
-export function checkIsSignInWithEmailLink() {
-    const auth = getAuthInstance();
-    return isSignInWithEmailLink(auth, window.location.href);
-}
-
-/**
- * Handle email link sign-in
- */
-export async function handleEmailLinkSignIn() {
-    let email = localStorage.getItem('emailForSignIn');
-
-    if (!email) {
-        email = prompt('Please enter your email to confirm sign-in:');
-    }
-
-    if (email) {
-        try {
-            const auth = getAuthInstance();
-            await signInWithEmailLink(auth, email, window.location.href);
-            localStorage.removeItem('emailForSignIn');
-            window.history.replaceState(null, '', window.location.pathname);
-        } catch (error) {
-            console.error('Email link sign-in error:', error);
-            throw error;
-        }
-    }
-}
-
-/**
- * Send a magic link to the user's email
- * @param {string} email - User's email address
- */
-export async function sendMagicLink(email) {
-    const continueUrl = window.location.origin + window.location.pathname;
-    console.log('Sending magic link to:', email);
-    console.log('Continue URL:', continueUrl);
-
-    const actionCodeSettings = {
-        url: continueUrl,
-        handleCodeInApp: true
-    };
-
-    try {
-        const auth = getAuthInstance();
-        await sendSignInLinkToEmail(auth, email, actionCodeSettings);
-        console.log('Magic link sent successfully!');
-        localStorage.setItem('emailForSignIn', email);
-    } catch (err) {
-        console.error('sendSignInLinkToEmail error:', err);
-        console.error('Error code:', err.code);
-        console.error('Error message:', err.message);
-        throw err;
-    }
 }
 
 /**

@@ -147,8 +147,8 @@ button, input, select {
 }
 
 .logo {
-    width: 60px;
-    height: 60px;
+    width: 84px;
+    height: 84px;
     border: var(--border-width) solid var(--border-color);
     background: var(--text-primary);
     color: var(--bg-primary);
@@ -158,6 +158,34 @@ button, input, select {
     margin: 0 auto var(--spacing-lg);
     font-size: 32px;
     font-weight: 900;
+    border-radius: 12px;
+    overflow: hidden;
+}
+
+.subtitle {
+    margin-top: var(--spacing-lg);
+    margin-bottom: var(--spacing-lg);
+    text-transform: uppercase;
+    font-weight: 900;
+}
+
+.subtitle-line {
+    display: block;
+}
+
+.subtitle-highlight {
+    background: var(--accent-success);
+    color: var(--bg-primary);
+    display: inline-block;
+    padding: 2px 6px;
+    margin-top: var(--spacing-xs);
+}
+
+.logo-image {
+    width: 100%;
+    height: 100%;
+    display: block;
+    object-fit: contain;
 }
 
 .input-group {
@@ -2777,27 +2805,34 @@ button, input, select {
 /* Header */
 .insights-header {
     border-bottom: var(--border-width) solid var(--border-color);
-    padding: var(--spacing-md);
+    padding: 0 var(--spacing-md);
     position: sticky;
     top: 0;
     background: var(--bg-primary);
     z-index: 10;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--spacing-md);
+    height: var(--header-height);
 }
 
 .insights-title {
-    font-size: 1.2rem;
-    margin-bottom: var(--spacing-md);
+    margin: 0;
 }
 
 .insights-controls {
     display: flex;
-    justify-content: space-between;
+    align-items: center;
+    justify-content: flex-end;
     gap: var(--spacing-md);
+    margin-left: auto;
 }
 
 .toggle-group {
     display: flex;
     border: var(--border-width-thin) solid var(--border-color);
+    height: 44px;
 }
 
 .toggle-btn {
@@ -2808,10 +2843,14 @@ button, input, select {
     font-family: var(--font-mono);
     font-weight: 900;
     font-size: 0.75rem;
-    padding: var(--spacing-sm) var(--spacing-md);
+    padding: 0 var(--spacing-md);
     cursor: pointer;
     text-transform: uppercase;
     transition: none;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .toggle-btn:last-child {

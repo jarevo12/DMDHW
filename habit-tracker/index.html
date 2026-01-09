@@ -36,9 +36,9 @@
         <div id="loading-screen" class="screen active">
             <div class="loading-content">
                 <div class="logo">
-                    <span class="logo-icon">&#10003;</span>
+                    <img src="assets/logo-white-back.svg" alt="Habit Tracker logo" class="logo-image">
                 </div>
-                <h1>Habit Tracker</h1>
+                <h1>Axiom Forge</h1>
                 <div class="loading-spinner"></div>
                 <p id="loading-status" style="color: var(--text-secondary); margin-top: 16px; font-size: 0.9rem;"></p>
             </div>
@@ -51,10 +51,13 @@
                 <button id="nav-to-signup" class="btn-top-right-signup">Sign Up</button>
 
                 <div class="logo">
-                    <span class="logo-icon">&#10003;</span>
+                    <img src="assets/logo-white-back.svg" alt="Habit Tracker logo" class="logo-image">
                 </div>
-                <h1>Habit Tracker</h1>
-                <p class="subtitle">Track your daily routines</p>
+                <h1>Axiom Forge</h1>
+                <p class="subtitle">
+                    <span class="subtitle-line">Principles turned into practice</span>
+                    <span class="subtitle-line subtitle-highlight">Routines that turn intent into identity</span>
+                </p>
 
                 <form id="auth-form" class="auth-form" autocomplete="off">
                     <div class="input-group">
@@ -66,32 +69,13 @@
                         <input type="password" id="password-input" placeholder="Password" autocomplete="current-password" required>
                     </div>
 
-                    <!-- Auth method toggle -->
-                    <div class="auth-toggle">
-                        <button type="button" id="toggle-auth-method" class="btn-link">
-                            <span id="toggle-text">Use magic link instead</span>
-                        </button>
-                    </div>
-
                     <!-- Password Auth Buttons -->
                     <div id="password-buttons" style="display: flex; gap: 8px;">
                         <button type="button" class="btn btn-primary" id="signin-btn">
                             <span>Sign In</span>
                         </button>
                     </div>
-
-                    <!-- Magic Link Button -->
-                    <button type="submit" class="btn btn-primary" id="magic-link-btn" style="display: none;">
-                        <span>Send Magic Link</span>
-                    </button>
                 </form>
-
-                <div id="auth-message" class="auth-message hidden">
-                    <div class="message-icon">&#9993;</div>
-                    <h2>Check your email</h2>
-                    <p>We sent a magic link to <strong id="sent-email"></strong></p>
-                    <button class="btn btn-secondary" id="try-again">Try another email</button>
-                </div>
 
                 <div id="auth-error" class="auth-error hidden"></div>
             </div>

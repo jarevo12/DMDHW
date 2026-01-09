@@ -13,8 +13,7 @@ import {
 
 // Auth
 import {
-    setAuthStateCallback, initAuth, checkIsSignInWithEmailLink,
-    handleEmailLinkSignIn, sendMagicLink, signInWithPassword, createAccount, logout
+    setAuthStateCallback, initAuth, signInWithPassword, createAccount, logout
 } from './auth.js';
 
 // Profile
@@ -67,11 +66,6 @@ async function init() {
         await initializeFirebase();
 
         updateLoadingStatus('Checking authentication...');
-
-        // Check for email link sign-in
-        if (checkIsSignInWithEmailLink()) {
-            await handleEmailLinkSignIn();
-        }
 
         // Set up auth state callback
         setAuthStateCallback(handleAuthStateChange);
@@ -204,72 +198,7 @@ setConfirmDeleteCallback(async (habitId) => {
 // ========== EVENT LISTENERS ==========
 
 document.addEventListener('DOMContentLoaded', () => {
-    // Toggle between magic link and password authentication
-    let usePassword = true;
-
     initMindset();
-
-    document.getElementById('toggle-auth-method').addEventListener('click', () => {
-        usePassword = !usePassword;
-        const passwordGroup = document.getElementById('password-group');
-        const passwordInput = document.getElementById('password-input');
-        const toggleText = document.getElementById('toggle-text');
-        const magicLinkBtn = document.getElementById('magic-link-btn');
-        const passwordButtons = document.getElementById('password-buttons');
-
-        if (usePassword) {
-            passwordGroup.style.display = 'block';
-            passwordInput.required = true;
-            toggleText.textContent = 'Use magic link instead';
-            magicLinkBtn.style.display = 'none';
-            passwordButtons.style.display = 'flex';
-        } else {
-            passwordGroup.style.display = 'none';
-            passwordInput.required = false;
-            passwordInput.value = '';
-            toggleText.textContent = 'Use password instead';
-            magicLinkBtn.style.display = 'block';
-            passwordButtons.style.display = 'none';
-        }
-    });
-
-    // Magic Link form submission
-    document.getElementById('auth-form').addEventListener('submit', async (e) => {
-        e.preventDefault();
-        const email = document.getElementById('email-input').value.trim();
-        const btn = document.getElementById('magic-link-btn');
-
-        btn.disabled = true;
-        btn.innerHTML = '<span>Sending...</span>';
-
-        try {
-            await sendMagicLink(email);
-            document.getElementById('auth-form').classList.add('hidden');
-            document.getElementById('auth-message').classList.remove('hidden');
-            document.getElementById('sent-email').textContent = email;
-        } catch (error) {
-            console.error('Auth error:', error);
-            let errorMsg = 'Failed to send email. ';
-            if (error.code === 'auth/quota-exceeded') {
-                errorMsg = 'Daily quota exceeded. Please use password authentication instead.';
-            } else if (error.code === 'auth/operation-not-allowed') {
-                errorMsg = 'Email link sign-in is not enabled. Please enable it in Firebase Console.';
-            } else if (error.code === 'auth/invalid-email') {
-                errorMsg = 'Please enter a valid email address.';
-            } else if (error.code === 'auth/missing-continue-uri') {
-                errorMsg = 'Configuration error. Missing continue URL.';
-            } else if (error.code === 'auth/unauthorized-continue-uri') {
-                errorMsg = 'This domain is not authorized. Add localhost to Firebase authorized domains.';
-            } else if (error.message) {
-                errorMsg = error.message;
-            }
-            document.getElementById('auth-error').textContent = errorMsg;
-            document.getElementById('auth-error').classList.remove('hidden');
-        } finally {
-            btn.disabled = false;
-            btn.innerHTML = '<span>Send Magic Link</span>';
-        }
-    });
 
     // Sign In button handler
     document.getElementById('signin-btn').addEventListener('click', async () => {
@@ -392,12 +321,6 @@ document.addEventListener('DOMContentLoaded', () => {
             btn.disabled = false;
             btn.textContent = 'Create Account';
         }
-    });
-
-    document.getElementById('try-again').addEventListener('click', () => {
-        document.getElementById('auth-form').classList.remove('hidden');
-        document.getElementById('auth-message').classList.add('hidden');
-        document.getElementById('email-input').value = '';
     });
 
     // Calendar toggle

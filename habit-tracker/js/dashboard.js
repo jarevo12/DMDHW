@@ -156,7 +156,7 @@ export async function updateDashboardData(year, month) {
     const dailyHabitStreaks = buildDailyHabitStreaks(dailyHabits, entriesMap, currentType, todayDate);
     const weeklyHabitStreaks = buildWeeklyGoalStreaks(weeklyHabits, entriesMap, year, month, lastDay);
 
-    renderDashboardHabitStrength(currentType, dailyHabitStreaks, weeklyHabitStreaks, entriesMap, year, month, lastDay);
+    renderDashboardHabitStrength(currentType, dailyHabitStreaks, weeklyHabitStreaks, entriesMap, year, month, lastDay, chartStartDay);
 
     // Render completion chart
     renderCompletionChart(year, month, lastDay, chartStartDay, entriesMap, currentType);
@@ -255,7 +255,7 @@ export async function updateDashboardData(year, month) {
     renderWeekdayPatterns(entriesMap, year, month, chartStartDay, lastDay, currentType);
 }
 
-function renderDashboardHabitStrength(currentType, dailyHabitStreaks, weeklyHabitStreaks, entriesMap, year, month, lastDay) {
+function renderDashboardHabitStrength(currentType, dailyHabitStreaks, weeklyHabitStreaks, entriesMap, year, month, lastDay, startDay = 1) {
     const dailyContainer = document.getElementById('strength-list-daily');
     const weeklyContainer = document.getElementById('strength-list-weekly');
     if (!dailyContainer && !weeklyContainer) return;
@@ -286,7 +286,7 @@ function renderDashboardHabitStrength(currentType, dailyHabitStreaks, weeklyHabi
         return map;
     }, {});
 
-    const { strengthData: dailyStrengthData, entryCount } = buildMonthlyHabitStrength(entriesMap, dailyHabits, year, month, lastDay);
+    const { strengthData: dailyStrengthData, entryCount } = buildMonthlyHabitStrength(entriesMap, dailyHabits, year, month, lastDay, startDay);
     const { strengthData: weeklyStrengthData, weekCount } = buildMonthlyWeeklyGoalStrength(entriesMap, weeklyHabits, year, month, lastDay);
 
     if (dailyContainer) {
@@ -320,10 +320,10 @@ function renderDashboardHabitStrength(currentType, dailyHabitStreaks, weeklyHabi
     }
 }
 
-function buildMonthlyHabitStrength(entriesMap, allHabits, year, month, lastDay) {
+function buildMonthlyHabitStrength(entriesMap, allHabits, year, month, lastDay, startDay = 1) {
     const monthEntries = [];
 
-    for (let day = 1; day <= lastDay; day++) {
+    for (let day = startDay; day <= lastDay; day++) {
         const dateString = formatDate(new Date(year, month, day));
         const entry = entriesMap[dateString];
         if (entry) {
@@ -334,7 +334,7 @@ function buildMonthlyHabitStrength(entriesMap, allHabits, year, month, lastDay) 
     const strengthData = allHabits.map(habit => {
         const completions = [];
 
-        for (let day = 1; day <= lastDay; day++) {
+        for (let day = startDay; day <= lastDay; day++) {
             const dateString = formatDate(new Date(year, month, day));
             if (!isHabitScheduledForDate(habit, dateString)) {
                 continue;
@@ -784,7 +784,7 @@ function renderCompletionChart(year, month, lastDay, startDay, entriesMap, curre
         borderWidth: 2,
         fill: false,
         tension: 0,
-        pointRadius: 0,
+        pointRadius: 3,
         pointHoverRadius: 6,
         pointBackgroundColor: chartColor,
         pointBorderColor: '#000000',
@@ -956,6 +956,7 @@ function renderCompletionChart(year, month, lastDay, startDay, entriesMap, curre
             },
             scales: {
                 x: {
+                    offset: true,
                     grid: {
                         color: '#333333',
                         drawBorder: false,
@@ -974,8 +975,8 @@ function renderCompletionChart(year, month, lastDay, startDay, entriesMap, curre
                     }
                 },
                 y: {
-                    min: 0,
-                    max: 100,
+                    suggestedMin: 0,
+                    suggestedMax: 100,
                     grace: '5%',
                     afterBuildTicks: (scale) => {
                         scale.ticks = [0, 20, 40, 60, 80, 100].map(value => ({ value }));
