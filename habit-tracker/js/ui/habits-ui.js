@@ -20,6 +20,43 @@ function getWeekRange(date) {
     return { start, end };
 }
 
+function getWeeklyGoalStartDate(habit) {
+    const raw = habit?.schedule?.weeklyGoalStartDate || habit?.createdAt;
+    if (!raw) return null;
+    if (raw instanceof Date) {
+        const date = new Date(raw);
+        date.setHours(0, 0, 0, 0);
+        return date;
+    }
+    if (typeof raw === 'string' || typeof raw === 'number') {
+        const date = new Date(raw);
+        if (Number.isNaN(date.getTime())) return null;
+        date.setHours(0, 0, 0, 0);
+        return date;
+    }
+    if (typeof raw.toDate === 'function') {
+        const date = raw.toDate();
+        if (date instanceof Date && !Number.isNaN(date.getTime())) {
+            date.setHours(0, 0, 0, 0);
+            return date;
+        }
+    }
+    if (typeof raw.seconds === 'number') {
+        const date = new Date(raw.seconds * 1000);
+        if (!Number.isNaN(date.getTime())) {
+            date.setHours(0, 0, 0, 0);
+            return date;
+        }
+    }
+    return null;
+}
+
+function isWeeklyGoalActive(habit) {
+    const startDate = getWeeklyGoalStartDate(habit);
+    if (!startDate) return true;
+    return formatDate(currentDate) >= formatDate(startDate);
+}
+
 async function fetchWeekEntriesMap(startDate, endDate) {
     const db = getDb();
     const entriesRef = collection(db, `users/${currentUser.uid}/entries`);
@@ -64,8 +101,8 @@ export function renderHabits() {
 
 export function renderWeeklyGoalsSection() {
     const weeklyGoals = {
-        morning: habits.morning.filter(h => h.schedule?.type === 'weekly_goal'),
-        evening: habits.evening.filter(h => h.schedule?.type === 'weekly_goal')
+        morning: habits.morning.filter(h => h.schedule?.type === 'weekly_goal' && isWeeklyGoalActive(h)),
+        evening: habits.evening.filter(h => h.schedule?.type === 'weekly_goal' && isWeeklyGoalActive(h))
     };
 
     renderWeeklyGoals('morning-weekly-habits', weeklyGoals.morning, 'morning');
@@ -149,7 +186,9 @@ async function renderWeeklyGoals(containerId, habitList, type) {
         const goal = Number.isFinite(goalValue) ? goalValue : 3;
         let doneCount = 0;
         if (goal > 0) {
-            const cursor = new Date(weekRange.start);
+            const startDate = getWeeklyGoalStartDate(habit);
+            const rangeStart = startDate && startDate > weekRange.start ? startDate : weekRange.start;
+            const cursor = new Date(rangeStart);
             while (cursor <= weekRange.end) {
                 const entry = entriesMap[formatDate(cursor)];
                 if (entry && entry[type]?.includes(habit.id)) {

@@ -6,6 +6,8 @@ import { getScheduleLabel } from './schedule.js';
 import { formatDate } from './utils.js';
 import { DAY_NAMES } from './constants.js';
 
+const WEEKDAY_ORDER = [1, 2, 3, 4, 5, 6, 0];
+
 // Module-level state for modals
 let habitToEdit = null;
 let habitToDelete = null;
@@ -146,9 +148,9 @@ export function renderScheduleOptions(schedule) {
             container.innerHTML = `
                 <p>Select which days to track this habit</p>
                 <div class="day-selector">
-                    ${DAY_NAMES.map((name, i) => `
-                        <button class="day-chip ${days.includes(i) ? 'selected' : ''}" data-day="${i}">
-                            ${name.substring(0, 3)}
+                    ${WEEKDAY_ORDER.map((dayIndex) => `
+                        <button class="day-chip ${days.includes(dayIndex) ? 'selected' : ''}" data-day="${dayIndex}">
+                            ${DAY_NAMES[dayIndex].substring(0, 3)}
                         </button>
                     `).join('')}
                 </div>
@@ -163,6 +165,7 @@ export function renderScheduleOptions(schedule) {
 
         case 'weekly_goal':
             const times = schedule.timesPerWeek || 3;
+            const weeklyGoalStart = resolveWeeklyGoalStartDate(schedule);
             container.innerHTML = `
                 <p>How many times per week?</p>
                 <div class="weekly-goal-input">
@@ -174,7 +177,29 @@ export function renderScheduleOptions(schedule) {
                     </select>
                     <span>times per week</span>
                 </div>
+                <div class="interval-row">
+                    <span>Start date</span>
+                    <button type="button" class="btn btn-secondary interval-date-btn" id="weekly-goal-start-date-btn">Pick date</button>
+                    <span class="interval-date-value" id="weekly-goal-start-date-label">${weeklyGoalStart}</span>
+                    <input type="hidden" id="weekly-goal-start-date" value="${weeklyGoalStart}">
+                </div>
+                <div id="weekly-goal-calendar" class="interval-calendar hidden">
+                    <div class="interval-calendar-header">
+                        <button type="button" class="btn-icon weekly-goal-cal-prev" aria-label="Previous month">
+                            <span>&#8249;</span>
+                        </button>
+                        <span class="interval-calendar-label" id="weekly-goal-calendar-label"></span>
+                        <button type="button" class="btn-icon weekly-goal-cal-next" aria-label="Next month">
+                            <span>&#8250;</span>
+                        </button>
+                    </div>
+                    <div class="interval-calendar-weekdays">
+                        ${WEEKDAY_ORDER.map((dayIndex) => `<span>${DAY_NAMES[dayIndex].substring(0, 2)}</span>`).join('')}
+                    </div>
+                    <div class="interval-calendar-grid" id="weekly-goal-calendar-grid"></div>
+                </div>
             `;
+            setupWeeklyGoalCalendar(weeklyGoalStart);
             break;
 
         case 'interval':
@@ -205,16 +230,16 @@ export function renderScheduleOptions(schedule) {
                             </button>
                         </div>
                         <div class="interval-calendar-weekdays">
-                            ${DAY_NAMES.map(name => `<span>${name.substring(0, 2)}</span>`).join('')}
+                            ${WEEKDAY_ORDER.map((dayIndex) => `<span>${DAY_NAMES[dayIndex].substring(0, 2)}</span>`).join('')}
                         </div>
                         <div class="interval-calendar-grid" id="interval-calendar-grid"></div>
                     </div>
                     <div class="interval-row">
                         <span>Skip days</span>
                         <div class="day-selector interval-skip-days">
-                            ${DAY_NAMES.map((name, i) => `
-                                <button class="day-chip ${skipDays.includes(i) ? 'selected' : ''}" data-day="${i}">
-                                    ${name.substring(0, 3)}
+                            ${WEEKDAY_ORDER.map((dayIndex) => `
+                                <button class="day-chip ${skipDays.includes(dayIndex) ? 'selected' : ''}" data-day="${dayIndex}">
+                                    ${DAY_NAMES[dayIndex].substring(0, 3)}
                                 </button>
                             `).join('')}
                         </div>
@@ -250,6 +275,7 @@ export function getScheduleFromModal() {
 
         case 'weekly_goal':
             schedule.timesPerWeek = parseInt(document.getElementById('times-per-week').value) || 3;
+            schedule.weeklyGoalStartDate = document.getElementById('weekly-goal-start-date')?.value || formatDate(new Date());
             break;
 
         case 'interval':
@@ -302,7 +328,112 @@ function setupIntervalCalendar(initialDate) {
         const month = current.getMonth();
         const monthStart = new Date(year, month, 1);
         const monthEnd = new Date(year, month + 1, 0);
-        const startDay = monthStart.getDay();
+        const startDay = (monthStart.getDay() + 6) % 7;
+        labelEl.textContent = monthStart.toLocaleDateString('en-US', {
+            month: 'long',
+            year: 'numeric'
+        });
+
+        const cells = [];
+        for (let i = 0; i < startDay; i++) {
+            cells.push('<span class="interval-calendar-cell empty"></span>');
+        }
+        for (let day = 1; day <= monthEnd.getDate(); day++) {
+            const dateString = formatDate(new Date(year, month, day));
+            const isSelected = dateString === selectedDate;
+            cells.push(`
+                <button type="button" class="interval-calendar-day${isSelected ? ' selected' : ''}" data-date="${dateString}">
+                    ${day}
+                </button>
+            `);
+        }
+        gridEl.innerHTML = cells.join('');
+
+        gridEl.querySelectorAll('.interval-calendar-day').forEach(btn => {
+            btn.addEventListener('click', () => {
+                selectedDate = btn.dataset.date;
+                valueInput.value = selectedDate;
+                valueLabel.textContent = selectedDate;
+                calendarEl.classList.add('hidden');
+                renderCalendar();
+            });
+        });
+    };
+
+    toggleBtn.addEventListener('click', () => {
+        calendarEl.classList.toggle('hidden');
+        renderCalendar();
+    });
+
+    prevBtn.addEventListener('click', () => {
+        current.setMonth(current.getMonth() - 1);
+        renderCalendar();
+    });
+
+    nextBtn.addEventListener('click', () => {
+        current.setMonth(current.getMonth() + 1);
+        renderCalendar();
+    });
+
+    valueInput.value = selectedDate;
+    valueLabel.textContent = selectedDate;
+    renderCalendar();
+}
+
+function resolveWeeklyGoalStartDate(schedule) {
+    if (schedule.weeklyGoalStartDate) return schedule.weeklyGoalStartDate;
+    if (currentScheduleHabit?.schedule?.weeklyGoalStartDate) {
+        return currentScheduleHabit.schedule.weeklyGoalStartDate;
+    }
+    const createdAt = currentScheduleHabit?.createdAt;
+    const createdDate = parseDateValue(createdAt);
+    return createdDate ? formatDate(createdDate) : formatDate(new Date());
+}
+
+function parseDateValue(value) {
+    if (!value) return null;
+    if (value instanceof Date) return value;
+    if (typeof value === 'string' || typeof value === 'number') {
+        const parsed = new Date(value);
+        return Number.isNaN(parsed.getTime()) ? null : parsed;
+    }
+    if (typeof value.toDate === 'function') {
+        const date = value.toDate();
+        if (date instanceof Date && !Number.isNaN(date.getTime())) return date;
+    }
+    if (typeof value.seconds === 'number') {
+        const date = new Date(value.seconds * 1000);
+        return Number.isNaN(date.getTime()) ? null : date;
+    }
+    return null;
+}
+
+function setupWeeklyGoalCalendar(initialDate) {
+    const calendarEl = document.getElementById('weekly-goal-calendar');
+    const gridEl = document.getElementById('weekly-goal-calendar-grid');
+    const labelEl = document.getElementById('weekly-goal-calendar-label');
+    const prevBtn = document.querySelector('.weekly-goal-cal-prev');
+    const nextBtn = document.querySelector('.weekly-goal-cal-next');
+    const toggleBtn = document.getElementById('weekly-goal-start-date-btn');
+    const valueInput = document.getElementById('weekly-goal-start-date');
+    const valueLabel = document.getElementById('weekly-goal-start-date-label');
+    if (!calendarEl || !gridEl || !labelEl || !prevBtn || !nextBtn || !toggleBtn || !valueInput || !valueLabel) {
+        return;
+    }
+
+    let selectedDate = initialDate || formatDate(new Date());
+    let current = new Date(selectedDate + 'T00:00:00');
+    if (Number.isNaN(current.getTime())) {
+        current = new Date();
+        selectedDate = formatDate(current);
+    }
+
+    const renderCalendar = () => {
+        const year = current.getFullYear();
+        const month = current.getMonth();
+        const monthStart = new Date(year, month, 1);
+        const monthEnd = new Date(year, month + 1, 0);
+        const startDay = (monthStart.getDay() + 6) % 7;
         labelEl.textContent = monthStart.toLocaleDateString('en-US', {
             month: 'long',
             year: 'numeric'

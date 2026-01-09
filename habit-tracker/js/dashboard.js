@@ -26,7 +26,7 @@ let lastDashboardMonth = null;
 
 function getHabitStartDate(habit) {
     if (!habit) return null;
-    const raw = habit.schedule?.intervalStartDate || habit.createdAt;
+    const raw = habit.schedule?.weeklyGoalStartDate || habit.schedule?.intervalStartDate || habit.createdAt;
     if (!raw) return null;
     if (raw instanceof Date) {
         const date = new Date(raw);
@@ -543,12 +543,17 @@ function renderCalendar(year, month, entriesMap, currentType) {
 
     const firstDay = new Date(year, month, 1);
     const lastDay = new Date(year, month + 1, 0);
-    const startDayOfWeek = firstDay.getDay();
+    const startDayOfWeek = (firstDay.getDay() + 6) % 7;
     const todayDate = new Date();
     todayDate.setHours(0, 0, 0, 0);
     const today = formatDate(todayDate);
+    const creationDate = accountCreatedAt ? new Date(accountCreatedAt) : null;
+    const creationDateValid = creationDate && !Number.isNaN(creationDate.getTime());
+    const creationDateOnly = creationDateValid
+        ? new Date(creationDate.getFullYear(), creationDate.getMonth(), creationDate.getDate())
+        : null;
 
-    const weekdays = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+    const weekdays = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
     let html = '<div class="calendar-layout">';
     html += '<div class="calendar-grid">';
     html += '<div class="calendar-weekdays">';
@@ -568,6 +573,7 @@ function renderCalendar(year, month, entriesMap, currentType) {
         const dateString = formatDate(date);
         const isToday = dateString === today;
         const isFuture = date > todayDate;
+        const isBeforeCreation = creationDateOnly ? date < creationDateOnly : false;
         const entry = entriesMap[dateString];
         const scheduled = getScheduledHabitsForDate(habits, dateString)[currentType]
             .filter(habit => habit.schedule?.type !== 'weekly_goal');
@@ -584,7 +590,10 @@ function renderCalendar(year, month, entriesMap, currentType) {
         let level = 0;
         let isNoSchedule = false;
         let isFutureDay = false;
-        if (isFuture) {
+        if (isBeforeCreation) {
+            isFutureDay = true;
+            level = 0;
+        } else if (isFuture) {
             isFutureDay = true;
             level = 0;
         } else if (scheduledCount === 0) {
@@ -599,7 +608,7 @@ function renderCalendar(year, month, entriesMap, currentType) {
             else level = 1;
         }
 
-        html += `<div class="calendar-day level-${level} ${isNoSchedule ? 'na' : ''} ${isFutureDay ? 'future' : ''} ${isToday ? 'today' : ''}" data-date="${dateString}">${day}</div>`;
+        html += `<div class="calendar-day level-${level} ${isNoSchedule ? 'na' : ''} ${isFutureDay ? 'future' : ''} ${isBeforeCreation ? 'before-account' : ''} ${isToday ? 'today' : ''}" data-date="${dateString}">${day}</div>`;
     }
 
     html += '</div></div>';
@@ -639,7 +648,7 @@ function renderCalendar(year, month, entriesMap, currentType) {
             const target = event.target;
             if (!(target instanceof HTMLElement)) return;
             const dayEl = target.closest('.calendar-day');
-            if (!dayEl || dayEl.classList.contains('empty')) return;
+            if (!dayEl || dayEl.classList.contains('empty') || dayEl.classList.contains('before-account')) return;
             const dateString = dayEl.dataset.date;
             if (!dateString) return;
             const desiredTab = container.dataset.type || 'morning';
@@ -1253,17 +1262,25 @@ function renderWeeklyGoalFilter(container, weeklyHabits, selection, currentType)
 
 function buildMonthlyWeekRanges(year, month, lastDay) {
     const ranges = [];
-    for (let i = 0; i < 4; i++) {
-        const startDay = i * 7 + 1;
-        const endDay = Math.min(startDay + 6, lastDay);
-        if (startDay > lastDay) {
-            ranges.push(null);
-        } else {
-            ranges.push({
-                start: new Date(year, month, startDay),
-                end: new Date(year, month, endDay, 23, 59, 59, 999)
-            });
+    const monthStart = new Date(year, month, 1);
+    const monthEnd = new Date(year, month, lastDay, 23, 59, 59, 999);
+    const week1Start = getWeekStart(monthStart);
+    const cursor = new Date(week1Start);
+
+    while (cursor <= monthEnd) {
+        const weekStart = new Date(cursor);
+        const weekEnd = new Date(weekStart);
+        weekEnd.setDate(weekStart.getDate() + 6);
+        weekEnd.setHours(23, 59, 59, 999);
+
+        if (weekStart <= monthStart && weekEnd >= monthStart) {
+            ranges.push({ start: weekStart, end: weekEnd });
+        } else if (weekStart > monthStart) {
+            ranges.push({ start: weekStart, end: weekEnd });
         }
+
+        cursor.setDate(cursor.getDate() + 7);
     }
+
     return ranges;
 }

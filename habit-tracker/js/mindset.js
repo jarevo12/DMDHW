@@ -331,7 +331,7 @@ function renderMindsetCalendar() {
 
     const monthDate = new Date(mindsetCalendarState.currentYear, mindsetCalendarState.currentMonth, 1);
     const lastDay = new Date(mindsetCalendarState.currentYear, mindsetCalendarState.currentMonth + 1, 0);
-    const startDayOfWeek = monthDate.getDay();
+    const startDayOfWeek = (monthDate.getDay() + 6) % 7;
     const today = formatDate(new Date());
     const selectedString = formatDate(currentDate);
     const creationDate = accountCreatedAt ? new Date(accountCreatedAt) : null;

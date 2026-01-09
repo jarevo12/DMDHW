@@ -107,7 +107,8 @@ export function getScheduleLabel(schedule) {
             }
             return days.map(d => DAY_NAMES[d].substring(0, 3)).join(', ');
         case 'weekly_goal':
-            return `${schedule.timesPerWeek}x/week`;
+            const startLabel = schedule.weeklyGoalStartDate ? ` from ${schedule.weeklyGoalStartDate}` : '';
+            return `${schedule.timesPerWeek}x/week${startLabel}`;
         case 'interval':
             const intervalDays = schedule.intervalDays || 1;
             const intervalStart = schedule.intervalStartDate;

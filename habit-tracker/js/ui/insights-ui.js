@@ -243,12 +243,14 @@ export function renderWeekdayPattern(weekdayData) {
     const values = rates.filter(r => r.possible > 0).map(r => r.rate);
     const maxVal = Math.max(...values);
 
-    const dayLabels = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'];
+    const dayLabels = ['MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT', 'SUN'];
+    const dayOrder = [1, 2, 3, 4, 5, 6, 0];
 
     const grid = document.createElement('div');
     grid.className = 'weekday-grid';
 
-    rates.forEach((dayData, index) => {
+    dayOrder.forEach((dayIndex, index) => {
+        const dayData = rates[dayIndex] || { rate: 0, possible: 0 };
         const isUnavailable = dayData.possible === 0;
         const isBest = !isUnavailable && dayData.rate === maxVal && dayData.rate > 0;
         const barClass = isUnavailable ? 'na' : (isBest ? 'best' : 'normal');

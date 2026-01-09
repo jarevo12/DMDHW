@@ -101,7 +101,10 @@ function renderHabitCard(habit) {
     // Calculate concise schedule chip
     let scheduleChip = 'Daily';
     const s = habit.schedule || {type: 'daily'};
-    if (s.type === 'weekly_goal') scheduleChip = `${s.timesPerWeek}x/week`;
+    if (s.type === 'weekly_goal') {
+        const startLabel = s.weeklyGoalStartDate ? ` from ${s.weeklyGoalStartDate}` : '';
+        scheduleChip = `${s.timesPerWeek}x/week${startLabel}`;
+    }
     else if (s.type === 'specific_days') {
         const days = s.days || [];
         if (days.length === 5 && !days.includes(0) && !days.includes(6)) scheduleChip = 'Weekdays';

@@ -15,7 +15,7 @@ export async function renderTodayCalendar() {
     const db = getDb();
     const monthDate = new Date(calendarState.currentYear, calendarState.currentMonth, 1);
     const lastDay = new Date(calendarState.currentYear, calendarState.currentMonth + 1, 0);
-    const startDayOfWeek = monthDate.getDay();
+    const startDayOfWeek = (monthDate.getDay() + 6) % 7;
     const today = formatDate(new Date());
     const selectedString = formatDate(currentDate);
     const creationDate = accountCreatedAt ? new Date(accountCreatedAt) : null;
