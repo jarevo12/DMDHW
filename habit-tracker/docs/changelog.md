@@ -4,6 +4,55 @@ This document summarizes the key improvements, features, and architectural decis
 
 ---
 
+## January 09, 2026 - Insights Period Selector Update & Power Cells Visualization
+
+**Session Focus:** Refine the Insights tab period options and add an animated data collection visualization for users with insufficient tracking history.
+
+### Period Selector Changes
+
+Changed the period selector options from **7D/30D/90D** to **7D/14D/28D** to provide more practical time windows for habit analysis.
+
+| Old | New | Rationale |
+|-----|-----|-----------|
+| 7D | 7D | Unchanged - quick snapshot |
+| 30D | 14D | Two weeks is more actionable than a full month |
+| 90D | 28D | Four weeks captures monthly patterns without requiring 3 months of data |
+
+**Insight availability by period:**
+- **7D:** Trend (basic), Strength
+- **14D:** Trend (reliable), Strength, Weekly Pattern, Anomaly
+- **28D:** ALL insights including Correlation and Sequence (require 21+ days)
+
+### Power Cells Visualization
+
+Added an animated "Power Cells" visualization that displays when users don't have enough data for the selected period. Previously showed a simple progress bar.
+
+**Features:**
+- 7 rows of skewed bars that fill from bottom-left based on days tracked
+- Cells states: empty (dark), filled (acid green), current day (pulsing white)
+- Dynamic motivational copy based on progress percentage:
+  - 0-20%: "INITIATING SEQUENCE...", "SYSTEM AWAKENING"
+  - 20-50%: "GATHERING MOMENTUM...", "POWER LEVELS RISING"
+  - 50-80%: "CORE CHARGE AT 50%", "CONSISTENCY IS POWER"
+  - 80-99%: "MAXIMUM POWER APPROACHING", "CRITICAL MASS IMMINENT"
+  - 100%: "CYCLE COMPLETE", "SYSTEM OPTIMIZED"
+- Grid adapts to selected period (7D=1 unit/row, 14D=2 units/row, 28D=4 units/row)
+- Shows "X / Y DAYS TRACKED" subtitle
+
+**Behavior change:** The insufficient data state now triggers when `totalDays < selectedPeriod` (instead of only when `< 7 days`). This means:
+- User with 10 days selecting 7D → Shows normal insights
+- User with 10 days selecting 14D → Shows power cells (10/14)
+- User with 10 days selecting 28D → Shows power cells (10/28)
+
+### Files Modified
+- `js/analytics-worker.js` - Changed insufficient data check to compare against selected period
+- `js/insights.js` - Pass period to worker, updated defaults from 30/90 to 14/28
+- `js/ui/insights-ui.js` - Added power cells rendering functions and motivational quotes
+- `css/styles.css` - Added power cells visualization styles and animations
+- `index.html` - Updated period selector buttons and data notice HTML structure
+
+---
+
 ## January 08, 2026 - Insights Tab Type Filtering Bug Fix
 
 **Session Focus:** Fix critical bug where switching between Morning/Evening filters in the Insights tab would show incorrect habits.

@@ -24,15 +24,15 @@ self.onmessage = function(e) {
  * @returns {object} Complete analysis results
  */
 function runFullAnalysis(data) {
-    const { habitMap, habitIds, dates, matrix, metadata, type, entries, periodStart, periodEnd, requestKey } = data;
+    const { habitMap, habitIds, dates, matrix, metadata, type, entries, periodStart, periodEnd, requestKey, period } = data;
 
-    // Check minimum data requirements
-    if (metadata.totalDays < 7) {
+    // Check minimum data requirements - need full period of data
+    if (metadata.totalDays < period) {
         return {
             insufficientData: true,
             daysCollected: metadata.totalDays,
-            daysNeeded: 7,
-            message: 'Need at least 7 days of data for insights',
+            daysNeeded: period,
+            message: `Need ${period} days of data for insights`,
             requestKey
         };
     }
@@ -115,9 +115,9 @@ function runFullAnalysis(data) {
 
         // Trend data for chart
         trendData: {
-            labels: dates.slice(-30), // Last 30 days
-            morning: calculateMovingAverage(morningRates.slice(-30), 3),
-            evening: calculateMovingAverage(eveningRates.slice(-30), 3)
+            labels: dates.slice(-28), // Last 28 days
+            morning: calculateMovingAverage(morningRates.slice(-28), 3),
+            evening: calculateMovingAverage(eveningRates.slice(-28), 3)
         },
 
     // Anomaly detection

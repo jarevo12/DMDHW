@@ -3582,6 +3582,118 @@ button, input, select {
     font-weight: 900;
 }
 
+/* =========================================
+   POWER CELLS VISUALIZATION
+   ========================================= */
+.power-cells-notice {
+    padding: var(--spacing-lg);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 500px;
+}
+
+.vis-promo-header {
+    font-family: var(--font-sans);
+    font-weight: 900;
+    text-transform: uppercase;
+    font-size: 1.1rem;
+    line-height: 1.2;
+    margin-bottom: var(--spacing-lg);
+    color: var(--text-primary);
+    letter-spacing: 0.5px;
+    text-align: center;
+}
+
+.vis-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: var(--spacing-md) 0;
+    width: 100%;
+}
+
+/* The container for the 7 bars */
+.power-grid {
+    width: 100%;
+    max-width: 280px;
+    height: 350px;
+    display: flex;
+    flex-direction: column-reverse; /* Build from bottom up */
+    gap: 12px; /* Spacing between the 7 main bars */
+}
+
+/* Each of the 7 bars */
+.power-row {
+    flex: 1; /* Distribute height evenly */
+    display: flex;
+    gap: 2px; /* Small gap between internal units */
+    transform: skewX(-15deg); /* Retain the dynamic angle */
+    border: 1px solid var(--text-muted);
+    padding: 2px;
+    background: var(--bg-primary);
+}
+
+/* The internal units/cells within a bar */
+.power-unit {
+    flex: 1;
+    height: 100%;
+    background: #1a1a1a;
+    transition: all 0.3s ease;
+    position: relative;
+}
+
+/* Completed State - ACID GREEN */
+.power-unit.filled {
+    background-color: var(--accent-primary) !important;
+    box-shadow: 0 0 8px rgba(204, 255, 0, 0.5);
+    z-index: 1;
+}
+
+/* Current Day - Pulsing White */
+.power-unit.current {
+    background: #fff;
+    animation: pulse-unit 1.5s infinite;
+    z-index: 2;
+}
+
+@keyframes pulse-unit {
+    0% { opacity: 0.8; box-shadow: 0 0 5px #fff; }
+    50% { opacity: 0.4; box-shadow: 0 0 10px #fff; }
+    100% { opacity: 0.8; box-shadow: 0 0 5px #fff; }
+}
+
+.copy-container {
+    margin-top: var(--spacing-lg);
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-sm);
+    text-align: center;
+}
+
+.motivational-copy {
+    font-family: var(--font-sans);
+    font-weight: 900;
+    text-transform: uppercase;
+    font-size: 1.3rem;
+    line-height: 1.1;
+    min-height: 2.4em;
+    margin: 0;
+    color: var(--text-primary);
+}
+
+.copy-sub {
+    font-size: 0.8rem;
+    color: var(--accent-primary);
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    margin: 0;
+    font-weight: 900;
+}
+
 /* No Insights Message */
 .no-insights {
     text-align: center;

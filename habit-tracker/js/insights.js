@@ -32,7 +32,7 @@ let requestCounter = 0;
 
 // Current insights state
 export let insightsState = {
-    period: 30,           // 7, 30, or 90 days
+    period: 14,           // 7, 14, or 28 days
     type: 'morning',      // 'morning' or 'evening'
     isLoading: false,
     lastResults: null,
@@ -143,7 +143,7 @@ function normalizeDate(date) {
     return normalized;
 }
 
-async function fetchEntriesForInsights(periodDays = 90) {
+async function fetchEntriesForInsights(periodDays = 28) {
     const db = getDb();
     const endDate = normalizeDate(new Date());
     const startDate = normalizeDate(new Date(endDate));
@@ -261,10 +261,10 @@ function clearPendingCallbacks() {
 
 /**
  * Run insights analysis
- * @param {number} period - Time period (7, 30, or 90 days)
+ * @param {number} period - Time period (7, 14, or 28 days)
  * @param {string} type - Filter type ('all', 'morning', 'evening')
  */
-export async function runInsightsAnalysis(period = 30, type = 'all', options = {}) {
+export async function runInsightsAnalysis(period = 14, type = 'all', options = {}) {
     const { forceRefresh = false } = options;
     if (!currentUser?.uid) {
         return null;
@@ -340,6 +340,7 @@ export async function runInsightsAnalysis(period = 30, type = 'all', options = {
         workerData.periodStart = periodStart;
         workerData.periodEnd = periodEnd;
         workerData.requestKey = requestKey;
+        workerData.period = period;
 
         // Send to worker
         insightsWorker.postMessage({
@@ -363,7 +364,7 @@ export async function runInsightsAnalysis(period = 30, type = 'all', options = {
 
 /**
  * Update period and re-analyze
- * @param {number} period - New period (7, 30, 90)
+ * @param {number} period - New period (7, 14, 28)
  */
 export function setInsightsPeriod(period) {
     // Clear the insights container immediately to prevent showing stale data

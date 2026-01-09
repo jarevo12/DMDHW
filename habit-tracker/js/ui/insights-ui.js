@@ -27,6 +27,107 @@ const INSIGHTS_SECTION_STORAGE_KEY = 'insightsSectionState';
 // Chart instance
 let trendChartInstance = null;
 
+// ========== POWER CELLS VISUALIZATION ==========
+
+const MOTIVATIONAL_QUOTES = {
+    start: [
+        "INITIATING SEQUENCE...",
+        "STARTING NEW PROTOCOL",
+        "FIRST CELLS CHARGING",
+        "SYSTEM AWAKENING"
+    ],
+    early: [
+        "GATHERING MOMENTUM...",
+        "POWER LEVELS RISING",
+        "STABILITY INCREASING",
+        "GOOD START, KEEP GOING"
+    ],
+    mid: [
+        "CORE CHARGE AT 50%",
+        "OPTIMIZATION IN PROGRESS",
+        "SUSTAINED OUTPUT DETECTED",
+        "CONSISTENCY IS POWER"
+    ],
+    late: [
+        "MAXIMUM POWER APPROACHING",
+        "FINALIZING CHARGE CYCLE",
+        "CRITICAL MASS IMMINENT",
+        "ALMOST AT FULL CAPACITY"
+    ],
+    done: [
+        "CYCLE COMPLETE",
+        "POWER OVERWHELMING",
+        "FULL SYNCHRONIZATION",
+        "SYSTEM OPTIMIZED"
+    ]
+};
+
+/**
+ * Get motivational copy based on progress percentage
+ * @param {number} percentage - Progress percentage (0-100)
+ * @returns {string} Motivational copy text
+ */
+function getMotivationalCopy(percentage) {
+    let category = 'start';
+    if (percentage >= 100) category = 'done';
+    else if (percentage > 80) category = 'late';
+    else if (percentage > 50) category = 'mid';
+    else if (percentage > 20) category = 'early';
+
+    const quotes = MOTIVATIONAL_QUOTES[category];
+    const index = Math.floor(percentage) % quotes.length;
+    return quotes[index];
+}
+
+/**
+ * Render the power grid visualization
+ * @param {number} daysCollected - Number of days with data
+ * @param {number} daysNeeded - Total days needed (period)
+ */
+function renderPowerGrid(daysCollected, daysNeeded) {
+    const powerGrid = document.getElementById('power-grid');
+    if (!powerGrid) return;
+
+    powerGrid.innerHTML = '';
+
+    // Fixed layout: Always 7 main visual rows
+    const totalRows = 7;
+
+    // Calculate units per row based on target period
+    // 7 days -> 1 unit/row
+    // 14 days -> 2 units/row
+    // 28 days -> 4 units/row
+    const unitsPerRow = daysNeeded / totalRows;
+
+    // Loop through ROWS (1 to 7)
+    // Flex column-reverse builds from bottom up
+    for (let r = 1; r <= totalRows; r++) {
+        const row = document.createElement('div');
+        row.className = 'power-row';
+
+        // Loop through UNITS in this row
+        for (let u = 1; u <= unitsPerRow; u++) {
+            const unit = document.createElement('div');
+            unit.className = 'power-unit';
+
+            // Calculate global day index
+            // Row 1 (bottom): Days 1..N
+            const globalDayIndex = ((r - 1) * unitsPerRow) + u;
+
+            // State logic
+            if (globalDayIndex <= daysCollected) {
+                unit.classList.add('filled');
+            } else if (globalDayIndex === daysCollected + 1) {
+                unit.classList.add('current');
+            }
+
+            row.appendChild(unit);
+        }
+
+        powerGrid.appendChild(row);
+    }
+}
+
 // ========== RENDER FUNCTIONS ==========
 
 /**
@@ -606,7 +707,7 @@ export function renderHabitStrength(strengthData, habitMap, options = {}) {
 }
 
 /**
- * Render the data collection notice
+ * Render the data collection notice with power cells visualization
  */
 export function renderDataNotice(daysCollected, daysNeeded) {
     const notice = document.getElementById('insights-data-notice');
@@ -617,16 +718,22 @@ export function renderDataNotice(daysCollected, daysNeeded) {
     notice.classList.remove('hidden');
     main.style.display = 'none';
 
-    const progressFill = document.getElementById('data-progress-fill');
-    const progressText = document.getElementById('data-progress-text');
+    // Calculate progress percentage
+    const percentage = Math.min((daysCollected / daysNeeded) * 100, 100);
 
-    if (progressFill) {
-        const percentage = Math.min((daysCollected / daysNeeded) * 100, 100);
-        progressFill.style.width = `${percentage}%`;
+    // Render the power grid
+    renderPowerGrid(daysCollected, daysNeeded);
+
+    // Update motivational copy
+    const mainCopy = document.getElementById('power-cells-main');
+    const subCopy = document.getElementById('power-cells-sub');
+
+    if (mainCopy) {
+        mainCopy.textContent = getMotivationalCopy(percentage);
     }
 
-    if (progressText) {
-        progressText.textContent = `${daysCollected}/${daysNeeded} days`;
+    if (subCopy) {
+        subCopy.textContent = `${daysCollected} / ${daysNeeded} DAYS TRACKED`;
     }
 }
 
@@ -666,7 +773,7 @@ export function hideLoading() {
  * Set up UI event handlers
  */
 export function setupInsightsUIHandlers(onPeriodChange, onTypeChange) {
-    // Period toggle (7D / 30D / 90D)
+    // Period toggle (7D / 14D / 28D)
     const periodToggle = document.getElementById('period-toggle');
     if (periodToggle) {
         periodToggle.addEventListener('click', (e) => {
