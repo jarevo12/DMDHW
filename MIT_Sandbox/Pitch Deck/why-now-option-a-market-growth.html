@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Why Now - Option A: Market Growth | Axiom Forge</title>
+    <style>
+        /* ========================================
+           SWISS BRUTALISM PRESENTATION SYSTEM
+           ======================================== */
+
+        :root {
+            /* Core Palette */
+            --bg-primary: #000000;
+            --bg-secondary: #0a0a0a;
+            --text-primary: #ffffff;
+            --text-secondary: #c0c0c0;
+            --text-muted: #666666;
+
+            /* Accent Colors */
+            --accent-purple: #a78bfa;
+            --accent-green: #ccff00;
+            --accent-red: #ff0000;
+            --accent-yellow: #ffff00;
+
+            /* Structural */
+            --border-width: 4px;
+            --border-thin: 2px;
+            --border-color: #ffffff;
+
+            /* Typography */
+            --font-mono: 'SF Mono', 'Consolas', 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+            --font-sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html, body {
+            height: 100%;
+            overflow: auto;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            font-family: var(--font-mono);
+        }
+
+        .slide {
+            min-height: 100vh;
+            width: 100vw;
+            padding: 60px;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
+        }
+
+        h1, h2, h3, h4 {
+            font-family: var(--font-sans);
+            font-weight: 900;
+            text-transform: uppercase;
+            letter-spacing: -1px;
+            line-height: 1;
+        }
+
+        h1 {
+            font-size: 4rem;
+            margin-bottom: 24px;
+        }
+
+        h3 {
+            font-size: 1.5rem;
+            margin-bottom: 16px;
+        }
+
+        p, li {
+            font-size: 1.1rem;
+            line-height: 1.6;
+        }
+
+        .section-label {
+            color: var(--accent-purple);
+            font-family: var(--font-mono);
+            font-size: 1.05rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 8px;
+        }
+
+        .section-label::before {
+            content: '// ';
+        }
+
+        .content-grid {
+            display: grid;
+            gap: 40px;
+            flex: 1;
+            align-content: start;
+        }
+
+        .two-col {
+            grid-template-columns: 1fr 1fr;
+        }
+
+        .card {
+            border: var(--border-width) solid var(--border-color);
+            padding: 24px;
+            background: var(--bg-primary);
+        }
+
+        .card.highlight {
+            border-color: var(--accent-green);
+            background: rgba(204, 255, 0, 0.05);
+        }
+
+        .stat-block {
+            text-align: center;
+            padding: 24px;
+            border: var(--border-width) solid var(--border-color);
+            margin-bottom: 20px;
+        }
+
+        .stat-block.hero {
+            border-color: var(--accent-green);
+            background: rgba(204, 255, 0, 0.05);
+        }
+
+        .stat-value {
+            font-family: var(--font-sans);
+            font-size: 2.5rem;
+            font-weight: 900;
+            line-height: 1;
+            margin-bottom: 8px;
+        }
+
+        .stat-value.green {
+            color: var(--accent-green);
+        }
+
+        .stat-value.large {
+            font-size: 3rem;
+        }
+
+        .stat-label {
+            font-size: 1rem;
+            text-transform: uppercase;
+            color: var(--text-secondary);
+            letter-spacing: 0.5px;
+        }
+
+        /* Growth Bar Visualization */
+        .growth-chart {
+            border: var(--border-width) solid var(--border-color);
+            padding: 24px;
+            margin-bottom: 20px;
+        }
+
+        .growth-chart h3 {
+            margin-bottom: 20px;
+            color: var(--accent-green);
+        }
+
+        .growth-bar-row {
+            display: grid;
+            grid-template-columns: 60px 1fr 100px;
+            gap: 16px;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+
+        .growth-year {
+            font-weight: 900;
+            font-size: 1rem;
+        }
+
+        .growth-bar {
+            height: 28px;
+            border: var(--border-thin) solid var(--border-color);
+            background: var(--bg-secondary);
+            position: relative;
+        }
+
+        .growth-fill {
+            height: 100%;
+            background: var(--accent-purple);
+            transition: width 0.3s ease;
+        }
+
+        .growth-fill.current {
+            background: var(--accent-green);
+        }
+
+        .growth-value {
+            text-align: right;
+            font-family: var(--font-sans);
+            font-weight: 900;
+        }
+
+        ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        li {
+            padding: 12px 0;
+            border-bottom: 1px solid #333;
+            position: relative;
+            padding-left: 24px;
+        }
+
+        li::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 8px;
+            height: 8px;
+            background: var(--accent-green);
+        }
+
+        li:last-child {
+            border-bottom: none;
+        }
+
+        .option-label {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: var(--accent-purple);
+            color: var(--bg-primary);
+            padding: 8px 16px;
+            font-weight: 900;
+            text-transform: uppercase;
+            font-size: 0.9rem;
+        }
+
+        @media (max-width: 1200px) {
+            .slide {
+                padding: 40px;
+            }
+
+            h1 {
+                font-size: 3rem;
+            }
+
+            .two-col {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="option-label">Option A: Market Growth</div>
+
+    <section class="slide">
+        <p class="section-label">Why Now</p>
+        <h1>A Market Ready to Explode</h1>
+
+        <div class="content-grid two-col" style="margin-top: 40px;">
+            <div>
+                <div class="stat-block hero">
+                    <div class="stat-value green large">$6.2B &rarr; $12.9B</div>
+                    <div class="stat-label">Mental Wellness App Market (2023 &rarr; 2025)</div>
+                </div>
+
+                <div class="growth-chart">
+                    <h3>Market Trajectory</h3>
+                    <div class="growth-bar-row">
+                        <div class="growth-year">2023</div>
+                        <div class="growth-bar"><div class="growth-fill" style="width: 41%;"></div></div>
+                        <div class="growth-value">$6.2B</div>
+                    </div>
+                    <div class="growth-bar-row">
+                        <div class="growth-year">2025</div>
+                        <div class="growth-bar"><div class="growth-fill current" style="width: 86%;"></div></div>
+                        <div class="growth-value">$12.9B</div>
+                    </div>
+                    <div class="growth-bar-row">
+                        <div class="growth-year">2026+</div>
+                        <div class="growth-bar"><div class="growth-fill current" style="width: 100%;"></div></div>
+                        <div class="growth-value">$15B+</div>
+                    </div>
+                </div>
+
+                <div class="stat-block">
+                    <div class="stat-value green">14.7%</div>
+                    <div class="stat-label">Compound Annual Growth Rate</div>
+                </div>
+            </div>
+
+            <div>
+                <h3 style="color: var(--accent-green); margin-bottom: 24px;">Converging Forces</h3>
+                <ul>
+                    <li>
+                        <strong style="font-size: 1.2rem;">Digital Therapeutics Boom</strong><br>
+                        <span style="color: var(--text-secondary);">$5.8B &rarr; $15B market (2023&rarr;2026), 29% CAGR</span>
+                    </li>
+                    <li>
+                        <strong style="font-size: 1.2rem;">Post-Pandemic Normalization</strong><br>
+                        <span style="color: var(--text-secondary);">25% increase in anxiety/depression drove digital adoption</span>
+                    </li>
+                    <li>
+                        <strong style="font-size: 1.2rem;">AI Personalization Maturity</strong><br>
+                        <span style="color: var(--text-secondary);">60% of top apps now integrate AI for real-time adaptation</span>
+                    </li>
+                    <li>
+                        <strong style="font-size: 1.2rem;">Institutional Tailwinds</strong><br>
+                        <span style="color: var(--text-secondary);">Employer wellness: $60B&rarr;$102B. Insurer coverage up 610%</span>
+                    </li>
+                </ul>
+
+                <div class="card highlight" style="margin-top: 24px;">
+                    <p style="font-size: 1.2rem; font-weight: 700;">Axiom Forge enters at the inflection point of exponential growth.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+</body>
+</html>

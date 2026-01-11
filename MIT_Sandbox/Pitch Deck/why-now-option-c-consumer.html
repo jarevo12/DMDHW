@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Why Now - Option C: Consumer Readiness | Axiom Forge</title>
+    <style>
+        /* ========================================
+           SWISS BRUTALISM PRESENTATION SYSTEM
+           ======================================== */
+
+        :root {
+            /* Core Palette */
+            --bg-primary: #000000;
+            --bg-secondary: #0a0a0a;
+            --text-primary: #ffffff;
+            --text-secondary: #c0c0c0;
+            --text-muted: #666666;
+
+            /* Accent Colors */
+            --accent-purple: #a78bfa;
+            --accent-green: #ccff00;
+            --accent-red: #ff0000;
+            --accent-yellow: #ffff00;
+
+            /* Structural */
+            --border-width: 4px;
+            --border-thin: 2px;
+            --border-color: #ffffff;
+
+            /* Typography */
+            --font-mono: 'SF Mono', 'Consolas', 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+            --font-sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html, body {
+            height: 100%;
+            overflow: auto;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            font-family: var(--font-mono);
+        }
+
+        .slide {
+            min-height: 100vh;
+            width: 100vw;
+            padding: 60px;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
+        }
+
+        h1, h2, h3, h4 {
+            font-family: var(--font-sans);
+            font-weight: 900;
+            text-transform: uppercase;
+            letter-spacing: -1px;
+            line-height: 1;
+        }
+
+        h1 {
+            font-size: 4rem;
+            margin-bottom: 24px;
+        }
+
+        h3 {
+            font-size: 1.5rem;
+            margin-bottom: 16px;
+        }
+
+        p, li {
+            font-size: 1.1rem;
+            line-height: 1.6;
+        }
+
+        .section-label {
+            color: var(--accent-purple);
+            font-family: var(--font-mono);
+            font-size: 1.05rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 8px;
+        }
+
+        .section-label::before {
+            content: '// ';
+        }
+
+        .content-grid {
+            display: grid;
+            gap: 40px;
+            flex: 1;
+            align-content: start;
+        }
+
+        .two-col {
+            grid-template-columns: 1fr 1fr;
+        }
+
+        .card {
+            border: var(--border-width) solid var(--border-color);
+            padding: 24px;
+            background: var(--bg-primary);
+        }
+
+        .card.highlight {
+            border-color: var(--accent-green);
+            background: rgba(204, 255, 0, 0.05);
+        }
+
+        .stat-block {
+            text-align: center;
+            padding: 24px;
+            border: var(--border-width) solid var(--border-color);
+            margin-bottom: 20px;
+        }
+
+        .stat-block.hero {
+            border-color: var(--accent-green);
+            background: rgba(204, 255, 0, 0.05);
+        }
+
+        .stat-value {
+            font-family: var(--font-sans);
+            font-size: 2.5rem;
+            font-weight: 900;
+            line-height: 1;
+            margin-bottom: 8px;
+        }
+
+        .stat-value.green {
+            color: var(--accent-green);
+        }
+
+        .stat-value.purple {
+            color: var(--accent-purple);
+        }
+
+        .stat-value.large {
+            font-size: 4rem;
+        }
+
+        .stat-label {
+            font-size: 1rem;
+            text-transform: uppercase;
+            color: var(--text-secondary);
+            letter-spacing: 0.5px;
+        }
+
+        /* Adoption Bar Visualization */
+        .adoption-chart {
+            border: var(--border-width) solid var(--border-color);
+            padding: 24px;
+            margin-bottom: 20px;
+        }
+
+        .adoption-chart h3 {
+            margin-bottom: 20px;
+            color: var(--accent-green);
+        }
+
+        .adoption-bar-row {
+            display: grid;
+            grid-template-columns: 100px 1fr 50px;
+            gap: 16px;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+
+        .adoption-label {
+            font-weight: 900;
+            font-size: 0.95rem;
+        }
+
+        .adoption-bar {
+            height: 28px;
+            border: var(--border-thin) solid var(--border-color);
+            background: var(--bg-secondary);
+            position: relative;
+        }
+
+        .adoption-fill {
+            height: 100%;
+            transition: width 0.3s ease;
+        }
+
+        .adoption-fill.green {
+            background: var(--accent-green);
+        }
+
+        .adoption-fill.purple {
+            background: var(--accent-purple);
+        }
+
+        .adoption-fill.muted {
+            background: var(--text-muted);
+        }
+
+        .adoption-value {
+            text-align: right;
+            font-family: var(--font-sans);
+            font-weight: 900;
+        }
+
+        ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        li {
+            padding: 12px 0;
+            border-bottom: 1px solid #333;
+            position: relative;
+            padding-left: 24px;
+        }
+
+        li::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 8px;
+            height: 8px;
+            background: var(--accent-green);
+        }
+
+        li:last-child {
+            border-bottom: none;
+        }
+
+        .stat-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+        }
+
+        .mini-stat {
+            border: var(--border-thin) solid var(--border-color);
+            padding: 16px;
+            text-align: center;
+        }
+
+        .mini-stat .stat-value {
+            font-size: 1.8rem;
+        }
+
+        .mini-stat .stat-label {
+            font-size: 0.85rem;
+        }
+
+        .option-label {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: var(--accent-purple);
+            color: var(--bg-primary);
+            padding: 8px 16px;
+            font-weight: 900;
+            text-transform: uppercase;
+            font-size: 0.9rem;
+        }
+
+        @media (max-width: 1200px) {
+            .slide {
+                padding: 40px;
+            }
+
+            h1 {
+                font-size: 3rem;
+            }
+
+            .two-col {
+                grid-template-columns: 1fr;
+            }
+
+            .stat-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="option-label">Option C: Consumer Readiness</div>
+
+    <section class="slide">
+        <p class="section-label">Why Now</p>
+        <h1>A Generation Ready to Pay</h1>
+
+        <div class="content-grid two-col" style="margin-top: 40px;">
+            <div>
+                <div class="stat-block hero">
+                    <div class="stat-value green large">79%</div>
+                    <div class="stat-label">Gen Z & Millennials Using Wellness Apps</div>
+                </div>
+
+                <div class="adoption-chart">
+                    <h3>Adoption by Generation</h3>
+                    <div class="adoption-bar-row">
+                        <div class="adoption-label">Gen Z</div>
+                        <div class="adoption-bar"><div class="adoption-fill green" style="width: 82%;"></div></div>
+                        <div class="adoption-value">82%</div>
+                    </div>
+                    <div class="adoption-bar-row">
+                        <div class="adoption-label">Millennials</div>
+                        <div class="adoption-bar"><div class="adoption-fill green" style="width: 76%;"></div></div>
+                        <div class="adoption-value">76%</div>
+                    </div>
+                    <div class="adoption-bar-row">
+                        <div class="adoption-label">Gen X</div>
+                        <div class="adoption-bar"><div class="adoption-fill muted" style="width: 48%;"></div></div>
+                        <div class="adoption-value">48%</div>
+                    </div>
+                    <div class="adoption-bar-row">
+                        <div class="adoption-label">Boomers</div>
+                        <div class="adoption-bar"><div class="adoption-fill muted" style="width: 28%;"></div></div>
+                        <div class="adoption-value">28%</div>
+                    </div>
+                </div>
+
+                <div class="stat-grid">
+                    <div class="mini-stat">
+                        <div class="stat-value green">50%</div>
+                        <div class="stat-label">Now Pay for Wellness Apps</div>
+                    </div>
+                    <div class="mini-stat">
+                        <div class="stat-value purple">$12T</div>
+                        <div class="stat-label">Gen Z Spending Power by 2030</div>
+                    </div>
+                </div>
+            </div>
+
+            <div>
+                <h3 style="color: var(--accent-green); margin-bottom: 24px;">Why They're Ready</h3>
+                <ul>
+                    <li>
+                        <strong style="font-size: 1.2rem;">Prioritizing Wellness</strong><br>
+                        <span style="color: var(--text-secondary);">42% rate mindfulness as "very high priority" in their lives</span>
+                    </li>
+                    <li>
+                        <strong style="font-size: 1.2rem;">Outspending Previous Generations</strong><br>
+                        <span style="color: var(--text-secondary);">Millennials spend 3x more on fitness than Boomers</span>
+                    </li>
+                    <li>
+                        <strong style="font-size: 1.2rem;">Proactive Health Mindset</strong><br>
+                        <span style="color: var(--text-secondary);">Investing in "healthspan" decades earlier than parents did</span>
+                    </li>
+                    <li>
+                        <strong style="font-size: 1.2rem;">Seeking Science-Based Solutions</strong><br>
+                        <span style="color: var(--text-secondary);">Actively look for apps citing behavioral psychology frameworks</span>
+                    </li>
+                </ul>
+
+                <div class="card highlight" style="margin-top: 24px;">
+                    <p class="section-label" style="margin-bottom: 8px;">The Opportunity</p>
+                    <p style="font-size: 1.2rem; font-weight: 700;">Target demographic is primed, engaged, and willing to invest in their growth.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+</body>
+</html>
