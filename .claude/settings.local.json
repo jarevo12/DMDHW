@@ -8,7 +8,9 @@
       "Bash(git add:*)",
       "Bash(gemini:*)",
       "Bash(node test-presentation-details.js:*)",
-      "Bash(node --check:*)"
+      "Bash(node --check:*)",
+      "WebSearch",
+      "Bash(ls:*)"
     ],
     "deny": [],
     "ask": []
