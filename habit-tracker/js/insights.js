@@ -225,7 +225,7 @@ function prepareDataForWorker(habitsData, entries, periodStart, periodEnd) {
         const entry = entries[date];
         return habitIds.map(habitId => {
             const habit = habitMap[habitId];
-            const completed = entry[habit.type]?.includes(habitId);
+            const completed = entry?.[habit.type]?.includes(habitId);
             return completed ? 1 : 0;
         });
     });

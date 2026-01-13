@@ -117,7 +117,9 @@ The routine content phenomenon has created unprecedented demand for structured, 
 3. **Streak Anxiety**
    - **44%** of users report motivation drop-off after missing habit streaks [^15]
    - Punitive systems discourage users after first miss
-   - All-or-nothing mentality causes abandonment
+   - All-or-nothing mentality causes aband
+   
+   onment
 
 **Source:**
 - [^16]: [James Clear - 5 Common Mistakes That Cause Habits to Fail](https://jamesclear.com/habits-fail)

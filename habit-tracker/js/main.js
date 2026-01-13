@@ -51,7 +51,7 @@ import { initMindset, refreshMindsetView, updateMindsetFromEntry } from './minds
 // Insights
 import { initInsightsWorker, runInsightsAnalysis, setInsightsUpdateCallback, setInsightsPeriod, setInsightsType, invalidateInsightsCache, getInsightsState } from './insights.js';
 import { insightsCache } from './insights-cache.js';
-import { renderAllInsights, showLoading, setupInsightsUIHandlers, setInsightsToggleState } from './ui/insights-ui.js';
+import { renderAllInsights, showLoading, hideLoading, setupInsightsUIHandlers, setInsightsToggleState } from './ui/insights-ui.js';
 
 // Utils
 import { formatDate } from './utils.js';
@@ -157,6 +157,7 @@ setEntryChangeCallback((entry) => {
 setInsightsUpdateCallback((results) => {
     if (results.error) {
         console.error('Insights error:', results.message);
+        hideLoading();
         return;
     }
     renderAllInsights(results);
