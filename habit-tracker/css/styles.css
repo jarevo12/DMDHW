@@ -15,7 +15,7 @@
     --text-inverse: #000000;
 
     /* Accents */
-    --accent-primary: #6a00ff; /* Electric Purple */
+    --accent-primary: #a78bfa; /* Electric Purple */
     --accent-secondary: #ffffff;
     --accent-success: #ccff00; /* Acid Green */
     --accent-danger: #ff0000;
@@ -705,7 +705,7 @@ button, input, select {
 }
 
 .habit-item.opt-d-evening .fill-layer {
-    background-color: #6a00ff;
+    background-color: #a78bfa;
 }
 
 .habit-item.opt-d-morning.completed .fill-layer,
@@ -752,7 +752,7 @@ button, input, select {
 }
 
 .habit-item.opt-d-evening.completed .habit-icon::after {
-    color: #6a00ff;
+    color: #a78bfa;
 }
 
 @keyframes future-denied {
@@ -829,7 +829,7 @@ button, input, select {
 
 .progress-section.progress-evening,
 .weekly-progress.progress-evening {
-    --progress-complete-color: #6a00ff;
+    --progress-complete-color: #a78bfa;
     --progress-glow: rgba(106, 0, 255, 0.35);
 }
 
@@ -1936,7 +1936,7 @@ button, input, select {
     border-color: #101010;
 }
 .calendar-shell[data-type="morning"] .calendar-day.level-5 { background: #ccff00; color: #0a0a0a; }
-.calendar-shell[data-type="evening"] .calendar-day.level-5 { background: #6a00ff; color: #ffffff; }
+.calendar-shell[data-type="evening"] .calendar-day.level-5 { background: #a78bfa; color: #ffffff; }
 .calendar-day.today { border: 2px solid var(--accent-primary); }
 .calendar-shell[data-type="morning"] .calendar-day.today { border-color: #ccff00; }
 
@@ -1983,7 +1983,7 @@ button, input, select {
 .legend-swatch.level-4 { background: #8a8a8a; }
 .legend-swatch.level-5 { background: #ffffff; }
 .calendar-shell[data-type="morning"] .legend-swatch.level-5 { background: #ccff00; }
-.calendar-shell[data-type="evening"] .legend-swatch.level-5 { background: #6a00ff; }
+.calendar-shell[data-type="evening"] .legend-swatch.level-5 { background: #a78bfa; }
 
 @media (max-width: 720px) {
     .calendar-layout {

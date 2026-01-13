@@ -513,13 +513,13 @@ export function renderTrendChart(trendData) {
                 {
                     label: 'Evening',
                     data: evening,
-                    borderColor: '#6a00ff',
+                    borderColor: '#a78bfa',
                     backgroundColor: 'rgba(106, 0, 255, 0.1)',
                     borderWidth: 3,
                     fill: true,
                     tension: 0,
                     pointRadius: 3,
-                    pointBackgroundColor: '#6a00ff',
+                    pointBackgroundColor: '#a78bfa',
                     pointBorderColor: '#000',
                     pointBorderWidth: 1
                 }

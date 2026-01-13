@@ -723,7 +723,7 @@ function renderCompletionChart(year, month, lastDay, startDay, entriesMap, curre
     const entryKey = isMorning ? 'morning' : 'evening';
     const selectedCount = isMorning ? morningHabitsCount : eveningHabitsCount;
     const chartLabel = isMorning ? 'Morning' : 'Evening';
-    const chartColor = isMorning ? '#ccff00' : '#6a00ff';
+    const chartColor = isMorning ? '#ccff00' : '#a78bfa';
 
     if (selectedCount === 0) {
         // No habits for selected type, hide chart
@@ -1048,7 +1048,7 @@ function renderWeeklyGoalTrend(year, month, lastDay, entriesMap, currentType) {
 
     const weekRanges = buildMonthlyWeekRanges(year, month, lastDay);
     const labels = weekRanges.map((range, index) => `WK ${index + 1}`);
-    const palette = ['#6a00ff', '#ccff00', '#ffffff', '#ff3b3b', '#00e5ff', '#ffa600'];
+    const palette = ['#a78bfa', '#ccff00', '#ffffff', '#ff3b3b', '#00e5ff', '#ffa600'];
 
     const datasets = weeklyHabits
         .filter(habit => selection.has(habit.id))
