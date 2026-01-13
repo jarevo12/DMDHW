@@ -1,6 +1,6 @@
 {
-    "name": "Habit Tracker",
-    "short_name": "Habits",
+    "name": "Axiom Forge",
+    "short_name": "Axiom",
     "description": "Track your daily morning and evening habits",
     "start_url": "/",
     "display": "standalone",
