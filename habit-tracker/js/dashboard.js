@@ -1070,12 +1070,17 @@ function renderWeeklyGoalTrend(year, month, lastDay, entriesMap, currentType) {
                 data,
                 borderColor: color,
                 backgroundColor: color,
-                pointBackgroundColor: '#111',
-                pointBorderColor: color,
-                pointHoverRadius: 6,
-                pointHoverBorderWidth: 3,
                 borderWidth: 2,
-                tension: 0.1,
+                fill: false,
+                tension: 0,
+                pointRadius: 3,
+                pointHoverRadius: 6,
+                pointBackgroundColor: color,
+                pointBorderColor: '#000000',
+                pointBorderWidth: 2,
+                pointHoverBackgroundColor: color,
+                pointHoverBorderColor: '#ffffff',
+                pointHoverBorderWidth: 2,
                 spanGaps: true
             };
         });
@@ -1102,8 +1107,8 @@ function renderWeeklyGoalTrend(year, month, lastDay, entriesMap, currentType) {
             maintainAspectRatio: false,
             scales: {
                 y: {
-                    min: 0,
-                    max: 100,
+                    suggestedMin: 0,
+                    suggestedMax: 100,
                     grace: '5%',
                     afterBuildTicks: (scale) => {
                         scale.ticks = [0, 20, 40, 60, 80, 100].map(value => ({ value }));
