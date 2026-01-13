@@ -133,11 +133,11 @@ function renderGoalSelectionStep() {
     return `
         <div class="onboarding-welcome">
             <div class="logo">
-                <span class="logo-icon">&#10003;</span>
+                <img src="assets/logo-white-back.svg" alt="Axiom Forge" class="logo-image">
             </div>
-            <h1>Welcome to Habit Tracker</h1>
+            <h1>Welcome to <span class="brand-highlight">Axiom Forge</span></h1>
             <p class="onboarding-copy">
-                You're here to feel better, and we'll make it simple with science-backed routines.
+                You're here to become the best version of yourself, and we'll make it simple with science-backed routines.
                 Choose one that's ready to go or create your own in minutes.
             </p>
 

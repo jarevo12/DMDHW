@@ -2312,6 +2312,10 @@ button, input, select {
     border-color: var(--text-primary);
 }
 
+.onboarding-welcome {
+    padding: var(--spacing-lg) var(--spacing-md) 0;
+}
+
 .onboarding-habit-item {
     display: flex;
     align-items: center;
@@ -2581,9 +2585,16 @@ button, input, select {
 
 /* ===== New Onboarding Styles ===== */
 .onboarding-copy {
-    color: var(--text-secondary);
+    color: var(--text-primary);
     margin: 16px 0;
     line-height: 1.5;
+}
+
+.brand-highlight {
+    background: var(--accent-success);
+    color: var(--bg-primary);
+    display: inline-block;
+    padding: 2px 8px;
 }
 
 .goal-selection-container {
