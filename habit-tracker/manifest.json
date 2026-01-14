@@ -1,6 +1,6 @@
 {
     "name": "Axiom Forge",
-    "short_name": "Axiom",
+    "short_name": "AxiomForge",
     "description": "Track your daily morning and evening habits",
     "start_url": "/",
     "display": "standalone",
@@ -35,6 +35,12 @@
         {
             "src": "assets/icons/icon-152.png",
             "sizes": "152x152",
+            "type": "image/png",
+            "purpose": "any maskable"
+        },
+        {
+            "src": "assets/icons/icon-180.png",
+            "sizes": "180x180",
             "type": "image/png",
             "purpose": "any maskable"
         },

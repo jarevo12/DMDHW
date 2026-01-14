@@ -1,4 +1,4 @@
-const CACHE_NAME = 'habit-tracker-v2';
+const CACHE_NAME = 'habit-tracker-v4';
 const STATIC_ASSETS = [
     '/',
     '/index.html',
@@ -28,6 +28,8 @@ const STATIC_ASSETS = [
     '/js/ui/habits-ui.js',
     '/js/ui/settings-ui.js',
     // Assets
+    '/assets/logo-white-back.svg',
+    '/assets/icons/icon-180.png',
     '/assets/icons/icon-192.png',
     '/assets/icons/icon-512.png'
 ];
