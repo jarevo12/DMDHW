@@ -4,6 +4,194 @@ This document summarizes the key improvements, features, and architectural decis
 
 ---
 
+## January 14, 2026 - Firebase Analytics Implementation & Environment-Based Logging
+
+**Session Focus:** Implement comprehensive Firebase Analytics tracking for user behavior analysis and add environment-based console logging for clean production experience.
+
+### Firebase Analytics Integration
+
+Integrated Firebase Analytics SDK to track all key user actions and behaviors across the application. Analytics now captures:
+
+**Authentication Events:**
+- `user_signup` - New account creation with method and timestamp
+- `user_login` - User sign-in with method and timestamp
+- `user_logout` - User sign-out with timestamp
+- Automatic user ID tagging for retention analysis
+
+**Habit Management Events:**
+- `habit_created` - New habit added (type: morning/evening, schedule_type, is_default)
+- `habit_updated` - Habit edited (habitId, schedule_type)
+- `habit_deleted` - Habit archived (type, habitId)
+- `habits_reordered` - Habit order changed (type, count)
+
+**Completion Events:**
+- `habit_completed` - Habit marked complete (habitId, type, date)
+- `habit_uncompleted` - Habit unmarked (habitId, type, date)
+
+**Dashboard Events:**
+- `dashboard_viewed` - Dashboard accessed (total_habits, morning_habits, evening_habits, year, month)
+
+**What Analytics Provides:**
+- Real-time user activity monitoring via DebugView
+- Daily/Weekly/Monthly Active Users (DAU/WAU/MAU)
+- User retention curves (Day 1/7/30)
+- Geographic distribution and device breakdown
+- Feature adoption rates
+- Completion trends and engagement metrics
+
+**Cost:** $0/month (Firebase Analytics is completely free with unlimited events)
+
+### Multi-Domain Tracking
+
+Analytics automatically tracks both domains:
+- ✅ `https://habit-tracker-f3c23.web.app/` (Firebase Hosting)
+- ✅ `https://axiomforgeapp.com/` (Custom domain via Squarespace)
+
+Firebase captures the `page_location` parameter with every event, enabling segmentation by domain in reports. Future enhancement options documented for adding custom domain properties.
+
+### Environment-Based Logging
+
+Implemented intelligent console logging to provide clean production UX while maintaining debug capabilities:
+
+**Production Behavior (axiomforgeapp.com):**
+- No analytics logs in console (professional, clean experience)
+- Error logs always visible (helpful for bug reports)
+- Users don't see internal tracking events
+
+**Development Behavior (localhost):**
+- All analytics logs visible in console
+- Initialization messages shown
+- Full debugging information
+
+**Debug Mode (`?debug_mode=1`):**
+- Works on any domain (production or development)
+- Shows all analytics logs
+- Displays debug mode banner
+- Enables Firebase DebugView real-time tracking
+- Helpful for testing and troubleshooting
+
+**Implementation:**
+```javascript
+// Environment detection
+const IS_PRODUCTION = window.location.hostname !== 'localhost' &&
+                      window.location.hostname !== '127.0.0.1';
+const ENABLE_DEBUG_LOGS = !IS_PRODUCTION;
+
+// Conditional logging
+if (ENABLE_DEBUG_LOGS || debugMode) {
+    console.log(`Analytics: ${eventName}`, params);
+}
+```
+
+**Benefits:**
+- Professional production console (no developer noise)
+- Privacy-friendly (less exposure of tracking events)
+- Easy debugging via `?debug_mode=1` parameter
+- No impact on Analytics functionality
+- Error logs always preserved
+
+### Configuration Updates
+
+**Added `measurementId` to Firebase Config:**
+```javascript
+const firebaseConfig = {
+    // ... existing config
+    measurementId: "G-X7BGCTYYWN"  // Required for Analytics
+};
+```
+
+This measurement ID is essential for Firebase Analytics to function and was added after enabling Google Analytics in the Firebase Console.
+
+### Documentation Created
+
+**New Research Documents:**
+
+1. **`docs/research/analytics-implementation.md`** - Comprehensive analytics guide covering:
+   - All 4 analytics platforms (Firebase, Authentication, Squarespace, GA4)
+   - Custom events schema
+   - Key metrics to monitor
+   - Implementation phases
+   - Privacy considerations
+   - Multi-domain tracking strategies
+   - Troubleshooting guide
+
+2. **`docs/research/firebase-analytics-setup-steps.md`** - Step-by-step implementation guide:
+   - Detailed setup instructions
+   - Testing checklist
+   - Events being tracked
+   - How to access metrics
+   - DebugView usage
+   - Cost & limits reference
+
+3. **`docs/research/console-logging-cleanup.md`** - Logging behavior documentation:
+   - Environment detection logic
+   - Logging behavior matrix
+   - Testing procedures
+   - Benefits breakdown
+   - Rollback plan
+
+### Testing & Verification
+
+**DebugView Setup:**
+- Implemented `?debug_mode=1` URL parameter support
+- Added `setAnalyticsCollectionEnabled()` for debug mode
+- Configured `GA_DEBUG_MODE` for browser compatibility
+- Real-time event verification working
+
+**Deployment Verified:**
+- Analytics SDK loading correctly (firebase-analytics.js)
+- Events firing on production domain
+- Console logging behavior correct per environment
+- DebugView showing real-time events
+
+### Files Modified
+
+**Core Analytics Implementation:**
+- `js/firebase-init.js` - Analytics SDK initialization, tracking functions, environment detection, debug mode support
+- `js/auth.js` - Authentication event tracking (signup, login, logout, user ID tagging)
+- `js/habits.js` - Habit CRUD event tracking (create, update, delete, reorder)
+- `js/entries.js` - Completion event tracking (habit completed/uncompleted)
+- `js/dashboard.js` - Dashboard view tracking
+
+**New Documentation:**
+- `docs/research/analytics-implementation.md` - Comprehensive analytics guide
+- `docs/research/firebase-analytics-setup-steps.md` - Implementation steps
+- `docs/research/console-logging-cleanup.md` - Logging behavior documentation
+
+### Impact & Metrics
+
+**Data Collection (Now Available):**
+- User acquisition sources via Squarespace Analytics
+- User engagement patterns via Firebase Analytics
+- Feature usage tracking (habits created, completions, dashboard views)
+- Retention analysis (Day 1/7/30 retention rates)
+- Geographic and device distribution
+- Real-time active users
+
+**Business Intelligence:**
+- Which features drive engagement
+- Where users come from (.com vs .firebaseapp.com)
+- Habit creation vs completion rates
+- Dashboard adoption metrics
+- Churn indicators
+
+**Privacy & Compliance:**
+- No personally identifiable information (PII) tracked
+- IP addresses automatically anonymized
+- Respects browser "Do Not Track" settings
+- GDPR/CCPA compliant by default
+
+### Next Steps
+
+**Phase 2 Enhancements (Optional):**
+- Add domain as custom user property for segmentation
+- Set up Google Analytics 4 for advanced conversion tracking
+- Create custom BigQuery exports for advanced queries
+- Configure automated weekly metrics reports
+- Add Firebase Performance Monitoring for load time tracking
+
+---
+
 ## January 09, 2026 - Insights Period Selector Update & Power Cells Visualization
 
 **Session Focus:** Refine the Insights tab period options and add an animated data collection visualization for users with insufficient tracking history.

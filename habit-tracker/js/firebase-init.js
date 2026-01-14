@@ -34,7 +34,8 @@ import {
     getAnalytics,
     logEvent,
     setUserId,
-    setUserProperties
+    setUserProperties,
+    setAnalyticsCollectionEnabled
 } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-analytics.js';
 
 import { setFirebaseInstances } from './state.js';
@@ -42,6 +43,11 @@ import { setFirebaseInstances } from './state.js';
 // Check if running on localhost (for emulator usage)
 // Set to false to use production Firebase even on localhost
 const USE_EMULATORS = false; // Disabled - set to true and run `firebase emulators:start` for local testing
+
+// Environment detection for logging
+const IS_PRODUCTION = window.location.hostname !== 'localhost' &&
+                      window.location.hostname !== '127.0.0.1';
+const ENABLE_DEBUG_LOGS = !IS_PRODUCTION; // Show logs only in dev (localhost)
 
 // Firebase configuration
 const firebaseConfig = {
@@ -72,20 +78,39 @@ export async function initializeFirebase() {
     }
 
     // Initialize Firebase
-    console.log('Starting Firebase initialization...');
     app = initializeApp(firebaseConfig);
-    console.log('Firebase App initialized');
-
     db = getFirestore(app);
-    console.log('Firestore initialized');
-
     auth = getAuth(app);
-    console.log('Auth initialized');
 
     try {
         analytics = getAnalytics(app);
-        console.log('✅ Firebase Analytics initialized successfully');
+
+        // Only show success message in development
+        if (ENABLE_DEBUG_LOGS) {
+            console.log('✅ Firebase Analytics initialized successfully');
+        }
+
+        // Enable debug mode if URL parameter is present
+        const urlParams = new URLSearchParams(window.location.search);
+        const debugMode = urlParams.get('debug_mode');
+        if (debugMode === '1') {
+            // Enable analytics collection for debug mode
+            setAnalyticsCollectionEnabled(analytics, true);
+
+            // Set debug mode via gtag (this makes events appear in DebugView)
+            if (window.gtag) {
+                window.gtag('config', 'G-X7BGCTYYWN', { 'debug_mode': true });
+            } else {
+                // If gtag isn't available, set it on window for Firebase to pick up
+                window['GA_DEBUG_MODE'] = true;
+            }
+
+            // Always show debug mode messages (helpful for testing)
+            console.log('🐛 DEBUG MODE ENABLED - Events will appear in Firebase DebugView');
+            console.log('📊 View events at: Firebase Console → Analytics → DebugView');
+        }
     } catch (error) {
+        // Always log errors (helpful for troubleshooting)
         console.error('❌ Failed to initialize Analytics:', error);
         console.error('Analytics error details:', error.message);
     }
@@ -139,14 +164,25 @@ export function isUsingEmulators() {
  */
 export function trackEvent(eventName, params = {}) {
     if (!analytics) {
-        console.warn('Analytics not initialized yet');
+        if (ENABLE_DEBUG_LOGS) {
+            console.warn('Analytics not initialized yet');
+        }
         return;
     }
 
     try {
+        // Always send event to Firebase
         logEvent(analytics, eventName, params);
-        console.log(`Analytics: ${eventName}`, params);
+
+        // Only log to console in development or debug mode
+        const urlParams = new URLSearchParams(window.location.search);
+        const debugMode = urlParams.get('debug_mode') === '1';
+
+        if (ENABLE_DEBUG_LOGS || debugMode) {
+            console.log(`Analytics: ${eventName}`, params);
+        }
     } catch (error) {
+        // Always log errors (helpful for troubleshooting)
         console.error('Error tracking event:', error);
     }
 }
@@ -157,14 +193,24 @@ export function trackEvent(eventName, params = {}) {
  */
 export function setAnalyticsUserId(userId) {
     if (!analytics) {
-        console.warn('Analytics not initialized yet');
+        if (ENABLE_DEBUG_LOGS) {
+            console.warn('Analytics not initialized yet');
+        }
         return;
     }
 
     try {
         setUserId(analytics, userId);
-        console.log('Analytics: User ID set');
+
+        // Only log in development or debug mode
+        const urlParams = new URLSearchParams(window.location.search);
+        const debugMode = urlParams.get('debug_mode') === '1';
+
+        if (ENABLE_DEBUG_LOGS || debugMode) {
+            console.log('Analytics: User ID set');
+        }
     } catch (error) {
+        // Always log errors
         console.error('Error setting user ID:', error);
     }
 }
@@ -175,14 +221,24 @@ export function setAnalyticsUserId(userId) {
  */
 export function setAnalyticsUserProperties(properties) {
     if (!analytics) {
-        console.warn('Analytics not initialized yet');
+        if (ENABLE_DEBUG_LOGS) {
+            console.warn('Analytics not initialized yet');
+        }
         return;
     }
 
     try {
         setUserProperties(analytics, properties);
-        console.log('Analytics: User properties set', properties);
+
+        // Only log in development or debug mode
+        const urlParams = new URLSearchParams(window.location.search);
+        const debugMode = urlParams.get('debug_mode') === '1';
+
+        if (ENABLE_DEBUG_LOGS || debugMode) {
+            console.log('Analytics: User properties set', properties);
+        }
     } catch (error) {
+        // Always log errors
         console.error('Error setting user properties:', error);
     }
 }
