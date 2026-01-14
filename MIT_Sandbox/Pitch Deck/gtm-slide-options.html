@@ -1,0 +1,1064 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Axiom Forge | Go-to-Market Slide Options</title>
+    <style>
+        /* ========================================
+           SWISS BRUTALISM PRESENTATION SYSTEM
+           ======================================== */
+
+        :root {
+            /* Core Palette */
+            --bg-primary: #000000;
+            --bg-secondary: #0a0a0a;
+            --text-primary: #ffffff;
+            --text-secondary: #c0c0c0;
+            --text-muted: #666666;
+
+            /* Accent Colors */
+            --accent-purple: #a78bfa;
+            --accent-green: #ccff00;
+            --accent-red: #ff0000;
+            --accent-yellow: #ffff00;
+
+            /* Structural */
+            --border-width: 4px;
+            --border-thin: 2px;
+            --border-color: #ffffff;
+
+            /* Typography */
+            --font-mono: 'SF Mono', 'Consolas', 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+            --font-sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html, body {
+            height: 100%;
+            overflow: auto;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            font-family: var(--font-mono);
+        }
+
+        /* ========================================
+           SLIDE CONTAINER
+           ======================================== */
+
+        .presentation {
+            min-height: 100vh;
+            width: 100vw;
+            position: relative;
+            overflow: auto;
+        }
+
+        .slide {
+            display: none;
+            min-height: 100vh;
+            width: 100vw;
+            padding: 60px 60px 80px 60px;
+            flex-direction: column;
+            justify-content: flex-start;
+            position: relative;
+            overflow: auto;
+        }
+
+        .slide.active {
+            display: flex;
+        }
+
+        /* Slide Logo - Top Right */
+        .slide-logo {
+            position: absolute;
+            top: 30px;
+            right: 40px;
+            width: 50px;
+            height: 50px;
+        }
+
+        .slide-logo img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
+
+        /* ========================================
+           TYPOGRAPHY
+           ======================================== */
+
+        h1, h2, h3, h4 {
+            font-family: var(--font-sans);
+            font-weight: 900;
+            text-transform: uppercase;
+            letter-spacing: -1px;
+            line-height: 1;
+        }
+
+        h1 {
+            font-size: 3.5rem;
+            margin-bottom: 24px;
+        }
+
+        h2 {
+            font-size: 2.5rem;
+            margin-bottom: 20px;
+        }
+
+        h3 {
+            font-size: 1.5rem;
+            margin-bottom: 16px;
+        }
+
+        p, li {
+            font-size: 1.1rem;
+            line-height: 1.6;
+        }
+
+        /* Section Labels - Code Comment Style */
+        .section-label {
+            color: var(--accent-purple);
+            font-family: var(--font-mono);
+            font-size: 1.05rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 8px;
+        }
+
+        .section-label::before {
+            content: '// ';
+        }
+
+        /* ========================================
+           LAYOUT COMPONENTS
+           ======================================== */
+
+        .content-grid {
+            display: grid;
+            gap: 40px;
+            flex: 1;
+            align-content: start;
+        }
+
+        .two-col {
+            grid-template-columns: 1fr 1fr;
+        }
+
+        .three-col {
+            grid-template-columns: 1fr 1fr 1fr;
+        }
+
+        .four-col {
+            grid-template-columns: 1fr 1fr 1fr 1fr;
+        }
+
+        /* Cards */
+        .card {
+            border: var(--border-width) solid var(--border-color);
+            padding: 24px;
+            background: var(--bg-primary);
+        }
+
+        .card-header {
+            border-bottom: var(--border-thin) solid var(--border-color);
+            padding-bottom: 12px;
+            margin-bottom: 16px;
+        }
+
+        .card.highlight {
+            border-color: var(--accent-green);
+            background: rgba(204, 255, 0, 0.05);
+        }
+
+        .card.accent {
+            border-color: var(--accent-purple);
+        }
+
+        /* ========================================
+           LISTS
+           ======================================== */
+
+        ul, ol {
+            list-style: none;
+            padding: 0;
+        }
+
+        li {
+            padding: 12px 0;
+            border-bottom: 1px solid #333;
+            position: relative;
+            padding-left: 24px;
+        }
+
+        li::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 8px;
+            height: 8px;
+            background: var(--accent-green);
+        }
+
+        li:last-child {
+            border-bottom: none;
+        }
+
+        /* ========================================
+           TIMELINE
+           ======================================== */
+
+        .timeline {
+            display: flex;
+            gap: 0;
+            margin-top: 20px;
+        }
+
+        .timeline-phase {
+            flex: 1;
+            border: var(--border-width) solid var(--border-color);
+            padding: 20px;
+            position: relative;
+        }
+
+        .timeline-phase:not(:last-child) {
+            border-right: none;
+        }
+
+        .timeline-phase.active {
+            border-color: var(--accent-green);
+            background: rgba(204, 255, 0, 0.05);
+        }
+
+        .phase-number {
+            font-family: var(--font-sans);
+            font-size: 3rem;
+            font-weight: 900;
+            color: var(--text-muted);
+            line-height: 1;
+            margin-bottom: 12px;
+        }
+
+        .timeline-phase.active .phase-number {
+            color: var(--accent-green);
+        }
+
+        .phase-title {
+            font-weight: 900;
+            text-transform: uppercase;
+            margin-bottom: 12px;
+            font-size: 1rem;
+        }
+
+        .phase-items {
+            font-size: 1rem;
+            color: var(--text-secondary);
+        }
+
+        .phase-items li {
+            padding: 6px 0;
+            padding-left: 16px;
+        }
+
+        .phase-items li::before {
+            width: 6px;
+            height: 6px;
+        }
+
+        /* ========================================
+           STAT BLOCKS
+           ======================================== */
+
+        .stat-block {
+            text-align: center;
+            padding: 24px;
+            border: var(--border-width) solid var(--border-color);
+        }
+
+        .stat-block.hero {
+            border-color: var(--accent-green);
+            background: rgba(204, 255, 0, 0.05);
+        }
+
+        .stat-value {
+            font-family: var(--font-sans);
+            font-size: 3rem;
+            font-weight: 900;
+            line-height: 1;
+            margin-bottom: 8px;
+        }
+
+        .stat-value.green {
+            color: var(--accent-green);
+        }
+
+        .stat-value.purple {
+            color: var(--accent-purple);
+        }
+
+        .stat-label {
+            font-size: 1rem;
+            text-transform: uppercase;
+            color: var(--text-secondary);
+            letter-spacing: 0.5px;
+        }
+
+        /* ========================================
+           CHANNEL BOXES
+           ======================================== */
+
+        .channel-box {
+            border: var(--border-width) solid var(--border-color);
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            min-height: 220px;
+        }
+
+        .channel-box.green {
+            border-color: var(--accent-green);
+            background: rgba(204, 255, 0, 0.05);
+        }
+
+        .channel-box.purple {
+            border-color: var(--accent-purple);
+            background: rgba(167, 139, 250, 0.05);
+        }
+
+        .channel-number {
+            font-family: var(--font-sans);
+            font-size: 2.5rem;
+            font-weight: 900;
+            color: var(--accent-green);
+            line-height: 1;
+            margin-bottom: 12px;
+        }
+
+        .channel-title {
+            font-weight: 900;
+            text-transform: uppercase;
+            margin-bottom: 12px;
+            font-size: 1.1rem;
+        }
+
+        .channel-target {
+            color: var(--accent-green);
+            font-weight: 700;
+            margin-bottom: 12px;
+        }
+
+        .channel-tactics {
+            font-size: 0.95rem;
+            color: var(--text-secondary);
+            list-style: none;
+        }
+
+        .channel-tactics li {
+            padding: 6px 0;
+            padding-left: 16px;
+            border: none;
+        }
+
+        .channel-tactics li::before {
+            width: 6px;
+            height: 6px;
+        }
+
+        /* ========================================
+           FUNNEL VISUAL
+           ======================================== */
+
+        .funnel-container {
+            display: flex;
+            flex-direction: column;
+            gap: 0;
+            margin-top: 20px;
+        }
+
+        .funnel-stage {
+            border: var(--border-width) solid var(--border-color);
+            padding: 20px 40px;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .funnel-stage:not(:first-child) {
+            border-top: none;
+        }
+
+        .funnel-stage.highlight {
+            border-color: var(--accent-green);
+            background: rgba(204, 255, 0, 0.05);
+        }
+
+        .funnel-label {
+            font-weight: 900;
+            font-size: 1.2rem;
+            text-transform: uppercase;
+        }
+
+        .funnel-number {
+            font-family: var(--font-sans);
+            font-size: 2rem;
+            font-weight: 900;
+            color: var(--accent-green);
+        }
+
+        /* ========================================
+           NAVIGATION
+           ======================================== */
+
+        .nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 60px;
+            background: var(--bg-primary);
+            border-top: var(--border-width) solid var(--border-color);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 40px;
+            z-index: 100;
+        }
+
+        .nav-controls {
+            display: flex;
+            gap: 0;
+        }
+
+        .nav-btn {
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            border: var(--border-thin) solid var(--border-color);
+            padding: 12px 24px;
+            font-family: var(--font-mono);
+            font-size: 1rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            cursor: pointer;
+            transition: none;
+        }
+
+        .nav-btn:not(:last-child) {
+            border-right: none;
+        }
+
+        .nav-btn:hover {
+            background: var(--text-primary);
+            color: var(--bg-primary);
+        }
+
+        .nav-btn:active {
+            transform: translate(2px, 2px);
+        }
+
+        .nav-btn:disabled {
+            opacity: 0.3;
+            cursor: not-allowed;
+        }
+
+        .slide-counter {
+            font-size: 1rem;
+            font-weight: 700;
+            color: var(--text-secondary);
+        }
+
+        .slide-counter .current {
+            color: var(--text-primary);
+            font-size: 1.5rem;
+        }
+
+        .nav-hint {
+            font-size: 0.95rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+        }
+
+        /* ========================================
+           FULL WIDTH BOX
+           ======================================== */
+
+        .full-width-box {
+            grid-column: 1 / -1;
+        }
+
+        /* ========================================
+           ANIMATIONS
+           ======================================== */
+
+        .slide.active {
+            animation: slideIn 0.1s ease-out;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+            }
+            to {
+                opacity: 1;
+            }
+        }
+
+        /* ========================================
+           INTRO SLIDE
+           ======================================== */
+
+        .intro-slide {
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+        }
+
+        .intro-slide h1 {
+            font-size: 4rem;
+            margin-bottom: 20px;
+        }
+
+        .intro-slide p {
+            font-size: 1.3rem;
+            color: var(--text-secondary);
+            max-width: 800px;
+        }
+    </style>
+</head>
+<body>
+    <div class="presentation">
+
+        <!-- ========================================
+             INTRO SLIDE
+             ======================================== -->
+        <section class="slide intro-slide active" data-slide="1">
+            <h1>Go-to-Market Slide Options</h1>
+            <p>5 different approaches for reaching your first 40-60 beta users</p>
+            <p style="margin-top: 20px; color: var(--accent-green); font-weight: 700;">Navigate through the options using arrow keys or the buttons below</p>
+        </section>
+
+        <!-- ========================================
+             OPTION 1: 4-Channel Beta Funnel
+             ======================================== -->
+        <section class="slide" data-slide="2">
+            <div class="slide-logo">
+                <img src="logo-white-back.svg" alt="Axiom Forge">
+            </div>
+
+            <p class="section-label">Go-to-Market / Option 1</p>
+            <h1>4-Channel Beta Recruitment Strategy</h1>
+
+            <div class="content-grid four-col" style="margin-top: 30px;">
+                <div class="channel-box green">
+                    <div class="channel-number">01</div>
+                    <div class="channel-title">MIT Campus</div>
+                    <div class="channel-target">Target: 15-20 users</div>
+                    <ul class="channel-tactics">
+                        <li>Dorm workshops</li>
+                        <li>Student group demos</li>
+                        <li>Campus email blast</li>
+                        <li>Friend referrals</li>
+                    </ul>
+                </div>
+
+                <div class="channel-box purple">
+                    <div class="channel-number">02</div>
+                    <div class="channel-title">Online Communities</div>
+                    <div class="channel-target">Target: 15-20 users</div>
+                    <ul class="channel-tactics">
+                        <li>r/productivity</li>
+                        <li>r/getdisciplined</li>
+                        <li>Indie Hackers</li>
+                        <li>Discord servers</li>
+                    </ul>
+                </div>
+
+                <div class="channel-box purple">
+                    <div class="channel-number">03</div>
+                    <div class="channel-title">Content Marketing</div>
+                    <div class="channel-target">Target: 10-15 users</div>
+                    <ul class="channel-tactics">
+                        <li>2-3 TikToks/week</li>
+                        <li>Problem-solution posts</li>
+                        <li>Beta access CTA</li>
+                        <li>Behind-the-scenes</li>
+                    </ul>
+                </div>
+
+                <div class="channel-box">
+                    <div class="channel-number">04</div>
+                    <div class="channel-title">Micro-Influencers</div>
+                    <div class="channel-target">Target: 5-10 users</div>
+                    <ul class="channel-tactics">
+                        <li>Reach out to 20</li>
+                        <li>Early access offer</li>
+                        <li>Feedback partnership</li>
+                        <li>Organic mentions</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="card highlight" style="margin-top: 30px;">
+                <p style="font-size: 1.2rem; font-weight: 700; text-align: center;">Parallel execution across 4 channels to reach 50+ beta users in 4-6 weeks</p>
+            </div>
+        </section>
+
+        <!-- ========================================
+             OPTION 2: 3-Phase Launch Strategy
+             ======================================== -->
+        <section class="slide" data-slide="3">
+            <div class="slide-logo">
+                <img src="logo-white-back.svg" alt="Axiom Forge">
+            </div>
+
+            <p class="section-label">Go-to-Market / Option 2</p>
+            <h1>3-Phase Beta Launch Strategy</h1>
+
+            <div class="timeline" style="margin-top: 40px;">
+                <div class="timeline-phase active">
+                    <div class="phase-number">W1-2</div>
+                    <div class="phase-title">Warm Network</div>
+                    <ul class="phase-items">
+                        <li>MIT friends & classmates</li>
+                        <li>Personal social media</li>
+                        <li>Direct outreach</li>
+                        <li>Target: 15 users</li>
+                    </ul>
+                </div>
+                <div class="timeline-phase">
+                    <div class="phase-number">W3-4</div>
+                    <div class="phase-title">Community Seeding</div>
+                    <ul class="phase-items">
+                        <li>Reddit posts (5-8 subs)</li>
+                        <li>ProductHunt "coming soon"</li>
+                        <li>Discord communities</li>
+                        <li>Target: 20-25 users</li>
+                    </ul>
+                </div>
+                <div class="timeline-phase">
+                    <div class="phase-number">W5-6</div>
+                    <div class="phase-title">Content Amplification</div>
+                    <ul class="phase-items">
+                        <li>12-15 content pieces</li>
+                        <li>Micro-influencer outreach</li>
+                        <li>User testimonials</li>
+                        <li>Target: 15-20 users</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="content-grid two-col" style="margin-top: 30px;">
+                <div class="stat-block hero">
+                    <div class="stat-value green">50-60</div>
+                    <div class="stat-label">Beta users in 6 weeks</div>
+                </div>
+                <div class="stat-block">
+                    <div class="stat-value purple">$200-400</div>
+                    <div class="stat-label">Estimated cost (incentives + ads)</div>
+                </div>
+            </div>
+
+            <div class="card" style="margin-top: 20px;">
+                <p style="color: var(--text-secondary);">Sequential approach builds momentum and lets you refine messaging between phases.</p>
+            </div>
+        </section>
+
+        <!-- ========================================
+             OPTION 3: Problem-First Community Approach
+             ======================================== -->
+        <section class="slide" data-slide="4">
+            <div class="slide-logo">
+                <img src="logo-white-back.svg" alt="Axiom Forge">
+            </div>
+
+            <p class="section-label">Go-to-Market / Option 3</p>
+            <h1>Problem-First Community Approach</h1>
+            <p style="font-size: 1.2rem; color: var(--text-secondary); margin-top: 12px;">Lead with pain points, then offer solution access</p>
+
+            <div class="content-grid two-col" style="margin-top: 40px;">
+                <div>
+                    <h3 style="color: var(--accent-green); margin-bottom: 24px;">Where Your Users Are Struggling</h3>
+                    <ul>
+                        <li>
+                            <strong>r/productivity</strong> (3.5M members)<br>
+                            <span style="color: var(--text-secondary);">"Can't stick to my routine"</span>
+                        </li>
+                        <li>
+                            <strong>r/getdisciplined</strong> (1.5M)<br>
+                            <span style="color: var(--text-secondary);">"Apps don't help me understand why"</span>
+                        </li>
+                        <li>
+                            <strong>r/selfimprovement</strong> (1.2M)<br>
+                            <span style="color: var(--text-secondary);">"Need science-backed approach"</span>
+                        </li>
+                        <li>
+                            <strong>TikTok comments</strong><br>
+                            <span style="color: var(--text-secondary);">"How do I actually DO this?"</span>
+                        </li>
+                    </ul>
+                </div>
+
+                <div>
+                    <h3 style="color: var(--accent-green); margin-bottom: 24px;">Engagement Strategy</h3>
+                    <div class="card accent" style="margin-bottom: 16px;">
+                        <div class="card-header">
+                            <strong>Week 1-2: Listen & Engage</strong>
+                        </div>
+                        <p style="color: var(--text-secondary);">Comment on frustration posts, offer insights, build credibility</p>
+                    </div>
+                    <div class="card accent" style="margin-bottom: 16px;">
+                        <div class="card-header">
+                            <strong>Week 3-4: Share Solution</strong>
+                        </div>
+                        <p style="color: var(--text-secondary);">Value-first posts about behavioral science + beta access offer</p>
+                    </div>
+                    <div class="card highlight">
+                        <div class="card-header">
+                            <strong>Week 5-6: Amplify</strong>
+                        </div>
+                        <p style="color: var(--text-secondary);">User testimonials, insights from beta cohort</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card" style="margin-top: 24px;">
+                <p style="font-weight: 700; margin-bottom: 8px;">Why This Works</p>
+                <p style="color: var(--text-secondary);">You're not selling an app - you're offering a solution to a problem they're already posting about daily.</p>
+            </div>
+        </section>
+
+        <!-- ========================================
+             OPTION 4: Influencer Micro-Partnership Model
+             ======================================== -->
+        <section class="slide" data-slide="5">
+            <div class="slide-logo">
+                <img src="logo-white-back.svg" alt="Axiom Forge">
+            </div>
+
+            <p class="section-label">Go-to-Market / Option 4</p>
+            <h1>Influencer Micro-Partnership Model</h1>
+
+            <div class="content-grid two-col" style="margin-top: 30px;">
+                <div>
+                    <div class="stat-block hero" style="margin-bottom: 20px;">
+                        <div class="stat-value green">20</div>
+                        <div class="stat-label">Micro-influencers to reach out to</div>
+                    </div>
+
+                    <h3 style="margin-bottom: 16px;">Target Profile</h3>
+                    <ul>
+                        <li>5K-50K followers</li>
+                        <li>Productivity/wellness niche</li>
+                        <li>High engagement rate (>3%)</li>
+                        <li>Creates routine content</li>
+                    </ul>
+
+                    <div class="card" style="margin-top: 20px;">
+                        <p style="font-weight: 700; margin-bottom: 8px;">Platforms to Target</p>
+                        <p style="color: var(--text-secondary);">TikTok, Instagram, YouTube (productivity vloggers)</p>
+                    </div>
+                </div>
+
+                <div>
+                    <h3 style="color: var(--accent-green); margin-bottom: 20px;">Partnership Offer</h3>
+
+                    <div class="card accent" style="margin-bottom: 12px;">
+                        <strong>Early Access + Co-Creation</strong>
+                        <p style="color: var(--text-secondary); margin-top: 8px;">Exclusive beta access + input on routine templates</p>
+                    </div>
+
+                    <div class="card accent" style="margin-bottom: 12px;">
+                        <strong>Custom Routine Template</strong>
+                        <p style="color: var(--text-secondary); margin-top: 8px;">Feature their routine as a template in the app</p>
+                    </div>
+
+                    <div class="card accent" style="margin-bottom: 12px;">
+                        <strong>Lifetime Pro Access</strong>
+                        <p style="color: var(--text-secondary); margin-top: 8px;">Free premium when you launch monetization</p>
+                    </div>
+
+                    <div class="card highlight">
+                        <strong>Expected Conversion</strong>
+                        <p style="color: var(--text-secondary); margin-top: 8px;">20 outreach → 5-7 partnerships → 30-40 beta users</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="funnel-container" style="margin-top: 24px;">
+                <div class="funnel-stage">
+                    <div class="funnel-label">Reach Out</div>
+                    <div class="funnel-number">20</div>
+                </div>
+                <div class="funnel-stage">
+                    <div class="funnel-label">Respond</div>
+                    <div class="funnel-number">10-12</div>
+                </div>
+                <div class="funnel-stage">
+                    <div class="funnel-label">Partner</div>
+                    <div class="funnel-number">5-7</div>
+                </div>
+                <div class="funnel-stage highlight">
+                    <div class="funnel-label">Beta Users</div>
+                    <div class="funnel-number">30-40</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ========================================
+             OPTION 5: MIT-to-Market Pipeline
+             ======================================== -->
+        <section class="slide" data-slide="6">
+            <div class="slide-logo">
+                <img src="logo-white-back.svg" alt="Axiom Forge">
+            </div>
+
+            <p class="section-label">Go-to-Market / Option 5</p>
+            <h1>MIT-to-Market Pipeline</h1>
+            <p style="font-size: 1.2rem; color: var(--text-secondary); margin-top: 12px;">Validate on campus, then expand with proven model</p>
+
+            <div class="content-grid three-col" style="margin-top: 40px;">
+                <div class="card green" style="border-color: var(--accent-green); background: rgba(204, 255, 0, 0.05);">
+                    <div class="card-header">
+                        <h3 style="margin: 0;">Phase 1: MIT Launch</h3>
+                        <p style="color: var(--text-secondary); margin-top: 8px;">Weeks 1-3</p>
+                    </div>
+                    <ul style="list-style: none; padding: 0;">
+                        <li style="border: none; padding: 8px 0;">Campus email blast</li>
+                        <li style="border: none; padding: 8px 0;">Dorm presentations</li>
+                        <li style="border: none; padding: 8px 0;">Student group demos</li>
+                        <li style="border: none; padding: 8px 0;">Referral incentive</li>
+                    </ul>
+                    <div style="margin-top: 16px; padding-top: 16px; border-top: 2px solid #333;">
+                        <strong style="color: var(--accent-green);">Target: 25-30 users</strong>
+                    </div>
+                </div>
+
+                <div class="card purple" style="border-color: var(--accent-purple); background: rgba(167, 139, 250, 0.05);">
+                    <div class="card-header">
+                        <h3 style="margin: 0;">Phase 2: Campus Expansion</h3>
+                        <p style="color: var(--text-secondary); margin-top: 8px;">Weeks 4-5</p>
+                    </div>
+                    <ul style="list-style: none; padding: 0;">
+                        <li style="border: none; padding: 8px 0;">Harvard, BU, Northeastern</li>
+                        <li style="border: none; padding: 8px 0;">Student ambassador program</li>
+                        <li style="border: none; padding: 8px 0;">College subreddits</li>
+                        <li style="border: none; padding: 8px 0;">University Discord servers</li>
+                    </ul>
+                    <div style="margin-top: 16px; padding-top: 16px; border-top: 2px solid #333;">
+                        <strong style="color: var(--accent-purple);">Target: 15-20 users</strong>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <h3 style="margin: 0;">Phase 3: Online Communities</h3>
+                        <p style="color: var(--text-secondary); margin-top: 8px;">Weeks 6+</p>
+                    </div>
+                    <ul style="list-style: none; padding: 0;">
+                        <li style="border: none; padding: 8px 0;">Reddit productivity subs</li>
+                        <li style="border: none; padding: 8px 0;">ProductHunt launch</li>
+                        <li style="border: none; padding: 8px 0;">Indie Hackers</li>
+                        <li style="border: none; padding: 8px 0;">Content marketing</li>
+                    </ul>
+                    <div style="margin-top: 16px; padding-top: 16px; border-top: 2px solid #333;">
+                        <strong>Target: 10-15 users</strong>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card highlight" style="margin-top: 30px;">
+                <p style="font-weight: 700; margin-bottom: 8px;">Why Start with MIT</p>
+                <p style="color: var(--text-secondary);">Credibility boost ("Built at MIT"), easy access for interviews, homogeneous cohort for better insights, natural network effects.</p>
+            </div>
+
+            <div class="stat-block" style="margin-top: 20px;">
+                <div class="stat-value green">50-65</div>
+                <div class="stat-label">Total beta users across 6 weeks</div>
+            </div>
+        </section>
+
+        <!-- ========================================
+             SUMMARY SLIDE
+             ======================================== -->
+        <section class="slide" data-slide="7">
+            <div class="slide-logo">
+                <img src="logo-white-back.svg" alt="Axiom Forge">
+            </div>
+
+            <p class="section-label">Summary</p>
+            <h1>Which Strategy Fits Best?</h1>
+
+            <div style="margin-top: 40px; overflow-x: auto;">
+                <table style="width: 100%; border-collapse: collapse;">
+                    <thead>
+                        <tr>
+                            <th style="width: 20%;">Option</th>
+                            <th>Best For</th>
+                            <th>Time Required</th>
+                            <th>Budget</th>
+                            <th>Risk Level</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>4-Channel Funnel</strong></td>
+                            <td>Maximum reach & speed</td>
+                            <td>High</td>
+                            <td>$400-600</td>
+                            <td>Low</td>
+                        </tr>
+                        <tr>
+                            <td><strong>3-Phase Launch</strong></td>
+                            <td>Controlled growth & learning</td>
+                            <td>Medium</td>
+                            <td>$200-400</td>
+                            <td>Low</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Problem-First</strong></td>
+                            <td>Organic engagement & credibility</td>
+                            <td>Medium</td>
+                            <td>$0-200</td>
+                            <td>Medium</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Micro-Influencers</strong></td>
+                            <td>Fast user acquisition via trust</td>
+                            <td>Low-Medium</td>
+                            <td>$0 (equity only)</td>
+                            <td>Medium-High</td>
+                        </tr>
+                        <tr style="background: rgba(204, 255, 0, 0.08);">
+                            <td><strong>MIT-to-Market</strong></td>
+                            <td>Credibility + easy access (Recommended)</td>
+                            <td>Medium</td>
+                            <td>$300-500</td>
+                            <td>Low</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="card highlight" style="margin-top: 30px;">
+                <p class="section-label" style="margin-bottom: 12px;">Recommendation</p>
+                <p style="font-size: 1.2rem; font-weight: 700;">Option 5 (MIT-to-Market) offers the best balance of credibility, access, and controlled expansion - while keeping costs within your $800 marketing budget.</p>
+            </div>
+        </section>
+
+    </div>
+
+    <nav class="nav" role="navigation" aria-label="Presentation navigation">
+        <span class="nav-hint">Use arrow keys or click to navigate</span>
+        <div class="slide-counter">
+            <span class="current" id="current-slide">1</span>
+            <span>/</span>
+            <span id="total-slides">7</span>
+        </div>
+        <div class="nav-controls">
+            <button class="nav-btn" id="prev-btn" disabled>Prev</button>
+            <button class="nav-btn" id="next-btn">Next</button>
+        </div>
+    </nav>
+
+    <script>
+        // ========================================
+        // PRESENTATION CONTROLLER
+        // ========================================
+
+        const slides = document.querySelectorAll('.slide');
+        const totalSlides = slides.length;
+        let currentSlide = 1;
+
+        const currentSlideEl = document.getElementById('current-slide');
+        const totalSlidesEl = document.getElementById('total-slides');
+        const prevBtn = document.getElementById('prev-btn');
+        const nextBtn = document.getElementById('next-btn');
+
+        totalSlidesEl.textContent = totalSlides;
+
+        function goToSlide(n) {
+            if (n < 1 || n > totalSlides) return;
+
+            slides.forEach(slide => slide.classList.remove('active'));
+            slides[n - 1].classList.add('active');
+
+            currentSlide = n;
+            currentSlideEl.textContent = currentSlide;
+
+            prevBtn.disabled = currentSlide === 1;
+            nextBtn.disabled = currentSlide === totalSlides;
+        }
+
+        function nextSlide() {
+            goToSlide(currentSlide + 1);
+        }
+
+        function prevSlide() {
+            goToSlide(currentSlide - 1);
+        }
+
+        prevBtn.addEventListener('click', prevSlide);
+        nextBtn.addEventListener('click', nextSlide);
+
+        document.addEventListener('keydown', (e) => {
+            switch(e.key) {
+                case 'ArrowRight':
+                case ' ':
+                case 'Enter':
+                    e.preventDefault();
+                    nextSlide();
+                    break;
+                case 'ArrowLeft':
+                case 'Backspace':
+                    e.preventDefault();
+                    prevSlide();
+                    break;
+                case 'Home':
+                    e.preventDefault();
+                    goToSlide(1);
+                    break;
+                case 'End':
+                    e.preventDefault();
+                    goToSlide(totalSlides);
+                    break;
+            }
+        });
+
+        document.querySelector('.presentation').addEventListener('click', (e) => {
+            if (!e.target.closest('.nav')) {
+                nextSlide();
+            }
+        });
+
+        let touchStartX = 0;
+        let touchEndX = 0;
+
+        document.addEventListener('touchstart', (e) => {
+            touchStartX = e.changedTouches[0].screenX;
+        });
+
+        document.addEventListener('touchend', (e) => {
+            touchEndX = e.changedTouches[0].screenX;
+            handleSwipe();
+        });
+
+        function handleSwipe() {
+            const diff = touchStartX - touchEndX;
+            if (Math.abs(diff) > 50) {
+                if (diff > 0) {
+                    nextSlide();
+                } else {
+                    prevSlide();
+                }
+            }
+        }
+    </script>
+</body>
+</html>
