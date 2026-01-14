@@ -10,7 +10,18 @@
       "Bash(node test-presentation-details.js:*)",
       "Bash(node --check:*)",
       "WebSearch",
-      "Bash(ls:*)"
+      "Bash(ls:*)",
+      "WebFetch(domain:www.cdc.gov)",
+      "WebFetch(domain:www.who.int)",
+      "WebFetch(domain:www.acsm.org)",
+      "WebFetch(domain:aasm.org)",
+      "WebFetch(domain:www.apa.org)",
+      "WebFetch(domain:www.niddk.nih.gov)",
+      "WebFetch(domain:www.heart.org)",
+      "WebFetch(domain:doi.org)",
+      "WebFetch(domain:positivepsychology.com)",
+      "WebFetch(domain:linkinghub.elsevier.com)",
+      "WebFetch(domain:pubmed.ncbi.nlm.nih.gov)"
     ],
     "deny": [],
     "ask": []
