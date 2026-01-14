@@ -1,7 +1,7 @@
 // ========== ENTRIES ==========
 // Functions for managing daily habit entries
 
-import { getDb, doc, setDoc, onSnapshot } from './firebase-init.js';
+import { getDb, doc, setDoc, onSnapshot, trackEvent } from './firebase-init.js';
 import { currentUser, currentDate, currentEntry, setCurrentEntry, setUnsubscribeEntry, unsubscribeEntry } from './state.js';
 import { formatDate } from './utils.js';
 
@@ -68,6 +68,21 @@ export async function toggleHabit(habitId, type) {
         date: dateString,
         [type]: newCompleted
     }, { merge: true });
+
+    // Track habit completion/uncompletion
+    if (!isCompleted) {
+        trackEvent('habit_completed', {
+            habitId: habitId,
+            type: type,
+            date: dateString
+        });
+    } else {
+        trackEvent('habit_uncompleted', {
+            habitId: habitId,
+            type: type,
+            date: dateString
+        });
+    }
 }
 
 /**

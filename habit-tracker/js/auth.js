@@ -6,7 +6,9 @@ import {
     onAuthStateChanged,
     signInWithEmailAndPassword,
     createUserWithEmailAndPassword,
-    signOut
+    signOut,
+    trackEvent,
+    setAnalyticsUserId
 } from './firebase-init.js';
 import { setCurrentUser, unsubscribeHabits, unsubscribeEntry } from './state.js';
 
@@ -31,6 +33,15 @@ export function initAuth() {
     onAuthStateChanged(auth, async (user) => {
         setCurrentUser(user);
 
+        // Track login event and set user ID for analytics
+        if (user) {
+            setAnalyticsUserId(user.uid);
+            trackEvent('user_login', {
+                method: 'email_password',
+                timestamp: Date.now()
+            });
+        }
+
         if (authStateCallback) {
             await authStateCallback(user);
         }
@@ -44,7 +55,11 @@ export function initAuth() {
  */
 export async function signInWithPassword(email, password) {
     const auth = getAuthInstance();
-    return signInWithEmailAndPassword(auth, email, password);
+    const result = await signInWithEmailAndPassword(auth, email, password);
+
+    // Note: user_login event is tracked in onAuthStateChanged listener
+
+    return result;
 }
 
 /**
@@ -54,13 +69,26 @@ export async function signInWithPassword(email, password) {
  */
 export async function createAccount(email, password) {
     const auth = getAuthInstance();
-    return createUserWithEmailAndPassword(auth, email, password);
+    const result = await createUserWithEmailAndPassword(auth, email, password);
+
+    // Track signup event
+    trackEvent('user_signup', {
+        method: 'email_password',
+        timestamp: Date.now()
+    });
+
+    return result;
 }
 
 /**
  * Sign out the current user
  */
 export async function logout() {
+    // Track logout event
+    trackEvent('user_logout', {
+        timestamp: Date.now()
+    });
+
     // Cleanup subscriptions
     if (unsubscribeHabits) unsubscribeHabits();
     if (unsubscribeEntry) unsubscribeEntry();

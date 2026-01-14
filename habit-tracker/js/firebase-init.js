@@ -30,6 +30,13 @@ import {
     connectAuthEmulator
 } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
 
+import {
+    getAnalytics,
+    logEvent,
+    setUserId,
+    setUserProperties
+} from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-analytics.js';
+
 import { setFirebaseInstances } from './state.js';
 
 // Check if running on localhost (for emulator usage)
@@ -43,13 +50,15 @@ const firebaseConfig = {
     projectId: "habit-tracker-f3c23",
     storageBucket: "habit-tracker-f3c23.firebasestorage.app",
     messagingSenderId: "506442188864",
-    appId: "1:506442188864:web:37b25d676ca80c58cd77a5"
+    appId: "1:506442188864:web:37b25d676ca80c58cd77a5",
+    measurementId: "G-X7BGCTYYWN"
 };
 
 // Firebase instances (will be set after initialization)
 let app = null;
 let db = null;
 let auth = null;
+let analytics = null;
 let emulatorsConnected = false;
 
 /**
@@ -63,9 +72,23 @@ export async function initializeFirebase() {
     }
 
     // Initialize Firebase
+    console.log('Starting Firebase initialization...');
     app = initializeApp(firebaseConfig);
+    console.log('Firebase App initialized');
+
     db = getFirestore(app);
+    console.log('Firestore initialized');
+
     auth = getAuth(app);
+    console.log('Auth initialized');
+
+    try {
+        analytics = getAnalytics(app);
+        console.log('✅ Firebase Analytics initialized successfully');
+    } catch (error) {
+        console.error('❌ Failed to initialize Analytics:', error);
+        console.error('Analytics error details:', error.message);
+    }
 
     // Connect to emulators if on localhost
     if (USE_EMULATORS && !emulatorsConnected) {
@@ -107,6 +130,61 @@ export function getAuthInstance() {
  */
 export function isUsingEmulators() {
     return USE_EMULATORS;
+}
+
+/**
+ * Track custom analytics event
+ * @param {string} eventName - Name of the event
+ * @param {Object} params - Event parameters
+ */
+export function trackEvent(eventName, params = {}) {
+    if (!analytics) {
+        console.warn('Analytics not initialized yet');
+        return;
+    }
+
+    try {
+        logEvent(analytics, eventName, params);
+        console.log(`Analytics: ${eventName}`, params);
+    } catch (error) {
+        console.error('Error tracking event:', error);
+    }
+}
+
+/**
+ * Set user ID for analytics
+ * @param {string} userId - Firebase user ID
+ */
+export function setAnalyticsUserId(userId) {
+    if (!analytics) {
+        console.warn('Analytics not initialized yet');
+        return;
+    }
+
+    try {
+        setUserId(analytics, userId);
+        console.log('Analytics: User ID set');
+    } catch (error) {
+        console.error('Error setting user ID:', error);
+    }
+}
+
+/**
+ * Set user properties for analytics
+ * @param {Object} properties - User properties
+ */
+export function setAnalyticsUserProperties(properties) {
+    if (!analytics) {
+        console.warn('Analytics not initialized yet');
+        return;
+    }
+
+    try {
+        setUserProperties(analytics, properties);
+        console.log('Analytics: User properties set', properties);
+    } catch (error) {
+        console.error('Error setting user properties:', error);
+    }
 }
 
 // Re-export Firestore functions for use in other modules

@@ -1,7 +1,7 @@
 // ========== DASHBOARD ==========
 // Functions for rendering the analytics dashboard
 
-import { getDb, collection, getDocs } from './firebase-init.js';
+import { getDb, collection, getDocs, trackEvent } from './firebase-init.js';
 import { habits, currentUser, dashboardMonth, setDashboardMonth, accountCreatedAt } from './state.js';
 import { formatDate } from './utils.js';
 import { renderHabitStrength, renderWeekdayPattern } from './ui/insights-ui.js';
@@ -60,6 +60,16 @@ function getHabitStartDate(habit) {
  * Render the dashboard with stats and charts
  */
 export async function renderDashboard() {
+    // Track dashboard view
+    const totalHabits = (habits.morning?.length || 0) + (habits.evening?.length || 0);
+    trackEvent('dashboard_viewed', {
+        total_habits: totalHabits,
+        morning_habits: habits.morning?.length || 0,
+        evening_habits: habits.evening?.length || 0,
+        year: dashboardMonth.year,
+        month: dashboardMonth.month
+    });
+
     const now = new Date();
     const baseYear = now.getFullYear();
     const baseMonth = now.getMonth();

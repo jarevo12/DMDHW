@@ -12,7 +12,8 @@ import {
     orderBy,
     onSnapshot,
     serverTimestamp,
-    writeBatch
+    writeBatch,
+    trackEvent
 } from './firebase-init.js';
 import { currentUser, habits, setHabits, setUnsubscribeHabits } from './state.js';
 import { DEFAULT_MORNING_HABITS, DEFAULT_EVENING_HABITS } from './constants.js';
@@ -110,6 +111,13 @@ export async function addHabit(name, type, schedule = { type: 'daily' }) {
         createdAt: serverTimestamp(),
         archived: false
     });
+
+    // Track habit creation
+    trackEvent('habit_created', {
+        type: type,
+        schedule_type: schedule.type,
+        is_default: false
+    });
 }
 
 /**
@@ -125,6 +133,12 @@ export async function updateHabit(habitId, name, schedule) {
         name: name.trim(),
         schedule: schedule
     });
+
+    // Track habit update
+    trackEvent('habit_updated', {
+        habitId: habitId,
+        schedule_type: schedule.type
+    });
 }
 
 /**
@@ -134,7 +148,19 @@ export async function updateHabit(habitId, name, schedule) {
 export async function deleteHabit(habitId) {
     const db = getDb();
     const habitRef = doc(db, `users/${currentUser.uid}/habits`, habitId);
+
+    // Find the habit to get its type before archiving
+    const habit = [...habits.morning, ...habits.evening].find(h => h.id === habitId);
+
     await updateDoc(habitRef, { archived: true });
+
+    // Track habit deletion
+    if (habit) {
+        trackEvent('habit_deleted', {
+            type: habit.type,
+            habitId: habitId
+        });
+    }
 }
 
 /**
@@ -152,6 +178,12 @@ export async function saveHabitOrder(type, orderedHabits) {
     });
 
     await batch.commit();
+
+    // Track habit reordering
+    trackEvent('habits_reordered', {
+        type: type,
+        count: orderedHabits.length
+    });
 }
 
 /**
