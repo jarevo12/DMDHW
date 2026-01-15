@@ -293,8 +293,7 @@ function renderHabitItem(habit, index, type) {
         <div class="onboarding-habit-item" draggable="true" data-index="${index}" data-type="${type}">
             <div class="onboarding-habit-row">
                 <span class="drag-handle-icon">&#9776;</span>
-                <input type="text" class="habit-name-input" value="${escapeHtml(habit.name)}"
-                    data-index="${index}" placeholder="Habit name">
+                <textarea class="habit-name-input" rows="1" data-index="${index}" placeholder="Habit name">${escapeHtml(habit.name)}</textarea>
 
                 <div class="habit-actions">
                     ${hasEvidence ? `
@@ -328,9 +327,16 @@ function attachHabitSetupListeners(type) {
 
     // Name Input
     listContainer.querySelectorAll('.habit-name-input').forEach(input => {
+        autoResizeHabitInput(input);
         input.addEventListener('input', (e) => {
             const idx = parseInt(e.target.dataset.index);
             habitsList[idx].name = e.target.value;
+            autoResizeHabitInput(e.target);
+        });
+        input.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+            }
         });
     });
 
@@ -532,6 +538,11 @@ function getEvidenceEntry(goal, type, habitName) {
     const routine = ROUTINE_EVIDENCE[goal];
     if (!routine || !routine[type]) return null;
     return routine[type].find(item => item.step === habitName) || null;
+}
+
+function autoResizeHabitInput(input) {
+    input.style.height = 'auto';
+    input.style.height = `${input.scrollHeight}px`;
 }
 
 async function finishOnboarding() {
