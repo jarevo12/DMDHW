@@ -13,9 +13,11 @@ import { getScheduleLabel } from './schedule.js';
 import { completeOnboarding } from './profile.js';
 import { openScheduleModal } from './modals.js';
 import { PREDEFINED_ROUTINES } from './routines-config.js';
+import { ROUTINE_EVIDENCE } from './routine-evidence.js';
 
 // Callbacks for after onboarding (set by main.js)
 let onboardingCompleteCallback = null;
+let onboardingScienceMode = { morning: false, evening: false };
 
 /**
  * Set the callback for when onboarding is complete
@@ -30,6 +32,7 @@ export function setOnboardingCompleteCallback(callback) {
  */
 export function initializeOnboarding() {
     resetOnboardingState();
+    resetScienceMode();
     setOnboardingStep(1);
     renderOnboardingStep();
 }
@@ -153,6 +156,10 @@ function renderGoalSelectionStep() {
                     </select>
                 </div>
                 <p id="goal-description" class="goal-description"></p>
+                <div id="science-summary" class="science-summary-box">
+                    <div class="science-summary-title">Scientific basis</div>
+                    <div id="science-summary-text" class="science-summary-text"></div>
+                </div>
             </div>
         </div>
     `;
@@ -161,6 +168,8 @@ function renderGoalSelectionStep() {
 function attachGoalSelectionListeners() {
     const select = document.getElementById('goal-select');
     const desc = document.getElementById('goal-description');
+    const summaryBox = document.getElementById('science-summary');
+    const summaryText = document.getElementById('science-summary-text');
 
     if (select) {
         if (onboardingSelectedGoal) {
@@ -182,6 +191,16 @@ function attachGoalSelectionListeners() {
             desc.textContent = 'Build your routine from scratch.';
         } else {
             desc.textContent = '';
+        }
+
+        if (!summaryBox || !summaryText) return;
+        const basis = ROUTINE_EVIDENCE[value]?.scientific_basis;
+        if (basis) {
+            summaryText.textContent = basis;
+            summaryBox.classList.add('visible');
+        } else {
+            summaryText.textContent = '';
+            summaryBox.classList.remove('visible');
         }
     }
 }
@@ -205,18 +224,21 @@ function processGoalSelection() {
                     type: 'morning',
                     order: i + 1,
                     selected: true,
-                    schedule: { type: 'daily' }
+                    schedule: { type: 'daily' },
+                    evidenceOpen: false
                 })),
                 evening: routine.evening.map((name, i) => ({
                     name,
                     type: 'evening',
                     order: i + 1,
                     selected: true,
-                    schedule: { type: 'daily' }
+                    schedule: { type: 'daily' },
+                    evidenceOpen: false
                 }))
             });
         }
     }
+    resetScienceMode();
     return true;
 }
 
@@ -227,6 +249,7 @@ function renderHabitSetupStep(type) {
     const goalName = onboardingSelectedGoal && PREDEFINED_ROUTINES[onboardingSelectedGoal]
         ? PREDEFINED_ROUTINES[onboardingSelectedGoal].label
         : 'Custom';
+    const scienceModeOn = onboardingScienceMode[type];
 
     return `
         <div class="habit-setup">
@@ -236,6 +259,12 @@ function renderHabitSetupStep(type) {
                 Based on your goal to <strong>${goalName}</strong>, we've selected these science-backed habits.
                 Feel free to adjust the frequency (Daily, Weekly, etc.) or add your own to make it work for you.
             </p>
+            <div class="science-toggle-row">
+                <span class="science-label">Explain the science</span>
+                <button type="button" class="science-toggle ${scienceModeOn ? 'active' : ''}" id="science-toggle-${type}" aria-pressed="${scienceModeOn}">
+                    <span class="science-toggle-handle"></span>
+                </button>
+            </div>
 
             <div class="onboarding-habit-list" id="onboarding-list-${type}">
                 ${habitsList.length > 0 ? habitsList.map((habit, index) => renderHabitItem(habit, index, type)).join('') : '<p class="empty-msg">No habits yet.</p>'}
@@ -249,20 +278,45 @@ function renderHabitSetupStep(type) {
 }
 
 function renderHabitItem(habit, index, type) {
+    const evidenceEntry = getEvidenceEntry(onboardingSelectedGoal, type, habit.name);
+    const evidence = evidenceEntry ? evidenceEntry.evidence : null;
+    const hasEvidence = Boolean(evidenceEntry);
+    const evidenceOpen = Boolean(habit.evidenceOpen);
+    const evidenceSummary = evidence?.summary ? `
+        <div class="evidence-summary">${escapeHtml(evidence.summary)}</div>
+    ` : '';
+    const evidenceLink = evidence?.link ? `
+        <a class="evidence-link" href="${escapeHtml(evidence.link)}" target="_blank" rel="noopener noreferrer">Read Source</a>
+    ` : '';
+
     return `
         <div class="onboarding-habit-item" draggable="true" data-index="${index}" data-type="${type}">
-            <span class="drag-handle-icon">&#9776;</span>
-            <input type="text" class="habit-name-input" value="${escapeHtml(habit.name)}"
-                   data-index="${index}" placeholder="Habit name">
+            <div class="onboarding-habit-row">
+                <span class="drag-handle-icon">&#9776;</span>
+                <input type="text" class="habit-name-input" value="${escapeHtml(habit.name)}"
+                    data-index="${index}" placeholder="Habit name">
 
-            <div class="habit-actions">
-                <button type="button" class="schedule-btn" data-index="${index}" data-type="${type}" title="Schedule">
-                    ${getScheduleLabel(habit.schedule)}
-                </button>
-                <button type="button" class="delete-btn" data-index="${index}" data-type="${type}" title="Remove">
-                    &times;
-                </button>
+                <div class="habit-actions">
+                    ${hasEvidence ? `
+                        <button type="button" class="why-btn ${evidenceOpen ? 'active' : ''}" data-index="${index}" data-type="${type}" title="Why?">
+                            Why?
+                        </button>
+                    ` : ''}
+                    <button type="button" class="schedule-btn" data-index="${index}" data-type="${type}" title="Schedule">
+                        ${getScheduleLabel(habit.schedule)}
+                    </button>
+                    <button type="button" class="delete-btn" data-index="${index}" data-type="${type}" title="Remove">
+                        &times;
+                    </button>
+                </div>
             </div>
+            ${hasEvidence ? `
+                <div class="evidence-card ${evidenceOpen ? 'open' : ''}">
+                    <span class="evidence-source">${escapeHtml(evidence.source)}</span>
+                    ${evidenceSummary}
+                    ${evidenceLink}
+                </div>
+            ` : ''}
         </div>
     `;
 }
@@ -270,6 +324,7 @@ function renderHabitItem(habit, index, type) {
 function attachHabitSetupListeners(type) {
     const listContainer = document.getElementById(`onboarding-list-${type}`);
     const habitsList = onboardingHabits[type];
+    const scienceToggle = document.getElementById(`science-toggle-${type}`);
 
     // Name Input
     listContainer.querySelectorAll('.habit-name-input').forEach(input => {
@@ -304,6 +359,30 @@ function attachHabitSetupListeners(type) {
         });
     });
 
+    // Why Button
+    listContainer.querySelectorAll('.why-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            const idx = parseInt(e.target.dataset.index);
+            habitsList[idx].evidenceOpen = !habitsList[idx].evidenceOpen;
+            renderOnboardingStep();
+        });
+    });
+
+    // Global Science Toggle
+    if (scienceToggle) {
+        scienceToggle.addEventListener('click', () => {
+            onboardingScienceMode[type] = !onboardingScienceMode[type];
+            const enableAll = onboardingScienceMode[type];
+            habitsList.forEach(habit => {
+                const entry = getEvidenceEntry(onboardingSelectedGoal, type, habit.name);
+                if (entry) {
+                    habit.evidenceOpen = enableAll;
+                }
+            });
+            renderOnboardingStep();
+        });
+    }
+
     // Add Custom Habit Button
     const addBtn = document.getElementById(`add-custom-${type}`);
     if (addBtn) {
@@ -313,7 +392,8 @@ function attachHabitSetupListeners(type) {
                 type: type,
                 order: habitsList.length + 1,
                 selected: true,
-                schedule: { type: 'daily' }
+                schedule: { type: 'daily' },
+                evidenceOpen: false
             });
             renderOnboardingStep();
             setTimeout(() => {
@@ -411,7 +491,6 @@ function renderReviewStep() {
 
     return `
         <div class="onboarding-review">
-            <div class="success-icon">&#10003;</div>
             <h2>You're All Set!</h2>
             <p class="review-subtitle">Here is your plan</p>
 
@@ -442,6 +521,17 @@ function renderReviewStep() {
             </div>
         </div>
     `;
+}
+
+function resetScienceMode() {
+    onboardingScienceMode = { morning: false, evening: false };
+}
+
+function getEvidenceEntry(goal, type, habitName) {
+    if (!goal || !type || !habitName) return null;
+    const routine = ROUTINE_EVIDENCE[goal];
+    if (!routine || !routine[type]) return null;
+    return routine[type].find(item => item.step === habitName) || null;
 }
 
 async function finishOnboarding() {

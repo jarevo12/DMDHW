@@ -1,0 +1,358 @@
+export const ROUTINE_EVIDENCE = {
+    get_fitter: {
+        label: 'Get fitter',
+        description: 'Build strength and improve physical health',
+        scientific_basis: 'Protocols derived from ACSM guidelines for mobility and progressive resistance, focusing on injury prevention and consistency.',
+        morning: [
+            {
+                step: '5-10 min light mobility (neck/hips/ankles)',
+                evidence: {
+                    source: 'American College of Sports Medicine (ACSM)',
+                    summary: 'ACSM recommends flexibility exercises at least 2-3 times per week. Dynamic stretching before workouts raises heart rate and increases blood flow to muscles, tendons, and ligaments, with potential to reduce injury.',
+                    link: 'https://pubmed.ncbi.nlm.nih.gov/21694556/'
+                }
+            },
+            {
+                step: '8-16 oz water + optional protein (10-20g)',
+                evidence: {
+                    source: 'National Institutes of Health',
+                    summary: 'Muscle protein synthesis was ~30% higher with 30g protein at breakfast versus 10g. 20-30g of protein per meal optimally stimulates muscle protein synthesis.',
+                    link: 'https://pmc.ncbi.nlm.nih.gov/articles/PMC4018950/'
+                }
+            },
+            {
+                step: '10-20 min brisk walk or easy cardio',
+                evidence: {
+                    source: 'CDC Physical Activity Guidelines',
+                    summary: 'Adults need at least 150 minutes of moderate-intensity physical activity a week, such as 30 minutes a day, 5 days a week.',
+                    link: 'https://www.cdc.gov/physical-activity-basics/guidelines/adults.html'
+                }
+            },
+            {
+                step: '2-3 strength moves (push/pull/squat/hinge/core)',
+                evidence: {
+                    source: 'American College of Sports Medicine (ACSM)',
+                    summary: 'ACSM recommends resistance exercises for major muscle groups on 2-3 days per week. For general health, one set of 8-12 repetitions of 8-10 exercises for major muscle groups 2+ days/week.',
+                    link: 'https://pubmed.ncbi.nlm.nih.gov/21694556/'
+                }
+            },
+            {
+                step: '1-2 min plan session for next workout',
+                evidence: {
+                    source: 'PubMed Systematic Review (31923898)',
+                    summary: 'Implementation intentions specify when, where, and how to act on a goal in if-then format. Meta-analysis shows medium-to-large effect on goal attainment.',
+                    link: 'https://pubmed.ncbi.nlm.nih.gov/31923898/'
+                }
+            }
+        ],
+        evening: [
+            {
+                step: 'Light stretching/foam roll 5-10 min',
+                evidence: {
+                    source: 'National Institutes of Health',
+                    summary: 'Foam rolling appears to have positive effect on flexibility before exercise and results in decreased soreness and fatigue following exercise.',
+                    link: 'https://pmc.ncbi.nlm.nih.gov/articles/PMC6465761/'
+                }
+            },
+            {
+                step: 'Prep workout clothes and water bottle',
+                evidence: {
+                    source: 'Habit Formation Research',
+                    summary: 'Environmental cues and reducing friction increases habit adherence through strategic cueing mechanisms.',
+                    link: ''
+                }
+            },
+            {
+                step: 'Protein-forward dinner/snack (20-40g)',
+                evidence: {
+                    source: 'Medicine & Science in Sports & Exercise',
+                    summary: 'Ingestion of 40g protein before sleep increases myofibrillar protein synthesis rates during overnight sleep.',
+                    link: 'https://pubmed.ncbi.nlm.nih.gov/28855419/'
+                }
+            },
+            {
+                step: '5-10 min wind-down walk or gentle mobility',
+                evidence: {
+                    source: 'National Institutes of Health',
+                    summary: 'Consistent light activity in the evening can improve sleep. 15-30 minute walk at relaxed pace helps people fall asleep faster and spend more time in deep sleep.',
+                    link: 'https://pmc.ncbi.nlm.nih.gov/articles/PMC6801055/'
+                }
+            },
+            {
+                step: 'Sleep target set (7-9h) + consistent alarm',
+                evidence: {
+                    source: 'American Academy of Sleep Medicine (AASM)',
+                    summary: 'Adults should sleep 7 or more hours per night on a regular basis. Keep a consistent sleep schedule - go to bed and wake up at the same time each day.',
+                    link: 'https://sleepeducation.org/healthy-sleep/healthy-sleep-habits/'
+                }
+            }
+        ]
+    },
+    sleep_better: {
+        label: 'Sleep better',
+        description: 'Improve sleep quality and energy',
+        scientific_basis: 'Circadian entrainment protocols based on American Academy of Sleep Medicine guidelines for light exposure and thermoregulation.',
+        morning: [
+            {
+                step: 'Bright light within 30-60 min of waking (10-20 min)',
+                evidence: {
+                    source: 'American Academy of Sleep Medicine (AASM)',
+                    summary: 'Experts recommend getting outside within the first 30 to 60 minutes of waking, as this is when your body is most sensitive to light.',
+                    link: 'https://sleepeducation.org/patients/bright-light-therapy/'
+                }
+            },
+            {
+                step: '5-10 min gentle movement or walk',
+                evidence: {
+                    source: 'National Institutes of Health',
+                    summary: '',
+                    link: 'https://pmc.ncbi.nlm.nih.gov/articles/PMC6527141/'
+                }
+            },
+            {
+                step: 'Delay caffeine 60-90 min after waking',
+                evidence: {
+                    source: 'General Chronobiology Principles',
+                    summary: 'Delaying caffeine allows adenosine clearance to prevent afternoon crash, though strict timing varies by individual metabolism.',
+                    link: ''
+                }
+            },
+            {
+                step: 'Regular breakfast with protein/fiber',
+                evidence: {
+                    source: 'National Institute of Diabetes and Digestive and Kidney Diseases',
+                    summary: 'Regular meals with protein/fiber stabilize glucose levels and energy, affecting metabolic circadian rhythms.',
+                    link: 'https://www.niddk.nih.gov/health-information/weight-management/healthy-eating-physical-activity-for-life'
+                }
+            },
+            {
+                step: 'Set cutoff times for caffeine and big meals',
+                evidence: {
+                    source: 'Journal of Clinical Sleep Medicine',
+                    summary: 'Caffeine taken 6 hours before bedtime has important disruptive effects on sleep. Large meals before bed cause discomfort and raise core temperature.',
+                    link: 'https://jcsm.aasm.org/doi/10.5664/jcsm.3170'
+                }
+            }
+        ],
+        evening: [
+            {
+                step: '30-60 min wind-down (dim lights, night mode)',
+                evidence: {
+                    source: 'National Institutes of Health',
+                    summary: 'Exposure to room light before bedtime suppressed melatonin in 99% of individuals, resulting in later melatonin onset and shortening duration by ~90 minutes.',
+                    link: 'https://pmc.ncbi.nlm.nih.gov/articles/PMC3047226/'
+                }
+            },
+            {
+                step: 'Warm shower/bath 60-90 min before bed',
+                evidence: {
+                    source: 'PubMed Meta-Analysis (31102877)',
+                    summary: 'Bathing in 40-42.5°C water 1-2 hours before bed significantly reduced sleep onset latency via thermoregulatory cooling effect.',
+                    link: 'https://pubmed.ncbi.nlm.nih.gov/31102877/'
+                }
+            },
+            {
+                step: '5-10 min journaling or next-day plan',
+                evidence: {
+                    source: 'National Institutes of Health',
+                    summary: 'Participants who wrote to-do lists at bedtime fell asleep faster than those who journaled about completed tasks.',
+                    link: 'https://pmc.ncbi.nlm.nih.gov/articles/PMC5758411/'
+                }
+            },
+            {
+                step: 'Avoid heavy exercise/meals 3h before bed',
+                evidence: {
+                    source: 'PubMed (34416428)',
+                    summary: 'Exercise ending 1 hour before bedtime may disrupt sleep by delaying onset and decreasing duration.',
+                    link: 'https://pubmed.ncbi.nlm.nih.gov/34416428/'
+                }
+            },
+            {
+                step: 'Bedroom cool (65-68°F), dark, and quiet',
+                evidence: {
+                    source: 'Sleep Foundation',
+                    summary: 'Most doctors recommend keeping the thermostat set between 65 to 68 degrees Fahrenheit for the most comfortable sleep.',
+                    link: 'https://www.sleepfoundation.org/bedroom-environment/best-temperature-for-sleep'
+                }
+            }
+        ]
+    },
+    productivity: {
+        label: 'Be more productive',
+        description: 'Boost focus and work performance',
+        scientific_basis: 'Leverages research on implementation intentions, ultradian rhythms, and cognitive load management.',
+        morning: [
+            {
+                step: '5 min intention setting (top 3 outcomes)',
+                evidence: {
+                    source: 'PubMed Systematic Review (31923898)',
+                    summary: 'Implementation intentions in if-then format improve goal attainment with medium-to-large effect sizes.',
+                    link: 'https://pubmed.ncbi.nlm.nih.gov/31923898/'
+                }
+            },
+            {
+                step: '10-20 min movement for alertness',
+                evidence: {
+                    source: 'National Institutes of Health (PMC6527141)',
+                    summary: 'Strong evidence demonstrates acute bouts of moderate-to-vigorous physical activity have transient benefits for cognition, specifically executive function and attention.',
+                    link: 'https://pmc.ncbi.nlm.nih.gov/articles/PMC6527141/'
+                }
+            },
+            {
+                step: 'Breakfast with protein/fiber (avoid sugar spikes)',
+                evidence: {
+                    source: 'General Nutrition Principles',
+                    summary: 'Protein and fiber stabilize blood glucose, avoiding energy crashes associated with high-sugar meals.',
+                    link: 'https://www.niddk.nih.gov/health-information/weight-management/healthy-eating-physical-activity-for-life'
+                }
+            },
+            {
+                step: '60-90 min deep work block (no notifications)',
+                evidence: {
+                    source: 'Chronobiology and Productivity Research',
+                    summary: 'Cognitive performance peaks in morning hours for most people based on circadian rhythms.',
+                    link: ''
+                }
+            },
+            {
+                step: 'Schedule micro-breaks (1-2 min per hour)',
+                evidence: {
+                    source: 'National Institutes of Health',
+                    summary: 'Meta-analyses showed statistically significant effects of micro-breaks in boosting vigor and reducing fatigue.',
+                    link: 'https://pmc.ncbi.nlm.nih.gov/articles/PMC9432722/'
+                }
+            }
+        ],
+        evening: [
+            {
+                step: '5-10 min shutdown ritual (review/capture tasks)',
+                evidence: {
+                    source: 'Organizational Psychology',
+                    summary: 'Closing work rituals help psychological detachment from work, lowering work-related rumination.',
+                    link: ''
+                }
+            },
+            {
+                step: 'Set top 3 priorities for tomorrow',
+                evidence: {
+                    source: 'National Institutes of Health',
+                    summary: 'Writing specific to-do lists helps offload cognitive load and improves task initiation the next day.',
+                    link: 'https://pmc.ncbi.nlm.nih.gov/articles/PMC5758411/'
+                }
+            },
+            {
+                step: '10-20 min light movement to transition',
+                evidence: {
+                    source: 'American Psychological Association (APA)',
+                    summary: 'Physical activity is a recommended stress management technique; exercise reduces cortisol and boosts endorphins.',
+                    link: 'https://www.apa.org/topics/stress'
+                }
+            },
+            {
+                step: 'Screen curfew 60 min before bed',
+                evidence: {
+                    source: 'National Institutes of Health',
+                    summary: 'Screen light before bed suppresses melatonin and disrupts sleep quality.',
+                    link: 'https://pmc.ncbi.nlm.nih.gov/articles/PMC3047226/'
+                }
+            },
+            {
+                step: 'Gratitude list (3 items) or wins log',
+                evidence: {
+                    source: 'National Institutes of Health',
+                    summary: 'Gratitude interventions led to significantly higher life satisfaction and lower anxiety and depression.',
+                    link: 'https://pmc.ncbi.nlm.nih.gov/articles/PMC10393216/'
+                }
+            }
+        ]
+    },
+    reduce_stress: {
+        label: 'Reduce stress',
+        description: 'Improve mood and resilience',
+        scientific_basis: 'Techniques backed by physiological research on heart rate variability (HRV) and positive psychology interventions.',
+        morning: [
+            {
+                step: '5 min diaphragmatic breathing',
+                evidence: {
+                    source: 'PubMed (31436595)',
+                    summary: 'Diaphragmatic breathing reduces respiratory rate and increases parasympathetic function (rest and digest) while reducing sympathetic arousal.',
+                    link: 'https://pubmed.ncbi.nlm.nih.gov/31436595/'
+                }
+            },
+            {
+                step: '5-10 min light exercise for mood lift',
+                evidence: {
+                    source: 'National Institutes of Health',
+                    summary: 'Exercise boosts endorphins and improves mood; acute benefits are observed even from short bouts.',
+                    link: 'https://pmc.ncbi.nlm.nih.gov/articles/PMC5934999/'
+                }
+            },
+            {
+                step: '5 min gratitude or values check',
+                evidence: {
+                    source: 'National Institutes of Health',
+                    summary: 'Gratitude interventions improve positive emotions, life satisfaction, and mental health.',
+                    link: 'https://pmc.ncbi.nlm.nih.gov/articles/PMC10393216/'
+                }
+            },
+            {
+                step: 'Hydrate and eat balanced breakfast',
+                evidence: {
+                    source: 'National Institutes of Health (NIDDK)',
+                    summary: 'Balanced meals stabilize blood glucose and energy levels, preventing mood fluctuations.',
+                    link: 'https://www.niddk.nih.gov/health-information/weight-management/healthy-eating-physical-activity-for-life'
+                }
+            },
+            {
+                step: 'Plan a social connection (msg/coffee)',
+                evidence: {
+                    source: 'American Psychological Association (APA)',
+                    summary: 'Social support is a recognized stress buffer in psychological research.',
+                    link: 'https://www.apa.org/topics/stress'
+                }
+            }
+        ],
+        evening: [
+            {
+                step: '5-10 min reflection journaling',
+                evidence: {
+                    source: 'National Institutes of Health',
+                    summary: 'Journaling interventions resulted in 5% greater reductions in patient health measures including PTSD, anxiety, and depression.',
+                    link: 'https://pmc.ncbi.nlm.nih.gov/articles/PMC8935176/'
+                }
+            },
+            {
+                step: '10-20 min light movement or yoga',
+                evidence: {
+                    source: 'National Institutes of Health',
+                    summary: 'Physical activity reduces cortisol and boosts endorphins; light evening movement improves sleep.',
+                    link: 'https://pmc.ncbi.nlm.nih.gov/articles/PMC5934999/'
+                }
+            },
+            {
+                step: 'Digital sunset 60 min before bed',
+                evidence: {
+                    source: 'National Institutes of Health',
+                    summary: 'Screen exposure before bed increases arousal and suppresses melatonin.',
+                    link: 'https://pmc.ncbi.nlm.nih.gov/articles/PMC3047226/'
+                }
+            },
+            {
+                step: 'Relaxation drill (box breathing/progressive)',
+                evidence: {
+                    source: 'PubMed (34769874)',
+                    summary: 'Progressive muscle relaxation (PMR) significantly increased Heart Rate Variability (HRV) compared to control groups.',
+                    link: 'https://pubmed.ncbi.nlm.nih.gov/34769874/'
+                }
+            },
+            {
+                step: 'Consistent sleep window',
+                evidence: {
+                    source: 'American Academy of Sleep Medicine (AASM)',
+                    summary: 'Consistent sleep schedules improve sleep quality and are associated with better mood regulation and stress resilience.',
+                    link: 'https://sleepeducation.org/healthy-sleep/healthy-sleep-habits/'
+                }
+            }
+        ]
+    }
+};
