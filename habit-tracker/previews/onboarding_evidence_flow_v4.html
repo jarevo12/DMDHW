@@ -1,0 +1,588 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Axiom Forge | Onboarding Flow V4 (High Fidelity)</title>
+    <style>
+        /* ========================================
+           SWISS BRUTALISM CORE STYLES
+           ======================================== */
+        :root {
+            --bg-primary: #000000;
+            --bg-secondary: #0a0a0a;
+            --text-primary: #ffffff;
+            --text-secondary: #aaaaaa;
+            --text-muted: #666666;
+            --text-inverse: #000000;
+            --accent-primary: #a78bfa;
+            --accent-success: #ccff00;
+            --accent-danger: #ff0000;
+            --border-color: #ffffff;
+            --border-width: 4px;
+            --border-width-thin: 2px;
+            --spacing-sm: 8px;
+            --spacing-md: 16px;
+            --spacing-lg: 24px;
+            --font-mono: 'Inter', 'Courier New', monospace;
+            --font-sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        
+        body {
+            font-family: var(--font-mono);
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.4;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+        }
+
+        /* Simulating the App Container */
+        #app-frame {
+            width: 100%;
+            max-width: 600px;
+            height: 100%;
+            border-left: var(--border-width) solid var(--border-color);
+            border-right: var(--border-width) solid var(--border-color);
+            position: relative;
+            background: var(--bg-primary);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        /* Typography */
+        h1, h2, h3 {
+            font-family: var(--font-sans);
+            font-weight: 900;
+            text-transform: uppercase;
+            letter-spacing: -1px;
+            line-height: 1;
+        }
+
+        /* Buttons */
+        .btn {
+            width: 100%;
+            padding: var(--spacing-md);
+            border: var(--border-width) solid var(--border-color);
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            font-weight: 900;
+            text-transform: uppercase;
+            cursor: pointer;
+            font-family: var(--font-mono);
+            font-size: 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .btn:active { transform: translate(2px, 2px); }
+        .btn-primary { background: var(--text-primary); color: var(--bg-primary); }
+        .btn-primary:hover { background: var(--accent-primary); color: var(--text-primary); border-color: var(--text-primary); }
+
+        /* ========================================
+           ONBOARDING SPECIFIC STYLES
+           ======================================== */
+        .onboarding-screen {
+            padding: var(--spacing-lg);
+            flex: 1;
+            overflow-y: auto;
+            display: none;
+            flex-direction: column;
+        }
+        .onboarding-screen.active { display: flex; }
+
+        /* Step 1: Welcome */
+        .onboarding-welcome { text-align: center; margin-top: 40px; }
+        .logo { 
+            width: 80px; height: 80px; margin: 0 auto 20px; 
+            background: #fff; display: flex; align-items: center; justify-content: center;
+            border-radius: 12px; 
+        }
+        .logo img { width: 60%; }
+        
+        h1 { font-size: 2.5rem; margin-bottom: 16px; }
+        .brand-highlight { color: var(--accent-success); text-decoration: underline; }
+        .onboarding-copy { color: var(--text-secondary); margin-bottom: 32px; font-size: 1rem; }
+
+        .goal-selection-container { text-align: left; }
+        .goal-label { display: block; font-weight: 900; text-transform: uppercase; margin-bottom: 8px; color: var(--text-secondary); font-size: 0.8rem; }
+        
+        .custom-select-wrapper { position: relative; border: 2px solid #fff; }
+        .custom-select-wrapper::after { content: '▼'; position: absolute; right: 16px; top: 50%; transform: translateY(-50%); pointer-events: none; font-size: 0.8rem; }
+        .goal-select { width: 100%; padding: 16px; background: #000; color: #fff; border: none; font-family: var(--font-mono); font-size: 1rem; appearance: none; cursor: pointer; }
+
+        /* SCIENCE SUMMARY BOX (NEW) */
+        .science-summary-box {
+            margin-top: 20px;
+            padding: 16px;
+            border-left: 4px solid var(--accent-success);
+            background: rgba(204, 255, 0, 0.05);
+            font-size: 0.9rem;
+            color: var(--text-primary);
+            line-height: 1.5;
+            display: none; /* Hidden by default until selection */
+        }
+        .science-summary-title {
+            font-weight: 900; color: var(--accent-success); text-transform: uppercase; 
+            margin-bottom: 6px; font-size: 0.8rem; letter-spacing: 1px;
+        }
+
+        /* Navigation */
+        .nav-buttons { margin-top: auto; padding-top: 20px; display: flex; gap: 10px; }
+        .btn-back { width: auto; padding: 0 20px; background: transparent; border: none; color: var(--text-secondary); text-decoration: underline; font-size: 0.9rem; }
+
+        /* Steps 2 & 3: Routine Setup */
+        .habit-setup h2 { font-size: 1.8rem; margin-bottom: 8px; display: flex; align-items: center; gap: 10px; }
+        .setup-subtitle { color: var(--text-secondary); margin-bottom: 20px; font-size: 0.9rem; }
+        .setup-explanation { 
+            border-left: 2px solid var(--accent-primary); padding-left: 12px; margin-bottom: 30px;
+            color: var(--text-secondary); font-size: 0.85rem;
+        }
+
+        /* Science Mode Toggle (Option D) */
+        .science-toggle-row {
+            display: flex; align-items: center; justify-content: flex-end;
+            margin-bottom: 15px; gap: 10px;
+        }
+        .science-label { font-size: 0.75rem; font-weight: 900; text-transform: uppercase; color: var(--text-secondary); }
+        .toggle-switch {
+            position: relative; width: 40px; height: 20px; background: #333; border-radius: 10px; cursor: pointer;
+        }
+        .toggle-switch::after {
+            content: ''; position: absolute; left: 2px; top: 2px; width: 16px; height: 16px;
+            background: #fff; border-radius: 50%; transition: 0.2s;
+        }
+        .toggle-switch.active { background: var(--accent-success); }
+        .toggle-switch.active::after { left: 22px; background: #000; }
+
+        /* Habit Item List */
+        .habit-list-container { display: flex; flex-direction: column; gap: 10px; }
+        
+        .onboarding-habit-item {
+            border: 1px solid #333;
+            background: #000;
+            display: flex;
+            flex-direction: column; /* Changed to column to house the card */
+            padding: 0;
+        }
+
+        .habit-main-row {
+            display: flex; align-items: center; padding: 12px; gap: 10px;
+            width: 100%;
+        }
+
+        .drag-handle { color: var(--text-muted); cursor: grab; font-size: 1.2rem; }
+        
+        .habit-input {
+            flex: 1; background: transparent; border: none; color: #fff; 
+            font-family: var(--font-mono); font-size: 0.95rem; font-weight: 700;
+        }
+        .habit-input:focus { outline: none; }
+
+        /* Action Buttons in Row */
+        .habit-actions { display: flex; gap: 6px; align-items: center; }
+        
+        .btn-action {
+            background: transparent; border: 1px solid #333; color: var(--text-secondary);
+            font-size: 0.7rem; padding: 4px 8px; cursor: pointer; font-family: var(--font-mono);
+            text-transform: uppercase; white-space: nowrap; height: 28px;
+            display: flex; align-items: center;
+        }
+        .btn-action:hover { border-color: #666; color: #fff; }
+        .btn-delete { color: var(--accent-danger); border-color: #333; }
+        .btn-delete:hover { background: var(--accent-danger); color: #fff; border-color: var(--accent-danger); }
+
+        /* THE "WHY?" BUTTON (Option D) */
+        .btn-why {
+            border: 1px solid var(--text-secondary);
+            color: var(--text-secondary);
+            transition: all 0.2s;
+        }
+        .btn-why.active {
+            background: var(--accent-success);
+            color: #000;
+            border-color: var(--accent-success);
+            font-weight: 900;
+        }
+
+        /* EVIDENCE CARD (Option D) */
+        .evidence-card {
+            display: none;
+            padding: 15px;
+            border-top: 1px dashed #333;
+            background: #050505;
+            animation: slideDown 0.2s ease-out;
+        }
+        .evidence-card.open { display: block; }
+        
+        .source-tag { 
+            color: var(--accent-primary); font-weight: 900; font-size: 0.7rem; 
+            text-transform: uppercase; margin-bottom: 6px; display: block;
+        }
+        .evidence-text { font-size: 0.85rem; color: #ccc; line-height: 1.5; margin-bottom: 10px; }
+        .evidence-links a {
+            color: var(--text-primary); font-size: 0.75rem; text-decoration: underline; 
+            margin-right: 12px; font-weight: 700;
+        }
+
+        .btn-add-habit {
+            width: 100%; padding: 12px; margin-top: 16px;
+            background: transparent; border: 1px dashed #666; color: var(--text-secondary);
+            font-family: var(--font-mono); text-transform: uppercase; cursor: pointer;
+        }
+        .btn-add-habit:hover { border-color: var(--accent-success); color: var(--accent-success); }
+
+        /* Step 4: Review */
+        .review-section { margin-bottom: 30px; }
+        .review-section h3 { color: var(--text-secondary); font-size: 0.9rem; margin-bottom: 15px; border-bottom: 1px solid #333; padding-bottom: 5px; }
+        .review-card {
+            background: #111; padding: 12px; margin-bottom: 8px; border: 1px solid #333;
+            display: flex; justify-content: space-between; font-size: 0.9rem;
+        }
+        .review-sched { font-size: 0.7rem; padding: 2px 6px; background: #000; border: 1px solid #333; color: #888; }
+
+        /* Progress Bar */
+        .progress-bar-container { height: 4px; background: #222; width: 100%; position: absolute; top: 0; }
+        .progress-fill { height: 100%; background: var(--accent-success); width: 25%; transition: width 0.3s; }
+
+        @keyframes slideDown { from { opacity: 0; transform: translateY(-5px); } to { opacity: 1; transform: translateY(0); } }
+
+    </style>
+</head>
+<body>
+
+<div id="app-frame">
+    <!-- Progress Bar -->
+    <div class="progress-bar-container"><div id="progress-fill" class="progress-fill"></div></div>
+
+    <!-- STEP 1: WELCOME & GOAL -->
+    <div id="step-1" class="onboarding-screen active">
+        <div class="onboarding-welcome">
+            <div class="logo"><img src="../assets/logo-white-back.svg" alt="Axiom"></div>
+            <h1>Welcome to <br><span class="brand-highlight">Axiom Forge</span></h1>
+            <p class="onboarding-copy">
+                Build habits that stick using protocols backed by behavioral science.
+            </p>
+        </div>
+
+        <div class="goal-selection-container">
+            <label class="goal-label">What is your primary goal?</label>
+            <div class="custom-select-wrapper">
+                <select id="goal-select" class="goal-select" onchange="handleGoalSelect()">
+                    <option value="" disabled selected>Select a goal...</option>
+                    <option value="get_fitter">Get fitter</option>
+                    <option value="sleep_better">Sleep better</option>
+                    <option value="productivity">Be more productive</option>
+                    <option value="reduce_stress">Reduce stress</option>
+                </select>
+            </div>
+
+            <!-- DYNAMIC EVIDENCE SUMMARY -->
+            <div id="science-summary" class="science-summary-box">
+                <div class="science-summary-title">Scientific Basis</div>
+                <div id="science-text">Protocol derived from...</div>
+            </div>
+        </div>
+
+        <div class="nav-buttons">
+            <button class="btn btn-primary" onclick="nextStep()">Continue</button>
+        </div>
+    </div>
+
+    <!-- STEP 2: MORNING ROUTINE -->
+    <div id="step-2" class="onboarding-screen">
+        <div class="habit-setup">
+            <h2><span>&#9788;</span> Morning Routine</h2>
+            <p class="setup-subtitle">Customize your start.</p>
+            <p class="setup-explanation">
+                Optimized for cortisol regulation and momentum.
+            </p>
+
+            <!-- Global Science Toggle -->
+            <div class="science-toggle-row">
+                <span class="science-label">Explain the Science</span>
+                <div id="toggle-morning" class="toggle-switch" onclick="toggleGlobalScience('morning')"></div>
+            </div>
+
+            <div id="morning-list" class="habit-list-container">
+                <!-- Injected via JS -->
+            </div>
+
+            <button class="btn-add-habit">+ Add Custom Habit</button>
+        </div>
+
+        <div class="nav-buttons">
+            <button class="btn-back" onclick="prevStep()">Back</button>
+            <button class="btn btn-primary" onclick="nextStep()">Next: Evening</button>
+        </div>
+    </div>
+
+    <!-- STEP 3: EVENING ROUTINE -->
+    <div id="step-3" class="onboarding-screen">
+        <div class="habit-setup">
+            <h2><span>&#9790;</span> Evening Routine</h2>
+            <p class="setup-subtitle">Wind down effectively.</p>
+            <p class="setup-explanation">
+                Focused on reducing sleep onset latency and recovery.
+            </p>
+
+            <!-- Global Science Toggle -->
+            <div class="science-toggle-row">
+                <span class="science-label">Explain the Science</span>
+                <div id="toggle-evening" class="toggle-switch" onclick="toggleGlobalScience('evening')"></div>
+            </div>
+
+            <div id="evening-list" class="habit-list-container">
+                <!-- Injected via JS -->
+            </div>
+
+            <button class="btn-add-habit">+ Add Custom Habit</button>
+        </div>
+
+        <div class="nav-buttons">
+            <button class="btn-back" onclick="prevStep()">Back</button>
+            <button class="btn btn-primary" onclick="nextStep()">Review Plan</button>
+        </div>
+    </div>
+
+    <!-- STEP 4: REVIEW -->
+    <div id="step-4" class="onboarding-screen">
+        <div style="text-align:center; margin-top:40px;">
+            <div style="font-size:3rem; color:var(--accent-success); margin-bottom:10px;">&#10003;</div>
+            <h1>You're All Set!</h1>
+            <p class="onboarding-copy">Your science-backed protocol is ready.</p>
+        </div>
+
+        <div class="review-section">
+            <h3>Morning</h3>
+            <div id="review-morning"></div>
+        </div>
+
+        <div class="review-section">
+            <h3>Evening</h3>
+            <div id="review-evening"></div>
+        </div>
+
+        <div class="nav-buttons">
+            <button class="btn-back" onclick="prevStep()">Back</button>
+            <button class="btn btn-primary">Start Your Journey</button>
+        </div>
+    </div>
+
+</div>
+
+<script>
+    // ========================================
+    // DATA: EVIDENCE & ROUTINES
+    // ========================================
+    const ROUTINES = {
+        'get_fitter': {
+            summary: "Protocols derived from ACSM guidelines for mobility and progressive resistance, focusing on injury prevention and consistency.",
+            morning: [
+                { name: "5-10 min light mobility", source: "ACSM Position Stand", claim: "Primes joints and reduces injury risk.", link: "#" },
+                { name: "30g Protein Breakfast", source: "Journal of Physiology", claim: "Optimizes muscle protein synthesis vs lower doses.", link: "#" },
+                { name: "10-20 min brisk walk", source: "CDC Physical Activity", claim: "Builds toward 150 min/week moderate activity goal.", link: "#" }
+            ],
+            evening: [
+                { name: "Foam Roll / Stretch", source: "Intl. Journal of Sports PT", claim: "Reduces delayed onset muscle soreness (DOMS).", link: "#" },
+                { name: "Pre-sleep protein (20g)", source: "Medicine & Science in Sports", claim: "Increases overnight muscle recovery rates.", link: "#" }
+            ]
+        },
+        'sleep_better': {
+            summary: "Circadian entrainment protocols based on American Academy of Sleep Medicine guidelines for light exposure and thermoregulation.",
+            morning: [
+                { name: "Bright light (10 mins)", source: "AASM Guidelines", claim: "Anchors circadian rhythm within 60 min of waking.", link: "#" },
+                { name: "Delay Caffeine 90m", source: "Chronobiology Principles", claim: "Allows adenosine clearance to prevent afternoon crash.", link: "#" }
+            ],
+            evening: [
+                { name: "Warm bath (90m pre-bed)", source: "Sleep Medicine Reviews", claim: "Passive heating reduces sleep onset latency.", link: "#" },
+                { name: "Dim lights 1hr pre-bed", source: "Nature Study", claim: "Prevents melatonin suppression from blue light.", link: "#" }
+            ]
+        },
+        'productivity': {
+            summary: "Leverages research on implementation intentions, ultradian rhythms, and cognitive load management.",
+            morning: [
+                { name: "Set Top 3 Priorities", source: "Implementation Intentions", claim: "Increases goal completion rate by ~65%.", link: "#" },
+                { name: "Deep Work (90 min)", source: "Ultradian Rhythm Research", claim: "Aligns with brain's natural attention cycles.", link: "#" }
+            ],
+            evening: [
+                { name: "Shutdown Ritual", source: "Org. Psychology", claim: "Reduces work-related rumination in evenings.", link: "#" }
+            ]
+        },
+        'reduce_stress': {
+            summary: "Techniques backed by physiological research on heart rate variability (HRV) and positive psychology.",
+            morning: [
+                { name: "Box Breathing (5 min)", source: "PubMed: Autonomic Reg.", claim: "Reduces sympathetic nervous system arousal.", link: "#" },
+                { name: "Gratitude Journaling", source: "Positive Psych. Meta-analysis", claim: "Improves affect and lowers anxiety scores.", link: "#" }
+            ],
+            evening: [
+                { name: "Progressive Relaxation", source: "APA Stress Guidelines", claim: "Lowers physical tension and cortisol levels.", link: "#" }
+            ]
+        }
+    };
+
+    // ========================================
+    // STATE
+    // ========================================
+    let currentStep = 1;
+    let selectedGoal = '';
+    let globalScienceState = {
+        morning: false,
+        evening: false
+    };
+
+    // ========================================
+    // LOGIC
+    // ========================================
+    
+    function handleGoalSelect() {
+        const select = document.getElementById('goal-select');
+        selectedGoal = select.value;
+        const data = ROUTINES[selectedGoal];
+        
+        // Show Summary
+        const summaryBox = document.getElementById('science-summary');
+        const summaryText = document.getElementById('science-text');
+        
+        if (data) {
+            summaryText.textContent = data.summary;
+            summaryBox.style.display = 'block';
+        }
+    }
+
+    function renderHabitList(type) { // type = 'morning' or 'evening'
+        const container = document.getElementById(`${type}-list`);
+        const data = ROUTINES[selectedGoal][type];
+        
+        container.innerHTML = data.map((habit, idx) => {
+            const id = `${type}-${idx}`;
+            // If global is on, render open
+            const isOpen = globalScienceState[type];
+            
+            return `
+                <div class="onboarding-habit-item" id="row-${id}">
+                    <div class="habit-main-row">
+                        <span class="drag-handle">☰</span>
+                        <input type="text" class="habit-input" value="${habit.name}">
+                        <div class="habit-actions">
+                            <button id="btn-${id}" class="btn-action btn-why ${isOpen ? 'active' : ''}" 
+                                onclick="toggleCard('${id}')">Why?</button>
+                            <button class="btn-action">Daily</button>
+                            <button class="btn-action btn-delete">×</button>
+                        </div>
+                    </div>
+                    <!-- EVIDENCE CARD -->
+                    <div id="card-${id}" class="evidence-card ${isOpen ? 'open' : ''}">
+                        <span class="source-tag">${habit.source}</span>
+                        <div class="evidence-text">${habit.claim}</div>
+                        <div class="evidence-links">
+                            <a href="${habit.link}" target="_blank">Read Source &rarr;</a>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }).join('');
+    }
+
+    // Toggle Single Card (Option D Logic)
+    function toggleCard(id) {
+        const card = document.getElementById(`card-${id}`);
+        const btn = document.getElementById(`btn-${id}`);
+        
+        // Toggle class
+        if (card.classList.contains('open')) {
+            card.classList.remove('open');
+            btn.classList.remove('active');
+        } else {
+            card.classList.add('open');
+            btn.classList.add('active');
+        }
+    }
+
+    // Toggle Global Science Mode
+    function toggleGlobalScience(type) {
+        const toggleBtn = document.getElementById(`toggle-${type}`);
+        // Flip state
+        globalScienceState[type] = !globalScienceState[type];
+        const isOn = globalScienceState[type];
+
+        // UI Update
+        if (isOn) toggleBtn.classList.add('active');
+        else toggleBtn.classList.remove('active');
+
+        // Force all items in list to this state
+        const list = document.getElementById(`${type}-list`);
+        const cards = list.querySelectorAll('.evidence-card');
+        const btns = list.querySelectorAll('.btn-why');
+
+        if (isOn) {
+            cards.forEach(c => c.classList.add('open'));
+            btns.forEach(b => b.classList.add('active'));
+        } else {
+            cards.forEach(c => c.classList.remove('open'));
+            btns.forEach(b => b.classList.remove('active'));
+        }
+    }
+
+    function renderReview() {
+        if(!selectedGoal) return;
+        
+        const m = ROUTINES[selectedGoal].morning;
+        const e = ROUTINES[selectedGoal].evening;
+
+        document.getElementById('review-morning').innerHTML = m.map(h => 
+            `<div class="review-card"><span>${h.name}</span><span class="review-sched">Daily</span></div>`
+        ).join('');
+        
+        document.getElementById('review-evening').innerHTML = e.map(h => 
+            `<div class="review-card"><span>${h.name}</span><span class="review-sched">Daily</span></div>`
+        ).join('');
+    }
+
+    // Navigation
+    function nextStep() {
+        if (currentStep === 1 && !selectedGoal) {
+            alert("Please select a goal first.");
+            return;
+        }
+
+        if (currentStep === 1) {
+            // Initialize lists when leaving step 1
+            renderHabitList('morning');
+            renderHabitList('evening');
+        }
+        
+        if (currentStep === 3) {
+            renderReview();
+        }
+
+        if (currentStep < 4) {
+            currentStep++;
+            updateUI();
+        }
+    }
+
+    function prevStep() {
+        if (currentStep > 1) {
+            currentStep--;
+            updateUI();
+        }
+    }
+
+    function updateUI() {
+        // Hide all screens
+        document.querySelectorAll('.onboarding-screen').forEach(el => el.classList.remove('active'));
+        // Show current
+        document.getElementById(`step-${currentStep}`).classList.add('active');
+        // Update Progress
+        document.getElementById('progress-fill').style.width = `${currentStep * 25}%`;
+    }
+
+</script>
+
+</body>
+</html>

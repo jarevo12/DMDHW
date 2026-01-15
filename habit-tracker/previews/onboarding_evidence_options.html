@@ -1,0 +1,738 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Axiom Forge | Onboarding Evidence Options</title>
+    <style>
+        /* ========================================
+           CORE STYLES (Mocking styles.css)
+           ======================================== */
+        :root {
+            --bg-primary: #000000;
+            --bg-secondary: #0a0a0a;
+            --text-primary: #ffffff;
+            --text-secondary: #c0c0c0;
+            --accent-green: #ccff00;
+            --accent-purple: #a78bfa;
+            --border-width: 2px;
+            --border-color: #333;
+            --font-mono: 'Courier New', monospace;
+            --font-sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background-color: var(--bg-primary);
+            color: var(--text-primary);
+            font-family: var(--font-sans);
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        /* ========================================
+           PREVIEW CONTROLS
+           ======================================== */
+        .preview-controls {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            padding: 15px;
+            margin-bottom: 40px;
+            display: flex;
+            gap: 20px;
+            align-items: center;
+        }
+
+        .preview-controls label {
+            font-family: var(--font-mono);
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            margin-right: 10px;
+        }
+
+        .option-btn {
+            background: transparent;
+            border: 1px solid var(--text-secondary);
+            color: var(--text-secondary);
+            padding: 8px 16px;
+            cursor: pointer;
+            font-family: var(--font-mono);
+            transition: all 0.2s;
+        }
+
+        .option-btn.active {
+            background: var(--text-primary);
+            color: var(--bg-primary);
+            border-color: var(--text-primary);
+            font-weight: bold;
+        }
+
+        /* ========================================
+           ONBOARDING MOCKUP
+           ======================================== */
+        .onboarding-screen {
+            border: var(--border-width) solid var(--border-color);
+            padding: 40px;
+            min-height: 600px;
+            position: relative;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            letter-spacing: -1px;
+        }
+
+        .subtitle {
+            font-size: 1.1rem;
+            color: var(--text-secondary);
+            margin-bottom: 40px;
+            max-width: 600px;
+        }
+
+        .brand-highlight {
+            color: var(--text-primary);
+            text-decoration: underline;
+            text-decoration-color: var(--accent-green);
+            text-decoration-thickness: 3px;
+        }
+
+        .select-container {
+            margin-bottom: 30px;
+        }
+
+        label {
+            display: block;
+            font-family: var(--font-mono);
+            font-size: 0.9rem;
+            margin-bottom: 10px;
+            color: var(--text-secondary);
+        }
+
+        select {
+            width: 100%;
+            padding: 15px;
+            background: var(--bg-primary);
+            border: var(--border-width) solid var(--text-primary);
+            color: var(--text-primary);
+            font-size: 1.1rem;
+            font-family: var(--font-sans);
+            cursor: pointer;
+            appearance: none;
+            background-image: url("data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%23FFFFFF%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E");
+            background-repeat: no-repeat;
+            background-position: right 15px top 50%;
+            background-size: 12px auto;
+        }
+
+        /* ========================================
+           OPTION A: CREDIBILITY BADGES
+           ======================================== */
+        .evidence-display.option-a {
+            margin-top: 20px;
+            padding: 20px;
+            border-left: 4px solid var(--accent-green);
+            background: rgba(204, 255, 0, 0.05);
+        }
+
+        .option-a .summary-text {
+            font-size: 1.1rem;
+            margin-bottom: 15px;
+        }
+
+        .option-a .badges-row {
+            display: flex;
+            gap: 15px;
+            margin-top: 15px;
+            flex-wrap: wrap;
+        }
+
+        .option-a .badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 6px 12px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            font-size: 0.8rem;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .option-a .badge-icon {
+            width: 16px;
+            height: 16px;
+            background: var(--text-primary);
+            margin-right: 8px;
+            border-radius: 50%;
+        }
+
+        /* ========================================
+           OPTION B: ABSTRACT CARD
+           ======================================== */
+        .evidence-display.option-b {
+            margin-top: 20px;
+            border: 1px solid var(--text-secondary);
+            padding: 0;
+            font-family: var(--font-mono);
+        }
+
+        .option-b .card-header {
+            background: var(--text-secondary);
+            color: var(--bg-primary);
+            padding: 8px 15px;
+            font-size: 0.8rem;
+            font-weight: bold;
+            text-transform: uppercase;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .option-b .card-body {
+            padding: 20px;
+        }
+
+        .option-b .source-title {
+            font-weight: bold;
+            color: var(--accent-green);
+            margin-bottom: 10px;
+            font-size: 0.9rem;
+        }
+
+        .option-b .summary-text {
+            font-size: 0.95rem;
+            line-height: 1.6;
+            color: var(--text-secondary);
+        }
+
+        /* ========================================
+           OPTION C: TRUST LIST
+           ======================================== */
+        .evidence-display.option-c {
+            margin-top: 20px;
+        }
+
+        .option-c .summary-text {
+            font-size: 1.2rem;
+            font-weight: bold;
+            margin-bottom: 20px;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 15px;
+        }
+
+        .option-c .sources-list {
+            list-style: none;
+        }
+
+        .option-c .source-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+        }
+
+        .option-c .check {
+            color: var(--accent-green);
+            margin-right: 10px;
+            font-weight: bold;
+        }
+
+        /* ========================================
+           COMMON ELEMENTS
+           ======================================== */
+        .more-details-btn {
+            display: inline-block;
+            margin-top: 20px;
+            font-family: var(--font-mono);
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            text-decoration: underline;
+            cursor: pointer;
+            background: none;
+            border: none;
+            padding: 0;
+        }
+
+        .more-details-btn:hover {
+            color: var(--text-primary);
+        }
+
+        /* ========================================
+           DETAILS MODAL
+           ======================================== */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 1000;
+            backdrop-filter: blur(5px);
+        }
+
+        .modal-content {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 90%;
+            max-width: 600px;
+            max-height: 80vh;
+            background: var(--bg-primary);
+            border: 2px solid var(--accent-green);
+            overflow-y: auto;
+            padding: 30px;
+            box-shadow: 0 0 30px rgba(204, 255, 0, 0.1);
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 30px;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 20px;
+        }
+
+        .modal-title h2 {
+            font-family: var(--font-sans);
+            font-size: 1.8rem;
+            margin-bottom: 5px;
+        }
+
+        .modal-subtitle {
+            color: var(--text-secondary);
+            font-family: var(--font-mono);
+            font-size: 0.9rem;
+        }
+
+        .close-btn {
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            font-size: 2rem;
+            cursor: pointer;
+            line-height: 1;
+        }
+
+        .evidence-section {
+            margin-bottom: 30px;
+        }
+
+        .evidence-section h3 {
+            color: var(--accent-green);
+            font-size: 1.1rem;
+            text-transform: uppercase;
+            margin-bottom: 15px;
+            font-family: var(--font-mono);
+        }
+
+        .source-card {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            padding: 15px;
+            margin-bottom: 15px;
+        }
+
+        .source-card.verified {
+            border-left: 3px solid var(--accent-green);
+        }
+
+        .source-card h4 {
+            font-size: 1rem;
+            margin-bottom: 8px;
+        }
+
+        .source-meta {
+            font-family: var(--font-mono);
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            margin-bottom: 10px;
+            display: flex;
+            gap: 10px;
+        }
+
+        .tag {
+            padding: 2px 6px;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+        }
+
+        .tag.verified {
+            color: var(--accent-green);
+            border-color: var(--accent-green);
+        }
+
+        .source-desc {
+            font-size: 0.9rem;
+            line-height: 1.5;
+            color: var(--text-secondary);
+        }
+
+        .paper-link {
+            display: inline-block;
+            margin-top: 10px;
+            color: var(--accent-green);
+            text-decoration: none;
+            font-size: 0.85rem;
+            font-weight: bold;
+        }
+
+        .paper-link:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <!-- Controls to switch design options -->
+        <div class="preview-controls">
+            <label>DISPLAY OPTION:</label>
+            <button class="option-btn active" onclick="setOption('a')">A: Badges</button>
+            <button class="option-btn" onclick="setOption('b')">B: Abstract</button>
+            <button class="option-btn" onclick="setOption('c')">C: Trust List</button>
+        </div>
+
+        <!-- The Onboarding UI -->
+        <div class="onboarding-screen">
+            <div style="margin-bottom: 40px;">
+                <img src="../assets/logo-white-back.svg" alt="Axiom Forge" style="height: 40px;">
+            </div>
+            
+            <h1>Select Your <span class="brand-highlight">Goal</span></h1>
+            <p class="subtitle">Choose a science-backed routine to start your journey.</p>
+
+            <div class="select-container">
+                <label for="goal-select">I WANT TO...</label>
+                <select id="goal-select" onchange="updateEvidence()">
+                    <option value="get_fitter">Get fitter</option>
+                    <option value="sleep_better">Sleep better</option>
+                    <option value="productivity">Be more productive</option>
+                    <option value="reduce_stress">Reduce stress</option>
+                </select>
+            </div>
+
+            <!-- Dynamic Evidence Content Area -->
+            <div id="evidence-container" class="evidence-display option-a">
+                <!-- Content injected by JS -->
+            </div>
+
+            <button class="more-details-btn" onclick="openModal()">View detailed evidence & research sources &rarr;</button>
+
+            <div style="margin-top: 50px; text-align: right;">
+                <button style="background: var(--text-primary); color: var(--bg-primary); border: none; padding: 15px 30px; font-weight: bold; font-size: 1rem; cursor: pointer;">CONTINUE</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal for Detailed Evidence -->
+    <div id="modal" class="modal-overlay">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-title">
+                    <h2 id="modal-title">Routine Name</h2>
+                    <div class="modal-subtitle">EVIDENCE MAPPING</div>
+                </div>
+                <button class="close-btn" onclick="closeModal()">&times;</button>
+            </div>
+            <div id="modal-body">
+                <!-- Detailed sources injected here -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ========================================
+        // DATA: Evidence Mapping
+        // ========================================
+        const EVIDENCE_DATA = {
+            'get_fitter': {
+                title: "Get Fitter",
+                summary: "Based on ACSM position stands and CDC guidelines for physical activity, focusing on mobility, progressive resistance, and protein timing.",
+                badges: ["ACSM Verified", "CDC Guidelines", "PubMed: 21694556"],
+                sources_list: [
+                    "American College of Sports Medicine (ACSM)",
+                    "CDC Physical Activity Guidelines",
+                    "Journal of Physiology (Protein Timing)"
+                ],
+                detailed: [
+                    {
+                        section: "Morning Routine",
+                        items: [
+                            {
+                                step: "Mobility & Movement",
+                                claim: "Primes joints and reduces injury risk",
+                                source: "ACSM Position Stand on Quantity and Quality of Exercise",
+                                type: "Verified",
+                                link: "https://pubmed.ncbi.nlm.nih.gov/21694556/",
+                                desc: "ACSM recommends flexibility exercises 2-3 times/week. Dynamic stretching increases blood flow and prepares muscles."
+                            },
+                            {
+                                step: "Protein Intake",
+                                claim: "30g protein at breakfast optimizes synthesis",
+                                source: "Dietary Protein Distribution Study",
+                                type: "Verified",
+                                link: "https://pmc.ncbi.nlm.nih.gov/articles/PMC4018950/",
+                                desc: "Muscle protein synthesis was ~30% higher with 30g protein at breakfast versus 10g."
+                            }
+                        ]
+                    },
+                    {
+                        section: "Evening Routine",
+                        items: [
+                            {
+                                step: "Pre-Sleep Protein",
+                                claim: "Ingestion before sleep increases overnight synthesis",
+                                source: "Medicine & Science in Sports & Exercise",
+                                type: "Verified",
+                                link: "https://pubmed.ncbi.nlm.nih.gov/28855419/",
+                                desc: "40g protein before sleep significantly increases overnight muscle protein synthesis rates."
+                            }
+                        ]
+                    }
+                ]
+            },
+            'sleep_better': {
+                title: "Sleep Better",
+                summary: "Protocols derived from the American Academy of Sleep Medicine (AASM) including bright light therapy and thermoregulation.",
+                badges: ["AASM Guidelines", "Sleep Medicine Rev.", "Circadian Biology"],
+                sources_list: [
+                    "American Academy of Sleep Medicine",
+                    "Sleep Medicine Reviews",
+                    "Journal of Clinical Sleep Medicine"
+                ],
+                detailed: [
+                    {
+                        section: "Morning Protocol",
+                        items: [
+                            {
+                                step: "Bright Light",
+                                claim: "Anchors circadian rhythm within 60 mins of waking",
+                                source: "AASM Bright Light Therapy Guidelines",
+                                type: "Verified",
+                                link: "https://sleepeducation.org/patients/bright-light-therapy/",
+                                desc: "Light exposure (2,500-10,000 lux) soon after waking is the primary treatment for circadian phase alignment."
+                            },
+                            {
+                                step: "Caffeine Delay",
+                                claim: "Avoids adenosine crash",
+                                source: "General Chronobiology Principles",
+                                type: "General",
+                                link: "",
+                                desc: "Based on adenosine clearance rates, though strict timing varies by individual metabolism."
+                            }
+                        ]
+                    },
+                    {
+                        section: "Evening Protocol",
+                        items: [
+                            {
+                                step: "Warm Bath/Shower",
+                                claim: "Passive body heating improves sleep onset",
+                                source: "Sleep Medicine Reviews Meta-Analysis",
+                                type: "Verified",
+                                link: "https://pubmed.ncbi.nlm.nih.gov/31102877/",
+                                desc: "Bathing 1-2 hours before bed significantly reduces sleep onset latency via thermoregulatory cooling effect."
+                            }
+                        ]
+                    }
+                ]
+            },
+            'productivity': {
+                title: "Be More Productive",
+                summary: "Leverages CDC research on cognition and meta-analyses on implementation intentions and micro-breaks.",
+                badges: ["CDC Cognition", "Meta-Analysis: Breaks", "Org. Psychology"],
+                sources_list: [
+                    "CDC: Physical Activity & Cognition",
+                    "Systematic Review: Micro-breaks",
+                    "Organizational Psychology"
+                ],
+                detailed: [
+                    {
+                        section: "Work Blocks",
+                        items: [
+                            {
+                                step: "Micro-breaks",
+                                claim: "Reduces fatigue and maintains vigor",
+                                source: "PLOS ONE Systematic Review",
+                                type: "Verified",
+                                link: "https://pmc.ncbi.nlm.nih.gov/articles/PMC9432722/",
+                                desc: "Participants taking micro-breaks had 60% better odds of feeling energetic and showed reduced fatigue."
+                            }
+                        ]
+                    }
+                ]
+            },
+            'reduce_stress': {
+                title: "Reduce Stress",
+                summary: "Techniques backed by physiological research on diaphragmatic breathing (HRV) and positive psychology interventions.",
+                badges: ["PubMed: Breathing", "APA Guidelines", "Pos. Psychology"],
+                sources_list: [
+                    "American Psychological Association (APA)",
+                    "PubMed: Diaphragmatic Breathing",
+                    "Positive Psychology Reviews"
+                ],
+                detailed: [
+                    {
+                        section: "Physiological Regulation",
+                        items: [
+                            {
+                                step: "Diaphragmatic Breathing",
+                                claim: "Reduces sympathetic arousal",
+                                source: "Journal of Evidence-Based Comp. Medicine",
+                                type: "Verified",
+                                link: "https://pubmed.ncbi.nlm.nih.gov/31436595/",
+                                desc: "Slow breathing (≤6 breaths/min) enhances autonomic regulation and reduces physiological stress markers."
+                            },
+                            {
+                                step: "Gratitude Journaling",
+                                claim: "Improves affect and lowers anxiety",
+                                source: "Gratitude Interventions Meta-Analysis",
+                                type: "Verified",
+                                link: "https://pmc.ncbi.nlm.nih.gov/articles/PMC10393216/",
+                                desc: "Led to 6.86% higher life satisfaction and significantly lower anxiety and depression scores."
+                            }
+                        ]
+                    }
+                ]
+            }
+        };
+
+        // ========================================
+        // STATE & RENDER LOGIC
+        // ========================================
+        let currentOption = 'a';
+        let currentRoutine = 'get_fitter';
+
+        function setOption(opt) {
+            currentOption = opt;
+            
+            // Update buttons
+            document.querySelectorAll('.option-btn').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active'); // Assumes click event
+
+            // Update Class
+            const container = document.getElementById('evidence-container');
+            container.className = `evidence-display option-${opt}`;
+
+            renderEvidence();
+        }
+
+        function updateEvidence() {
+            const select = document.getElementById('goal-select');
+            currentRoutine = select.value;
+            renderEvidence();
+        }
+
+        function renderEvidence() {
+            const container = document.getElementById('evidence-container');
+            const data = EVIDENCE_DATA[currentRoutine];
+
+            let html = '';
+
+            if (currentOption === 'a') {
+                // OPTION A: BADGES
+                html = `
+                    <div class="summary-text">${data.summary}</div>
+                    <div class="badges-row">
+                        ${data.badges.map(b => `
+                            <div class="badge">
+                                <span class="badge-icon"></span> ${b}
+                            </div>
+                        `).join('')}
+                    </div>
+                `;
+            } else if (currentOption === 'b') {
+                // OPTION B: ABSTRACT
+                html = `
+                    <div class="card-header">
+                        <span>Research Abstract</span>
+                        <span>${new Date().getFullYear()}</span>
+                    </div>
+                    <div class="card-body">
+                        <div class="source-title">PRIMARY SOURCES: ${data.sources_list.join(', ')}</div>
+                        <div class="summary-text">
+                            <strong>Objective:</strong> ${data.summary} Protocol effectiveness is supported by verified findings in peer-reviewed literature.
+                        </div>
+                    </div>
+                `;
+            } else if (currentOption === 'c') {
+                // OPTION C: TRUST LIST
+                html = `
+                    <div class="summary-text">${data.summary}</div>
+                    <ul class="sources-list">
+                        ${data.sources_list.map(s => `
+                            <li class="source-item">
+                                <span class="check">✓</span> Verified by ${s}
+                            </li>
+                        `).join('')}
+                    </ul>
+                `;
+            }
+
+            container.innerHTML = html;
+        }
+
+        // ========================================
+        // MODAL LOGIC
+        // ========================================
+        function openModal() {
+            const modal = document.getElementById('modal');
+            const data = EVIDENCE_DATA[currentRoutine];
+            
+            document.getElementById('modal-title').innerText = data.title;
+            
+            const body = document.getElementById('modal-body');
+            body.innerHTML = data.detailed.map(section => `
+                <div class="evidence-section">
+                    <h3>${section.section}</h3>
+                    ${section.items.map(item => `
+                        <div class="source-card ${item.type === 'Verified' ? 'verified' : ''}">
+                            <h4>${item.step}</h4>
+                            <div class="source-meta">
+                                <span class="tag ${item.type === 'Verified' ? 'verified' : ''}">${item.type.toUpperCase()}</span>
+                                <span>${item.source}</span>
+                            </div>
+                            <div class="source-desc">
+                                "${item.claim}" — ${item.desc}
+                            </div>
+                            ${item.link ? `<a href="${item.link}" target="_blank" class="paper-link">Read Source &rarr;</a>` : ''}
+                        </div>
+                    `).join('')}
+                </div>
+            `).join('');
+
+            modal.style.display = 'block';
+        }
+
+        function closeModal() {
+            document.getElementById('modal').style.display = 'none';
+        }
+
+        // Close on outside click
+        window.onclick = function(event) {
+            const modal = document.getElementById('modal');
+            if (event.target == modal) {
+                closeModal();
+            }
+        }
+
+        // Init
+        renderEvidence();
+
+    </script>
+</body>
+</html>

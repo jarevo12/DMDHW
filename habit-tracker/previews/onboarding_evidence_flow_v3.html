@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Axiom Forge | Onboarding Evidence Flow V3</title>
+    <style>
+        /* ========================================
+           CORE STYLES
+           ======================================== */
+        :root {
+            --bg-primary: #000000;
+            --bg-secondary: #0a0a0a;
+            --bg-tertiary: #111111;
+            --text-primary: #ffffff;
+            --text-secondary: #999999;
+            --accent-green: #ccff00;
+            --accent-purple: #a78bfa;
+            --border-color: #333;
+            --font-mono: 'Courier New', monospace;
+            --font-sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { background: var(--bg-primary); color: var(--text-primary); font-family: var(--font-sans); padding: 20px; }
+        
+        .container { max-width: 450px; margin: 0 auto; border: 1px solid var(--border-color); min-height: 800px; position: relative; overflow: hidden; background: var(--bg-secondary); }
+        
+        /* ========================================
+           CONTROLS (For Preview Only)
+           ======================================== */
+        .controls {
+            position: fixed; top: 20px; right: 20px; width: 250px;
+            background: #1a1a1a; padding: 15px; border: 1px solid var(--accent-green);
+            z-index: 1000;
+        }
+        .controls h3 { margin-bottom: 10px; font-size: 0.9rem; color: var(--accent-green); }
+        .controls button {
+            display: block; width: 100%; padding: 8px; margin-bottom: 5px;
+            background: #333; color: #fff; border: 1px solid #444; cursor: pointer;
+            text-align: left; font-family: var(--font-mono); font-size: 0.8rem;
+        }
+        .controls button.active { background: var(--accent-green); color: black; font-weight: bold; }
+        .controls button:hover { opacity: 0.9; }
+
+        /* ========================================
+           STEP 1: GOAL SELECTION
+           ======================================== */
+        .step-view { display: none; padding: 30px 20px; height: 100%; flex-direction: column; }
+        .step-view.active { display: flex; }
+
+        .logo-area { text-align: center; margin-bottom: 30px; }
+        .logo-area img { height: 40px; }
+
+        h1 { font-size: 2rem; margin-bottom: 10px; line-height: 1.1; }
+        .subtitle { color: var(--text-secondary); margin-bottom: 40px; font-size: 1rem; line-height: 1.5; }
+
+        .select-group { margin-bottom: 30px; }
+        .select-group label { display: block; font-family: var(--font-mono); font-size: 0.8rem; color: var(--accent-green); margin-bottom: 10px; }
+        
+        .custom-select {
+            width: 100%; padding: 15px; background: var(--bg-primary); border: 2px solid var(--text-primary);
+            color: var(--text-primary); font-size: 1.1rem; cursor: pointer;
+        }
+
+        .summary-card {
+            background: rgba(255, 255, 255, 0.05);
+            border-left: 3px solid var(--accent-green);
+            padding: 20px;
+            margin-top: 20px;
+            animation: fadeIn 0.5s ease;
+        }
+        .summary-title { font-family: var(--font-mono); font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 8px; text-transform: uppercase; }
+        .summary-text { font-size: 1rem; line-height: 1.4; }
+
+        /* ========================================
+           STEP 2: ROUTINE PREVIEW
+           ======================================== */
+        .step-header { margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; }
+        .step-back { background: none; border: none; color: var(--text-secondary); cursor: pointer; font-size: 1.2rem; }
+        
+        .routine-section { margin-bottom: 30px; }
+        .section-title { 
+            font-family: var(--font-mono); font-size: 0.9rem; color: var(--accent-green); 
+            margin-bottom: 15px; display: flex; align-items: center; gap: 8px; 
+        }
+
+        .step-list { list-style: none; }
+        .step-item { 
+            background: var(--bg-primary); border: 1px solid var(--border-color); 
+            margin-bottom: 10px; padding: 15px; position: relative;
+        }
+
+        .step-content { display: flex; justify-content: space-between; align-items: center; }
+        .step-text { font-size: 0.95rem; line-height: 1.4; flex: 1; padding-right: 10px; }
+
+        /* ========================================
+           OPTION D: INLINE + SCIENCE MODE (HYBRID)
+           ======================================== */
+        .option-d .evidence-btn {
+            background: transparent; border: 1px solid var(--text-secondary); color: var(--text-secondary);
+            font-size: 0.75rem; padding: 6px 10px; border-radius: 4px; cursor: pointer; white-space: nowrap;
+            transition: all 0.2s; font-family: var(--font-mono); text-transform: uppercase;
+        }
+        
+        /* Active State (Acid Green) */
+        .option-d .evidence-btn.active {
+            background: var(--accent-green);
+            color: #000;
+            border-color: var(--accent-green);
+            font-weight: bold;
+        }
+
+        .evidence-card {
+            display: none; margin-top: 15px; padding-top: 15px; border-top: 1px dashed #333;
+            font-size: 0.85rem; color: var(--text-secondary);
+        }
+        .evidence-card.open { display: block; animation: slideDown 0.3s ease; }
+        
+        .source-label { display: block; color: var(--accent-purple); font-weight: bold; margin-bottom: 4px; font-size: 0.8rem; }
+        .source-link { 
+            display: inline-block; margin-top: 8px; color: var(--text-primary); 
+            text-decoration: underline; font-size: 0.8rem; cursor: pointer; 
+        }
+
+        /* Science Mode Toggle Wrapper */
+        .science-toggle-wrapper {
+            display: flex; align-items: center; gap: 10px; margin-bottom: 20px; 
+            padding: 10px; background: var(--bg-tertiary); border: 1px solid var(--border-color);
+        }
+        .toggle-switch {
+            position: relative; width: 40px; height: 20px; background: #333; border-radius: 10px; cursor: pointer;
+        }
+        .toggle-switch::after {
+            content: ''; position: absolute; left: 2px; top: 2px; width: 16px; height: 16px;
+            background: #fff; border-radius: 50%; transition: 0.3s;
+        }
+        .toggle-switch.active { background: var(--accent-green); }
+        .toggle-switch.active::after { left: 22px; background: #000; }
+        
+        /* ========================================
+           UTILITIES
+           ======================================== */
+        .btn-continue {
+            width: 100%; padding: 18px; background: var(--text-primary); color: var(--bg-primary);
+            border: none; font-weight: bold; font-size: 1.1rem; cursor: pointer; margin-top: auto;
+            text-transform: uppercase; letter-spacing: 1px;
+        }
+        .btn-continue:hover { background: var(--accent-green); }
+
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes slideDown { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
+
+    </style>
+</head>
+<body>
+
+    <!-- PREVIEW CONTROLS (Floating) -->
+    <div class="controls">
+        <h3>STEP 2 VISUAL OPTIONS</h3>
+        <button onclick="setOption('d')" id="btn-opt-d" class="active">Option D: Inline + Science Mode</button>
+        <button onclick="setOption('a')" id="btn-opt-a">Option A: Inline Button (Original)</button>
+        <div style="margin-top: 15px; font-size: 0.7rem; color: #666;">
+            Goal: "Get Fitter" selected for demo.
+        </div>
+    </div>
+
+    <div class="container">
+        <!-- STEP 1: GOAL SELECTION -->
+        <div id="step-1" class="step-view active">
+            <div class="logo-area"><img src="../assets/logo-white-back.svg" alt="Axiom"></div>
+            <h1>Your <span style="color:var(--accent-green)">Goal</span></h1>
+            <p class="subtitle">We'll build a routine to help you get there.</p>
+
+            <div class="select-group">
+                <label>I WANT TO...</label>
+                <select class="custom-select" id="goal-select" onchange="updateSummary()">
+                    <option value="get_fitter">Get fitter</option>
+                    <option value="sleep_better">Sleep better</option>
+                    <option value="productivity">Be more productive</option>
+                </select>
+            </div>
+
+            <!-- DYNAMIC SUMMARY (Clean) -->
+            <div class="summary-card" id="step1-summary">
+                <!-- Injected via JS -->
+            </div>
+
+            <button class="btn-continue" onclick="goToStep(2)">Continue</button>
+        </div>
+
+        <!-- STEP 2: ROUTINE PREVIEW -->
+        <div id="step-2" class="step-view">
+            <div class="step-header">
+                <button class="step-back" onclick="goToStep(1)">&larr;</button>
+                <span style="font-family:var(--font-mono); font-size:0.8rem; color:var(--text-secondary)">PREVIEW ROUTINE</span>
+            </div>
+
+            <h1 id="routine-title" style="font-size: 1.8rem; margin-bottom: 20px;">Get Fitter</h1>
+
+            <!-- Global Toggle for Option D -->
+            <div id="science-toggle" class="science-toggle-wrapper" style="display:none;">
+                <div id="global-toggle-btn" class="toggle-switch" onclick="toggleScienceModeGlobal()"></div>
+                <span style="font-size:0.9rem; font-weight:bold; cursor:pointer;" onclick="toggleScienceModeGlobal()">Explain the Science</span>
+            </div>
+
+            <div style="flex:1; overflow-y: auto; padding-bottom: 20px;">
+                <!-- MORNING -->
+                <div class="routine-section">
+                    <div class="section-title"><span>&#9788;</span> MORNING</div>
+                    <ul class="step-list" id="morning-list">
+                        <!-- Injected via JS -->
+                    </ul>
+                </div>
+
+                <!-- EVENING -->
+                <div class="routine-section">
+                    <div class="section-title"><span>&#9790;</span> EVENING</div>
+                    <ul class="step-list" id="evening-list">
+                        <!-- Injected via JS -->
+                    </ul>
+                </div>
+            </div>
+
+            <button class="btn-continue">Start Journey</button>
+        </div>
+    </div>
+
+    <script>
+        // ========================================
+        // DATA
+        // ========================================
+        const ROUTINES = {
+            'get_fitter': {
+                label: "Get Fitter",
+                summary: "Protocols derived from ACSM guidelines for mobility and progressive resistance, optimized for adherence.",
+                morning: [
+                    { 
+                        text: "5-10 min light mobility", 
+                        source: "American College of Sports Medicine", 
+                        claim: "Primes joints and reduces injury risk by increasing blood flow.",
+                        links: [{text: "Read Position Stand", url: "#"}]
+                    },
+                    { 
+                        text: "30g Protein Breakfast", 
+                        source: "Journal of Physiology", 
+                        claim: "Optimizes muscle protein synthesis compared to lower doses.",
+                        links: [{text: "Read Study", url: "#"}]
+                    },
+                    { 
+                        text: "10-20 min brisk walk", 
+                        source: "CDC Physical Activity Guidelines", 
+                        claim: "Contributes to the recommended 150 min/week moderate activity.",
+                        links: [{text: "CDC Guidelines", url: "#"}]
+                    }
+                ],
+                evening: [
+                    { 
+                        text: "Pre-sleep protein (20-40g)", 
+                        source: "Medicine & Science in Sports & Exercise", 
+                        claim: "Significantly increases overnight muscle protein synthesis.",
+                        links: [{text: "View Research", url: "#"}]
+                    }
+                ]
+            },
+            'sleep_better': {
+                label: "Sleep Better",
+                summary: "Circadian entrainment protocols based on AASM guidelines, focusing on light exposure and thermoregulation.",
+                morning: [
+                    { 
+                        text: "Bright light (10-20 mins)", 
+                        source: "American Academy of Sleep Medicine", 
+                        claim: "Primary treatment for circadian alignment; anchors sleep/wake cycle.",
+                        links: [{text: "AASM Guide", url: "#"}]
+                    }
+                ],
+                evening: [
+                    { 
+                        text: "Warm bath/shower (90 min before bed)", 
+                        source: "Sleep Medicine Reviews", 
+                        claim: "Passive heating reduces sleep onset latency via cooling effect.",
+                        links: [{text: "Meta-Analysis", url: "#"}]
+                    }
+                ]
+            }
+        };
+
+        // ========================================
+        // APP LOGIC
+        // ========================================
+        let currentOption = 'd';
+        let currentRoutineKey = 'get_fitter';
+        let isGlobalScienceMode = false;
+
+        function init() {
+            updateSummary();
+            setOption('d'); // Default to new option
+        }
+
+        function setOption(opt) {
+            currentOption = opt;
+            
+            // Update UI Controls
+            document.querySelectorAll('.controls button').forEach(b => b.classList.remove('active'));
+            document.getElementById(`btn-opt-${opt}`).classList.add('active');
+
+            // Reset specific states
+            document.getElementById('science-toggle').style.display = (opt === 'd') ? 'flex' : 'none';
+            document.getElementById('step-2').className = `step-view active option-${opt}`;
+            
+            // Re-render
+            renderRoutine();
+        }
+
+        function goToStep(step) {
+            document.querySelectorAll('.step-view').forEach(el => el.classList.remove('active'));
+            document.getElementById(`step-${step}`).classList.add('active');
+            
+            // Re-apply option class to step 2 if entering it
+            if(step === 2) {
+                document.getElementById('step-2').className = `step-view active option-${currentOption}`;
+            }
+        }
+
+        function updateSummary() {
+            const val = document.getElementById('goal-select').value;
+            currentRoutineKey = val;
+            const r = ROUTINES[val] || ROUTINES['get_fitter']; // Fallback
+            
+            document.getElementById('step1-summary').innerHTML = `
+                <div class="summary-title">SCIENTIFIC BASIS</div>
+                <div class="summary-text">${r.summary}</div>
+            `;
+        }
+
+        function renderRoutine() {
+            const r = ROUTINES[currentRoutineKey] || ROUTINES['get_fitter'];
+            document.getElementById('routine-title').innerText = r.label;
+
+            renderList('morning-list', r.morning);
+            renderList('evening-list', r.evening);
+            
+            // Reset global toggle state on re-render
+            isGlobalScienceMode = false;
+            updateGlobalToggleUI();
+        }
+
+        function renderList(elementId, items) {
+            const container = document.getElementById(elementId);
+            container.innerHTML = items.map((item, idx) => {
+                const uniqueId = `${elementId}-${idx}`;
+                
+                if (currentOption === 'd') {
+                    // Option D: Inline Button + Science Mode
+                    return `
+                        <li class="step-item">
+                            <div class="step-content">
+                                <span class="step-text">${item.text}</span>
+                                <button id="btn-${uniqueId}" class="evidence-btn" onclick="toggleCard('${uniqueId}')">Why?</button>
+                            </div>
+                            <div id="${uniqueId}" class="evidence-card">
+                                <span class="source-label">${item.source}</span>
+                                <p>${item.claim}</p>
+                                ${renderLinks(item.links)}
+                            </div>
+                        </li>
+                    `;
+                } else {
+                    // Fallback to Option A (Original)
+                    return `
+                        <li class="step-item option-a">
+                            <div class="step-content">
+                                <span class="step-text">${item.text}</span>
+                                <button class="evidence-btn" onclick="toggleCardSimple('${uniqueId}')">Why? &darr;</button>
+                            </div>
+                            <div id="${uniqueId}" class="evidence-card">
+                                <span class="source-label">${item.source}</span>
+                                <p>${item.claim}</p>
+                                ${renderLinks(item.links)}
+                            </div>
+                        </li>
+                    `;
+                }
+            }).join('');
+        }
+
+        function renderLinks(links) {
+            return links.map(l => `<a class="source-link" href="${l.url}">${l.text} &rarr;</a>`).join(' ');
+        }
+
+        // --- INTERACTIONS FOR OPTION D ---
+
+        function toggleCard(id) {
+            const card = document.getElementById(id);
+            const btn = document.getElementById(`btn-${id}`);
+            const isOpen = card.classList.contains('open');
+            
+            if(isOpen) {
+                card.classList.remove('open');
+                btn.classList.remove('active');
+            } else {
+                card.classList.add('open');
+                btn.classList.add('active');
+            }
+
+            // Check if all are open/closed to sync global toggle visual (optional polish)
+            // For now, if user manually interacts, we assume they left global mode
+            // But we won't force the global toggle off unless they close everything.
+        }
+
+        function toggleScienceModeGlobal() {
+            isGlobalScienceMode = !isGlobalScienceMode;
+            updateGlobalToggleUI();
+
+            const cards = document.querySelectorAll('.evidence-card');
+            const btns = document.querySelectorAll('.evidence-btn');
+
+            if (isGlobalScienceMode) {
+                // Open All
+                cards.forEach(c => c.classList.add('open'));
+                btns.forEach(b => b.classList.add('active'));
+            } else {
+                // Close All
+                cards.forEach(c => c.classList.remove('open'));
+                btns.forEach(b => b.classList.remove('active'));
+            }
+        }
+
+        function updateGlobalToggleUI() {
+            const toggleBtn = document.getElementById('global-toggle-btn');
+            if(isGlobalScienceMode) {
+                toggleBtn.classList.add('active');
+            } else {
+                toggleBtn.classList.remove('active');
+            }
+        }
+
+        // Simple toggle for Option A legacy support
+        function toggleCardSimple(id) {
+             const card = document.getElementById(id);
+             card.classList.toggle('open');
+        }
+
+        // Start
+        init();
+
+    </script>
+</body>
+</html>
