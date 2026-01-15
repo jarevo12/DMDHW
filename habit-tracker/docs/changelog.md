@@ -4,6 +4,31 @@ This document summarizes the key improvements, features, and architectural decis
 
 ---
 
+## January 15, 2026 - Evidence-Rich Onboarding Updates
+
+**Session Focus:** Add scientific evidence summaries and per-habit explanations to onboarding while keeping the existing visual system and improving mobile readability.
+
+### Onboarding Evidence Enhancements
+
+- Added a **Scientific basis** summary box to Step 1 that updates based on the selected goal.
+- Introduced per-habit **Why?** buttons with evidence cards (source, summary, optional “Read Source” link).
+- Added **Explain the science** toggle to open/close all evidence cards per routine page.
+- Created a local evidence data module from research exports for fast, offline access.
+
+### UI/UX Polish & Mobile Readability
+
+- Adjusted spacing across onboarding steps (summary spacing, header margins, review layout spacing).
+- Resized and vertically balanced step indicators; completed steps now use acid green.
+- Removed the Step 4 checkmark icon for a cleaner review header.
+- Enabled habit text wrapping via auto-resizing textarea inputs while keeping action buttons aligned.
+- Fixed schedule button height for wrapped labels (weekly/interval schedules).
+
+### Files Modified
+
+- `js/onboarding.js` - Evidence UI, toggle/Why logic, textarea wrapping, and review header changes.
+- `js/routine-evidence.js` - New evidence data module.
+- `css/styles.css` - Evidence styles, spacing adjustments, step indicators, and mobile layout fixes.
+
 ## January 14, 2026 - Firebase Analytics Implementation & Environment-Based Logging
 
 **Session Focus:** Implement comprehensive Firebase Analytics tracking for user behavior analysis and add environment-based console logging for clean production experience.
